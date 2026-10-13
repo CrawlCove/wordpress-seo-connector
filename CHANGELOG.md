@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.4 (2026-10-13)
 
 - **The plugin now says when the site cannot accept Application Passwords at
   all** (review ticket #211). WordPress core only enables them over HTTPS or
