@@ -18,6 +18,18 @@
   `wp_is_application_passwords_available` filter and proves both surfaces
   against real core auth.
 
+- **`Update URI` header** (review ticket #212). Installed from GitHub, the
+  plugin had no Update URI, so core asked api.wordpress.org for updates
+  against a slug nobody has claimed yet; whoever one day owns
+  `crawl-cove-connector` there would have been offered to every GitHub
+  install as an upgrade. The header now points at
+  `https://crawlcove.com/wordpress-plugin`, which makes core skip the
+  directory for this plugin. `bin/build-zip.sh --wporg` strips the line for
+  the wordpress.org SVN copy (the directory serves updates only to plugins
+  without one, and Plugin Check flags it); `plugin-check.sh` checks that
+  copy. No update notices for GitHub installs yet: that needs an external
+  request both readmes promise not to make.
+
 - **README documents how to find the REST root.** WordPress serves the API
   at `/wp-json/`, `/index.php/wp-json/` or `/index.php?rest_route=/`
   depending on the permalink setting, and a client that hard-codes

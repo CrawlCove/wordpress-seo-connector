@@ -23,6 +23,22 @@ class ReadmeTest extends TestCase {
 		$this->assertSame( $header[1], $stable[1] );
 	}
 
+	/**
+	 * GitHub installs must never be offered an update by api.wordpress.org
+	 * for whatever plugin may one day own this unclaimed slug (review ticket
+	 * #212): a non-wordpress.org Update URI makes core skip the directory for
+	 * this plugin. The SVN copy must NOT carry it (bin/build-zip.sh --wporg
+	 * strips it), because the directory only serves updates to plugins
+	 * without one.
+	 */
+	public function test_plugin_header_carries_a_non_wporg_update_uri() {
+		$main = (string) file_get_contents( dirname( __DIR__ ) . '/crawl-cove-connector.php' );
+		preg_match( '/^\s*\*\s*Update URI:\s*(\S+)/m', $main, $uri );
+
+		$this->assertNotEmpty( $uri );
+		$this->assertSame( 'https://crawlcove.com/wordpress-plugin', $uri[1] );
+	}
+
 	public function test_readmes_say_the_desktop_app_is_paid_with_a_free_trial() {
 		foreach ( array( 'readme.txt', 'README.md' ) as $name ) {
 			$text = $this->file( $name );

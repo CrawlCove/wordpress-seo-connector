@@ -11,6 +11,16 @@
 #   bash bin/build-zip.sh --expect-version 0.10.0
 #                                          # fail unless header + Stable tag say so
 #                                          # (the release workflow passes the tag)
+#   bash bin/build-zip.sh --wporg          # the wordpress.org SVN copy: identical
+#                                          # except the `Update URI:` header line
+#                                          # is removed. The directory only serves
+#                                          # updates to plugins WITHOUT a foreign
+#                                          # Update URI, and Plugin Check flags one;
+#                                          # the GitHub zip keeps it so a GitHub
+#                                          # install is never offered whatever
+#                                          # plugin may one day own this slug on
+#                                          # wordpress.org (review ticket #212).
+#                                          # Combines with --stage-to.
 #
 # The zip unpacks to crawl-cove-connector/ so WordPress installs it under
 # the right slug. GitHub's own "Download ZIP" of a branch unpacks to
@@ -28,11 +38,13 @@ SLUG=crawl-cove-connector
 BUILD="$PLUGIN_ROOT/build"
 STAGE_TO=""
 EXPECT_VERSION=""
+WPORG=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --stage-to) STAGE_TO="$2"; shift 2 ;;
     --expect-version) EXPECT_VERSION="${2#v}"; shift 2 ;;
+    --wporg) WPORG=1; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -78,6 +90,19 @@ stage() {
     --exclude=SECURITY-NOTES.md --exclude=README.md --exclude=CHANGELOG.md \
     --exclude=CLAUDE.md --exclude=.claude --exclude='*.zip' --exclude='*.log' \
     "$PLUGIN_ROOT/" "$dest/"
+  if [[ "$WPORG" -eq 1 ]]; then
+    sed -i '/^ \* Update URI:/d' "$dest/$SLUG.php"
+    if grep -q '^ \* Update URI:' "$dest/$SLUG.php"; then
+      echo "--wporg: failed to strip the Update URI header" >&2
+      exit 1
+    fi
+    log "wordpress.org copy: Update URI header removed"
+  else
+    if ! grep -q '^ \* Update URI: *https://crawlcove.com/' "$dest/$SLUG.php"; then
+      echo "the GitHub copy must carry a crawlcove.com Update URI header (see --wporg)" >&2
+      exit 1
+    fi
+  fi
 }
 
 if [[ -n "$STAGE_TO" ]]; then

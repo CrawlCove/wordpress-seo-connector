@@ -14,3 +14,11 @@ repo and gated behind a human-only wordpress.org account.
 At submission time these get copied into the SVN `assets/` directory
 (trunk/tags stay separate). That step is part of the wp-release approval,
 not this repo.
+
+SVN trunk/tags must be built with `bash bin/build-zip.sh --wporg`
+(or `--stage-to DIR --wporg`), never from the GitHub release zip: the only
+difference is that the `Update URI:` header line is removed. The directory
+serves updates only to plugins that do not point their updates elsewhere,
+and Plugin Check flags the header; the GitHub copy keeps it so a GitHub
+install can never be offered whatever plugin might one day own this slug
+on wordpress.org (review ticket #212).
