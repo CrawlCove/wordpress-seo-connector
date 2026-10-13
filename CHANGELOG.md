@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- **The plugin now says when the site cannot accept Application Passwords at
+  all** (review ticket #211). WordPress core only enables them over HTTPS or
+  with `WP_ENVIRONMENT_TYPE=local`, so on a plain-http staging site, or an
+  HTTPS site behind a proxy that hides the scheme, core silently ignored the
+  desktop app's login and the app could only report "wrong credentials".
+  Every route now answers such an anonymous request with its own error,
+  `ccc_app_passwords_unavailable` (401), whose message names the cause; the
+  Tools page Status table gains an "Application Passwords" row (On, or Off
+  with the proxy fix and the last-resort filter); readme.txt gains a "Does my
+  site need HTTPS?" FAQ; README documents the code for the app. A logged-in
+  admin's own cookie session is never blocked. New `CCC_App_Passwords`
+  class, 5 unit tests, and `tests/integration/app-passwords-checks.sh` (12
+  checks, wired into run.sh) which lifts the harness's own
+  `wp_is_application_passwords_available` filter and proves both surfaces
+  against real core auth.
+
 - **README documents how to find the REST root.** WordPress serves the API
   at `/wp-json/`, `/index.php/wp-json/` or `/index.php?rest_route=/`
   depending on the permalink setting, and a client that hard-codes

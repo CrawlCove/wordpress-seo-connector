@@ -135,6 +135,23 @@ class CCC_Admin {
 						</td>
 					</tr>
 					<tr>
+						<td><?php esc_html_e( 'Application Passwords', 'crawl-cove-connector' ); ?></td>
+						<td>
+							<?php if ( CCC_App_Passwords::available() ) : ?>
+								<strong><?php esc_html_e( 'On', 'crawl-cove-connector' ); ?></strong>
+							<?php else : ?>
+								<strong><?php esc_html_e( 'Off', 'crawl-cove-connector' ); ?></strong>
+								<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress only enables Application Passwords when the site is served over HTTPS (is_ssl()) or WP_ENVIRONMENT_TYPE is local.', 'crawl-cove-connector' ); ?>
+								<br>
+								<?php esc_html_e( 'If a proxy or load balancer terminates HTTPS in front of WordPress, tell it so in wp-config.php:', 'crawl-cove-connector' ); ?>
+								<code>if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) &amp;&amp; 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] ) { $_SERVER['HTTPS'] = 'on'; }</code>
+								<br>
+								<?php esc_html_e( 'Last resort for a trusted local or staging site:', 'crawl-cove-connector' ); ?>
+								<code>add_filter( 'wp_is_application_passwords_available', '__return_true' );</code>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<tr>
 						<td><?php esc_html_e( 'REST endpoint', 'crawl-cove-connector' ); ?></td>
 						<td><code><?php echo esc_html( rest_url( CCC_Rest::NS ) ); ?></code></td>
 					</tr>

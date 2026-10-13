@@ -18,6 +18,8 @@ function cc_reset_wp() {
 	$GLOBALS['cc_home']    = 'https://example.com';
 	$GLOBALS['cc_aioseo']  = array(); // post_id => ['title' => ..., 'description' => ...]
 	$GLOBALS['cc_deny_manage_options'] = false;
+	$GLOBALS['cc_logged_in']     = true;  // is_user_logged_in() stub
+	$GLOBALS['cc_app_passwords'] = true;  // wp_is_application_passwords_available() stub
 	$GLOBALS['cc_terms']            = array(); // term_id => ['taxonomy' => ..., 'name' => ..., 'link' => ...]
 	$GLOBALS['cc_term_urls']        = array(); // url => term_id (CCC_Term_Resolver::resolve_pretty_permalink() stub)
 	$GLOBALS['cc_term_plain_urls']  = array(); // url => term_id (CCC_Term_Resolver::resolve_plain_query_vars() stub)
@@ -139,6 +141,9 @@ function current_user_can( $cap, $post_id = null ) {
 	}
 	return true;
 }
+
+function is_user_logged_in() { return ! empty( $GLOBALS['cc_logged_in'] ); }
+function wp_is_application_passwords_available() { return ! empty( $GLOBALS['cc_app_passwords'] ); }
 
 function sanitize_text_field( $str ) {
 	$str = strip_tags( (string) $str );
@@ -419,6 +424,7 @@ class PLL_MO {
 	}
 }
 
+require __DIR__ . '/../includes/class-ccc-app-passwords.php';
 require __DIR__ . '/../includes/class-ccc-adapter.php';
 require __DIR__ . '/../includes/class-ccc-change-log.php';
 require __DIR__ . '/../includes/class-ccc-connection.php';

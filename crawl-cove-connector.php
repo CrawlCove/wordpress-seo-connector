@@ -21,6 +21,7 @@ define( 'CCC_VERSION', '0.10.3' );
 define( 'CCC_PLUGIN_FILE', __FILE__ );
 define( 'CCC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
+require_once CCC_PLUGIN_DIR . 'includes/class-ccc-app-passwords.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-adapter.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-change-log.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-connection.php';

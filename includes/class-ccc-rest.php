@@ -100,9 +100,15 @@ class CCC_Rest {
 	 * the API at all. apply()/revert() re-check edit_post per post on top.
 	 *
 	 * @param WP_REST_Request|null $request Current request.
-	 * @return bool
+	 * @return bool|WP_Error WP_Error (ccc_app_passwords_unavailable, 401) when
+	 *                       the request is anonymous because core has
+	 *                       Application Passwords switched off.
 	 */
 	public static function can_use( $request = null ) {
+		$guard = CCC_App_Passwords::guard();
+		if ( is_wp_error( $guard ) ) {
+			return $guard;
+		}
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return false;
 		}

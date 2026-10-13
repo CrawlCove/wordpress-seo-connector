@@ -45,6 +45,10 @@ No. It writes only the SEO title and meta description fields, only for changes y
 
 Every write is capability-checked, validated, length-capped and logged with its previous value; reverting is one click. Authentication is core WordPress Application Passwords over HTTPS. This plugin relies on WordPress core and your host for login rate-limiting/brute-force protection rather than implementing its own; a login-throttling plugin is recommended if you don't already run one.
 
+= Does my site need HTTPS? =
+
+For the desktop app to log in, yes. WordPress only enables Application Passwords when the site is served over HTTPS (or WP_ENVIRONMENT_TYPE is set to local); on a plain http site, or an HTTPS site behind a proxy that does not pass the scheme through, core ignores the login and the app is told the site rejected it. Tools, then Crawl Cove, shows whether Application Passwords are on and what to change if they are not.
+
 = What happens to the change log if I delete the plugin? =
 
 Deleting the plugin (Plugins → Delete) removes everything it stored, including the change log, so the revert history goes with it. The titles and descriptions it applied stay in your SEO plugin as they are. Deactivating the plugin keeps the log.

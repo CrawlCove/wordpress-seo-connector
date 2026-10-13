@@ -45,6 +45,32 @@ Safety model:
 - Empty string means "remove the override, fall back to the SEO plugin's template".
 - No external requests, no tracking, no data leaves the site.
 
+### When the site cannot accept Application Passwords at all
+
+WordPress core only enables Application Passwords when `is_ssl()` is true or
+`WP_ENVIRONMENT_TYPE` is `local` (`wp_is_application_passwords_supported()`):
+every plain-http staging/local site and every HTTPS site behind a proxy that
+does not pass the scheme through. On such a site core ignores the Basic auth
+header, the request arrives anonymous, and WordPress alone would answer a
+generic `rest_forbidden` 401 that looks exactly like a wrong password.
+
+Every route therefore answers an anonymous request on such a site with its
+own error, before any credential is judged:
+
+```json
+{"code":"ccc_app_passwords_unavailable","message":"Application Passwords are switched off on this WordPress site, ...","data":{"status":401}}
+```
+
+The client should show that message as the site's problem, not the user's
+credentials, and point at **Tools → Crawl Cove** on the site, whose Status
+table shows the same state with the fix (proxy: set `HTTPS` from
+`HTTP_X_FORWARDED_PROTO` in `wp-config.php`; last resort: the
+`wp_is_application_passwords_available` filter). A genuine bad username or
+password on a site where they ARE enabled still comes back as core's own
+401 without this code: `incorrect_password` (or similar) when core gets to
+report it, or a bare `rest_forbidden` when another plugin determined the
+current user before the REST server did, which hides core's reason.
+
 ### Finding the REST root (do not hard-code `/wp-json/`)
 
 WordPress serves its REST API at one of three URL shapes, chosen by the
