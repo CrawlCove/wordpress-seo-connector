@@ -5,6 +5,8 @@
 - readme.txt and README install step 4 say the desktop app can push one fix
   at a time or every open title and description finding at once (app 1.3.8
   bulk push, ticket #217). Docs only.
+- wordpress.org screenshot-1 regenerated with the Application Passwords row
+  that 0.10.4 added to the Tools page; caption updated to match.
 
 ## 0.10.4 (2026-10-13)
 

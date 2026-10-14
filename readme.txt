@@ -55,7 +55,7 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 == Screenshots ==
 
-1. Tools → Crawl Cove: whether the desktop app has connected, the detected SEO plugin, setup steps, and the change log with one-click revert.
+1. Tools → Crawl Cove: the detected SEO plugin, whether Application Passwords are on, whether the desktop app has connected, setup steps, and the change log with one-click revert.
 
 == Changelog ==
 
