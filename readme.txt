@@ -29,7 +29,7 @@ The plugin is a small, auditable bridge (plain PHP, no framework, no external re
 1. Download `crawl-cove-connector.zip` from the latest GitHub release at https://github.com/CrawlCove/wordpress-seo-connector/releases/latest, then in your WordPress admin go to Plugins → Add New → Upload Plugin, choose the zip and activate it. (Once the plugin is listed on wordpress.org you will be able to install it from Plugins → Add New by searching "Crawl Cove Connector" instead.)
 2. Create an Application Password: Users → Profile → Application Passwords → "Crawl Cove".
 3. In the [Crawl Cove desktop app](https://crawlcove.com/download?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme), open your site profile → WordPress and enter the site URL, username and application password.
-4. Crawl, review the suggested fixes, push the approved ones. Review or revert them any time under Tools → Crawl Cove.
+4. Crawl, review the suggested fixes, and push the approved ones: one at a time, or every open title and description finding at once from the Findings list. Review or revert them any time under Tools → Crawl Cove.
 
 == Frequently Asked Questions ==
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- readme.txt and README install step 4 say the desktop app can push one fix
+  at a time or every open title and description finding at once (app 1.3.8
+  bulk push, ticket #217). Docs only.
+
 ## 0.10.4 (2026-10-13)
 
 - **The plugin now says when the site cannot accept Application Passwords at
