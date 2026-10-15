@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- When a plugin has switched Application Passwords off on an HTTPS site
+  (Wordfence's default), the Tools page and the API 401 now say so and name
+  Wordfence's setting, instead of blaming HTTPS and offering the proxy fix
+  (review ticket #220). Same `ccc_app_passwords_unavailable` code; new FAQ.
 - readme.txt and README install step 4 say the desktop app can push one fix
   at a time or every open title and description finding at once (app 1.3.8
   bulk push, ticket #217). Docs only.

@@ -15,8 +15,9 @@ class AppPasswordsTest extends TestCase {
 	}
 
 	public function test_anonymous_request_on_a_site_with_app_passwords_off_is_a_named_401() {
-		$GLOBALS['cc_logged_in']     = false;
-		$GLOBALS['cc_app_passwords'] = false;
+		$GLOBALS['cc_logged_in']               = false;
+		$GLOBALS['cc_app_passwords']           = false;
+		$GLOBALS['cc_app_passwords_supported'] = false;
 
 		$guard = CCC_App_Passwords::guard();
 
@@ -25,6 +26,39 @@ class AppPasswordsTest extends TestCase {
 		$this->assertSame( array( 'status' => 401 ), $guard->get_error_data() );
 		$this->assertStringContainsString( 'Application Passwords are switched off', $guard->get_error_message() );
 		$this->assertStringContainsString( 'HTTPS', $guard->get_error_message() );
+	}
+
+	public function test_off_on_a_site_core_would_allow_blames_a_plugin_not_https() {
+		// Wordfence's default: HTTPS site, __return_false on the availability filter (review #220).
+		$GLOBALS['cc_logged_in']               = false;
+		$GLOBALS['cc_app_passwords']           = false;
+		$GLOBALS['cc_app_passwords_supported'] = true;
+
+		$this->assertTrue( CCC_App_Passwords::off_by_filter() );
+		$guard = CCC_App_Passwords::guard();
+
+		$this->assertTrue( is_wp_error( $guard ) );
+		$this->assertSame( 'ccc_app_passwords_unavailable', $guard->get_error_code() );
+		$this->assertSame( array( 'status' => 401 ), $guard->get_error_data() );
+		$this->assertStringContainsString( 'Application Passwords are switched off', $guard->get_error_message() );
+		$this->assertStringContainsString( 'a plugin or theme has turned them off', $guard->get_error_message() );
+		$this->assertStringContainsString( 'Disable WordPress application passwords', $guard->get_error_message() );
+		$this->assertStringNotContainsString( 'HTTPS', $guard->get_error_message() );
+	}
+
+	public function test_off_where_core_would_refuse_keeps_the_https_explanation() {
+		$GLOBALS['cc_app_passwords']           = false;
+		$GLOBALS['cc_app_passwords_supported'] = false;
+
+		$this->assertFalse( CCC_App_Passwords::off_by_filter() );
+		$this->assertStringNotContainsString( 'plugin or theme', CCC_App_Passwords::message() );
+	}
+
+	public function test_on_is_never_reported_as_off_by_filter() {
+		$GLOBALS['cc_app_passwords']           = true;
+		$GLOBALS['cc_app_passwords_supported'] = true;
+
+		$this->assertFalse( CCC_App_Passwords::off_by_filter() );
 	}
 
 	public function test_anonymous_request_where_app_passwords_are_on_falls_through_to_the_capability_check() {

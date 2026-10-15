@@ -23,7 +23,8 @@ if [[ ! -f "$MU" ]]; then
   echo "  FAIL harness mu-plugin $MU is missing; cannot toggle Application Passwords" >&2
   FAIL=$((FAIL+1)); summary; exit 1
 fi
-restore() { [[ -f "$MU.off" ]] && mv "$MU.off" "$MU"; }
+WF="$CCC_SITE/wp-content/mu-plugins/ccc-test-wordfence-default.php"
+restore() { rm -f "$WF"; [[ -f "$MU.off" ]] && mv "$MU.off" "$MU"; }
 trap restore EXIT
 
 echo "-- Application Passwords on (harness default) --"
@@ -56,6 +57,25 @@ if grep -q 'wp_is_application_passwords_available' <<<"$PAGE"; then PASS=$((PASS
 # wp eval --user=1 is exactly that (current user set, no app password).
 GUARD="$(wp eval 'var_export( CCC_App_Passwords::guard() );' --user=1 2>/dev/null)"
 if [[ "$GUARD" == "true" ]]; then PASS=$((PASS+1)); echo "  ok   guard lets a logged-in user through while passwords are off"; else FAIL=$((FAIL+1)); echo "  FAIL guard for a logged-in user: $GUARD"; fi
+
+echo "-- Application Passwords off by a plugin on an HTTPS site (Wordfence's default, review #220) --"
+# Wordfence 9.x ships loginSec_disableApplicationPasswords on and adds exactly
+# this filter. With HTTPS on, core would allow them, so HTTPS is the wrong hint.
+cat > "$WF" <<'PHP'
+<?php
+$_SERVER['HTTPS'] = 'on';
+add_filter( 'wp_is_application_passwords_available', '__return_false' );
+PHP
+req GET /status "$EDITOR"
+check "HTTPS + filter: 401 ccc_app_passwords_unavailable (same code, app unchanged)" 401 "$RESP_HTTP" '.code' "ccc_app_passwords_unavailable" "$RESP_BODY"
+check "message blames a plugin or theme" 401 "$RESP_HTTP" '.message | contains("a plugin or theme has turned them off")' "true" "$RESP_BODY"
+check "message names the Wordfence setting" 401 "$RESP_HTTP" '.message | contains("Disable WordPress application passwords")' "true" "$RESP_BODY"
+check "message does not blame HTTPS" 401 "$RESP_HTTP" '.message | contains("HTTPS")' "false" "$RESP_BODY"
+PAGE="$(page)"
+if grep -q 'Application Passwords Off' <<<"$PAGE"; then PASS=$((PASS+1)); echo "  ok   Tools page says Application Passwords Off"; else FAIL=$((FAIL+1)); echo "  FAIL Tools page missing 'Application Passwords Off'"; fi
+if grep -q 'a plugin or theme has switched them off' <<<"$PAGE" && grep -q 'Disable WordPress application passwords' <<<"$PAGE"; then PASS=$((PASS+1)); echo "  ok   Tools page names the plugin cause and Wordfence's toggle"; else FAIL=$((FAIL+1)); echo "  FAIL Tools page missing the plugin cause"; fi
+if grep -q 'HTTP_X_FORWARDED_PROTO\|only enables Application Passwords' <<<"$PAGE"; then FAIL=$((FAIL+1)); echo "  FAIL Tools page still blames HTTPS / offers the proxy fix"; else PASS=$((PASS+1)); echo "  ok   Tools page drops the HTTPS/proxy hint"; fi
+rm -f "$WF"
 
 echo "-- filter restored --"
 restore

@@ -141,13 +141,19 @@ class CCC_Admin {
 								<strong><?php esc_html_e( 'On', 'crawl-cove-connector' ); ?></strong>
 							<?php else : ?>
 								<strong><?php esc_html_e( 'Off', 'crawl-cove-connector' ); ?></strong>
-								<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress only enables Application Passwords when the site is served over HTTPS (is_ssl()) or WP_ENVIRONMENT_TYPE is local.', 'crawl-cove-connector' ); ?>
-								<br>
-								<?php esc_html_e( 'If a proxy or load balancer terminates HTTPS in front of WordPress, tell it so in wp-config.php:', 'crawl-cove-connector' ); ?>
-								<code>if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) &amp;&amp; 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] ) { $_SERVER['HTTPS'] = 'on'; }</code>
-								<br>
-								<?php esc_html_e( 'Last resort for a trusted local or staging site:', 'crawl-cove-connector' ); ?>
-								<code>add_filter( 'wp_is_application_passwords_available', '__return_true' );</code>
+								<?php if ( CCC_App_Passwords::off_by_filter() ) : ?>
+									<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress itself allows them on this site, so a plugin or theme has switched them off.', 'crawl-cove-connector' ); ?>
+									<br>
+									<?php esc_html_e( 'Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. Other security plugins have a similar setting.', 'crawl-cove-connector' ); ?>
+								<?php else : ?>
+									<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress only enables Application Passwords when the site is served over HTTPS (is_ssl()) or WP_ENVIRONMENT_TYPE is local.', 'crawl-cove-connector' ); ?>
+									<br>
+									<?php esc_html_e( 'If a proxy or load balancer terminates HTTPS in front of WordPress, tell it so in wp-config.php:', 'crawl-cove-connector' ); ?>
+									<code>if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) &amp;&amp; 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] ) { $_SERVER['HTTPS'] = 'on'; }</code>
+									<br>
+									<?php esc_html_e( 'Last resort for a trusted local or staging site:', 'crawl-cove-connector' ); ?>
+									<code>add_filter( 'wp_is_application_passwords_available', '__return_true' );</code>
+								<?php endif; ?>
 							<?php endif; ?>
 						</td>
 					</tr>

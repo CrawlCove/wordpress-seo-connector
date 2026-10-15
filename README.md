@@ -54,8 +54,17 @@ does not pass the scheme through. On such a site core ignores the Basic auth
 header, the request arrives anonymous, and WordPress alone would answer a
 generic `rest_forbidden` 401 that looks exactly like a wrong password.
 
+The same state has a second, common cause on sites that ARE on HTTPS: a
+plugin or theme filtering `wp_is_application_passwords_available` to false.
+Wordfence does this by default (its "Disable WordPress application
+passwords" option, under Firewall, All Firewall Options, ships switched
+on). The plugin tells the two apart with core's
+`wp_is_application_passwords_supported()`: if core would allow them here, a
+filter turned them off, and the message names that cause instead of HTTPS.
+
 Every route therefore answers an anonymous request on such a site with its
-own error, before any credential is judged:
+own error, before any credential is judged (same code for both causes; only
+the message differs):
 
 ```json
 {"code":"ccc_app_passwords_unavailable","message":"Application Passwords are switched off on this WordPress site, ...","data":{"status":401}}
@@ -65,7 +74,8 @@ The client should show that message as the site's problem, not the user's
 credentials, and point at **Tools → Crawl Cove** on the site, whose Status
 table shows the same state with the fix (proxy: set `HTTPS` from
 `HTTP_X_FORWARDED_PROTO` in `wp-config.php`; last resort: the
-`wp_is_application_passwords_available` filter). A genuine bad username or
+`wp_is_application_passwords_available` filter; on an HTTPS site, the
+security plugin's setting instead). A genuine bad username or
 password on a site where they ARE enabled still comes back as core's own
 401 without this code: `incorrect_password` (or similar) when core gets to
 report it, or a bare `rest_forbidden` when another plugin determined the

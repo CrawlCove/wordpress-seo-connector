@@ -49,6 +49,10 @@ Every write is capability-checked, validated, length-capped and logged with its 
 
 For the desktop app to log in, yes. WordPress only enables Application Passwords when the site is served over HTTPS (or WP_ENVIRONMENT_TYPE is set to local); on a plain http site, or an HTTPS site behind a proxy that does not pass the scheme through, core ignores the login and the app is told the site rejected it. Tools, then Crawl Cove, shows whether Application Passwords are on and what to change if they are not.
 
+= My site is on HTTPS but Application Passwords are off. Why? =
+
+A security plugin has switched them off. Wordfence does this by default: untick Firewall, All Firewall Options, "Disable WordPress application passwords", then save. Other security plugins have a similar setting. Tools, then Crawl Cove, tells you which of the two causes applies to your site.
+
 = What happens to the change log if I delete the plugin? =
 
 Deleting the plugin (Plugins → Delete) removes everything it stored, including the change log, so the revert history goes with it. The titles and descriptions it applied stay in your SEO plugin as they are. Deactivating the plugin keeps the log.
