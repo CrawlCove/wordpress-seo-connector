@@ -4,7 +4,7 @@ Tags: seo, yoast, rank math, seopress, aioseo
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.10.4
+Stable tag: 0.10.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,9 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 1. Tools → Crawl Cove: the detected SEO plugin, whether Application Passwords are on, whether the desktop app has connected, setup steps, and the change log with one-click revert.
 
 == Changelog ==
+
+= 0.10.5 =
+* When a security plugin (Wordfence by default) switches Application Passwords off on an HTTPS site, the Tools page and the API now say so and name the setting, instead of blaming HTTPS; new FAQ.
 
 = 0.10.4 =
 * Tools page and the API now say when WordPress has Application Passwords switched off (plain-http or proxied sites), instead of the desktop app reporting wrong credentials; new FAQ "Does my site need HTTPS?".

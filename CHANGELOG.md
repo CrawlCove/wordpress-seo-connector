@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.5 (2026-10-15)
 
 - When a plugin has switched Application Passwords off on an HTTPS site
   (Wordfence's default), the Tools page and the API 401 now say so and name
