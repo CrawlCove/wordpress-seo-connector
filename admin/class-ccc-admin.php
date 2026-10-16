@@ -144,7 +144,7 @@ class CCC_Admin {
 								<?php if ( CCC_App_Passwords::off_by_filter() ) : ?>
 									<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress itself allows them on this site, so a plugin or theme has switched them off.', 'crawl-cove-connector' ); ?>
 									<br>
-									<?php esc_html_e( 'Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. Other security plugins have a similar setting.', 'crawl-cove-connector' ); ?>
+									<?php esc_html_e( 'Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. On another security plugin, look for a setting with a similar name.', 'crawl-cove-connector' ); ?>
 								<?php else : ?>
 									<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress only enables Application Passwords when the site is served over HTTPS (is_ssl()) or WP_ENVIRONMENT_TYPE is local.', 'crawl-cove-connector' ); ?>
 									<br>

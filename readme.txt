@@ -51,7 +51,7 @@ For the desktop app to log in, yes. WordPress only enables Application Passwords
 
 = My site is on HTTPS but Application Passwords are off. Why? =
 
-A security plugin has switched them off. Wordfence does this by default: untick Firewall, All Firewall Options, "Disable WordPress application passwords", then save. Other security plugins have a similar setting. Tools, then Crawl Cove, tells you which of the two causes applies to your site.
+A security plugin has switched them off. Wordfence does this by default: untick Firewall, All Firewall Options, "Disable WordPress application passwords", then save. On another security plugin, look for a setting with a similar name. Tools, then Crawl Cove, tells you which of the two causes applies to your site.
 
 = What happens to the change log if I delete the plugin? =
 

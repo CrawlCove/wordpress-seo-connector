@@ -87,7 +87,7 @@ msgid "The desktop app cannot log in until they are on. WordPress itself allows 
 msgstr ""
 
 #: admin/class-ccc-admin.php:147
-msgid "Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. Other security plugins have a similar setting."
+msgid "Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. On another security plugin, look for a setting with a similar name."
 msgstr ""
 
 #: admin/class-ccc-admin.php:149

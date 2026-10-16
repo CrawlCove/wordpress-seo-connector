@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- The Application Passwords hint (Tools page, readme FAQ) now tells users of
+  other security plugins to look for a setting with a similar name, instead
+  of asserting they all have one; matches the crawlcove.com FAQ (seo #222).
+
 ## 0.10.5 (2026-10-15)
 
 - When a plugin has switched Application Passwords off on an HTTPS site
