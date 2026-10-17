@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Security: `/resolve` and `/changes` no longer disclose what the user
+  cannot read** (review ticket #227). A Contributor or Author could resolve
+  `?p=N` for any id and read the title and SEO values of other users'
+  drafts and private posts, and of privacy requests (whose title is the
+  requester's email). Those now answer `ccc_unresolvable`, like a missing
+  post. `/changes` lists only entries on targets the user may edit;
+  administrators still see the whole log. The app resolves only crawled
+  public URLs, so nothing changes for it.
 - The Application Passwords hint (Tools page, readme FAQ) now tells users of
   other security plugins to look for a setting with a similar name, instead
   of asserting they all have one; matches the crawlcove.com FAQ (seo #222).

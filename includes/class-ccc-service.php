@@ -105,7 +105,14 @@ class CCC_Service {
 		// real WordPress (a plain-permalink URL for a deleted/never-existing id
 		// still returns that id). Verify it ourselves so a stale or guessed
 		// numeric URL reports unresolvable instead of a phantom "resolved" post.
-		if ( $post_id && get_post( $post_id ) ) {
+		//
+		// The same "?p=N" shortcut reaches ANY post id, so a post this user
+		// may not read (someone else's draft or private post) or one with no
+		// public page at all (a user_request, whose title is the requester's
+		// email) must not resolve either: describe() would hand back its title
+		// and SEO values. It answers exactly like a missing post, so the reply
+		// is not an oracle for which ids exist (review #227).
+		if ( $post_id && get_post( $post_id ) && self::can_read_post( $post_id ) ) {
 			return $post_id;
 		}
 
@@ -280,6 +287,19 @@ class CCC_Service {
 			return current_user_can( 'edit_term', -$post_id );
 		}
 		return current_user_can( 'edit_post', $post_id );
+	}
+
+	/**
+	 * Whether the current user may see the given post through /resolve: core's
+	 * own `read_post` meta capability (drafts and private posts map through to
+	 * the author / read_private_* checks, as on the REST posts endpoint) on a
+	 * post type that has a public page at all.
+	 *
+	 * @param int $post_id Existing post id (> 0).
+	 * @return bool
+	 */
+	public static function can_read_post( $post_id ) {
+		return current_user_can( 'read_post', $post_id ) && is_post_type_viewable( get_post_type( $post_id ) );
 	}
 
 	/**

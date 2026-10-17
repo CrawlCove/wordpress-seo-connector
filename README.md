@@ -34,12 +34,13 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 | `/status` | GET | Plugin + detected SEO plugin info |
 | `/resolve` | POST | Map crawled URLs to posts, return current title/description |
 | `/apply` | POST | Apply a batch of reviewed fixes (`dry_run` supported) |
-| `/changes` | GET | The change log |
+| `/changes` | GET | The change log (entries this user may edit; all of it for an administrator) |
 | `/revert` | POST | Restore a change's previous value |
 
 Safety model:
 
 - Nothing is written that wasn't sent by an authenticated user with the right capability for that specific target: `edit_post` for a post/page, `manage_options` for the homepage, `edit_term` for a taxonomy term.
+- Nothing is read back that the user could not read in WordPress itself: `/resolve` answers `ccc_unresolvable` (the same reply as a missing post) for a post the user may not `read_post` (another user's draft or private post) or whose type has no public page (a privacy request, a reusable block), and `/changes` lists only the entries on targets the user may edit (administrators, `manage_options`, see the whole log).
 - Values are sanitized and length-capped; batches are capped at 50 changes.
 - Every write records the previous value; revert from the app or from **Tools → Crawl Cove**.
 - Empty string means "remove the override, fall back to the SEO plugin's template".

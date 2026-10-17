@@ -443,3 +443,28 @@ section and CHANGELOG.md's 0.10.0 entry.
   plugin doesn't implement its own; it relies on whatever the host/core
   provides. Documented in `readme.txt`'s FAQ (26 Sept 2026) rather than left
   as an undocumented gap for a wordpress.org reviewer to ask about.
+
+## Addendum, 17 Oct 2026 (read disclosure through /resolve and /changes: a real bug, now fixed)
+
+Reported by the review agent (ticket #227) on the harness site. `url_to_postid()`
+takes `?p=N` straight from the query string and `resolve_url()` only checked
+that the post existed, so any `edit_posts` user could enumerate ids and read
+titles, permalinks and SEO values of other users' drafts and private posts,
+and of `user_request` posts (title = the GDPR requester's email). Core's own
+`GET /wp/v2/posts/<id>` refuses the same reads. `GET /changes` returned the
+whole log, including from/to values and the login behind every change.
+
+Fix: `resolve_url()` now also requires `read_post` and `is_post_type_viewable()`
+and answers `ccc_unresolvable` otherwise, so the reply is no oracle for which
+ids exist. `/changes` serves `CCC_Change_Log::visible()`: the full log for
+`manage_options`, otherwise only entries where `can_edit_target()` holds.
+Writes were never affected (`/apply` and `/revert` already checked
+`can_edit_target()`).
+
+Verified: `security-checks.sh` gained 13 checks (author vs editor's private
+post, draft and a real `wp_create_user_request()` row; editor's own private
+post still resolves; /changes as author omits the editor's entries, as editor
+includes the author's). All 8 leak checks FAIL against the 0.10.5 code and
+pass with the fix: AIOSEO 148/148, Rank Math 156/156, Yoast 154/154. Unit
+suite 127 -> 132.
+

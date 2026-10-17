@@ -41,6 +41,29 @@ class CCC_Change_Log {
 	}
 
 	/**
+	 * The logged changes the current user may see, newest first: everything
+	 * for an administrator (the Tools page already shows them the full log),
+	 * otherwise only entries on targets this user may edit. The log carries
+	 * from/to values and the login that made each change, so an Author must
+	 * not read another user's history through /changes (review #227).
+	 *
+	 * @return array[]
+	 */
+	public static function visible() {
+		$log = self::all();
+		if ( current_user_can( 'manage_options' ) ) {
+			return $log;
+		}
+		$out = array();
+		foreach ( $log as $entry ) {
+			if ( isset( $entry['post_id'] ) && CCC_Service::can_edit_target( (int) $entry['post_id'] ) ) {
+				$out[] = $entry;
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Find one logged change by id.
 	 *
 	 * @param int $change_id Change id.

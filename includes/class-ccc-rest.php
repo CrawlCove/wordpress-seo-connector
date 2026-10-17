@@ -205,12 +205,12 @@ class CCC_Rest {
 	}
 
 	/**
-	 * GET /changes — the full change log, newest first.
+	 * GET /changes — the change log entries this user may see, newest first.
 	 *
 	 * @return WP_REST_Response
 	 */
 	public static function changes() {
-		return rest_ensure_response( CCC_Change_Log::all() );
+		return rest_ensure_response( CCC_Change_Log::visible() );
 	}
 
 	/**

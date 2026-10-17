@@ -47,6 +47,28 @@ class ServiceTest extends TestCase {
 		$this->assertSame( 'ccc_unresolvable', $err->get_error_code() );
 	}
 
+	public function test_resolve_refuses_a_post_the_user_may_not_read() {
+		// "?p=N" reaches any post id; someone else's draft or private post
+		// must answer like a missing one, not hand describe() its title.
+		cc_add_post( 11, 'https://example.com/?p=11', 'Private: Q4 plan' );
+		$GLOBALS['cc_deny_read'] = array( 11 );
+		$err = CCC_Service::resolve_url( 'https://example.com/?p=11' );
+		$this->assertSame( 'ccc_unresolvable', $err->get_error_code() );
+		$this->assertStringNotContainsString( 'Q4', $err->get_error_message() );
+	}
+
+	public function test_resolve_refuses_a_post_type_with_no_public_page() {
+		// A user_request's title is the requester's email address.
+		cc_add_post( 12, 'https://example.com/?p=12', 'jane.doe@example.org', 'user_request' );
+		$err = CCC_Service::resolve_url( 'https://example.com/?p=12' );
+		$this->assertSame( 'ccc_unresolvable', $err->get_error_code() );
+	}
+
+	public function test_resolve_still_maps_a_readable_page() {
+		cc_add_post( 13, 'https://example.com/about/', 'About', 'page' );
+		$this->assertSame( 13, CCC_Service::resolve_url( 'https://example.com/about/' ) );
+	}
+
 	public function test_resolve_root_url_is_the_homepage_when_no_static_front_page() {
 		$this->assertSame( CCC_Service::HOME_ID, CCC_Service::resolve_url( 'https://example.com/' ) );
 		$this->assertSame( CCC_Service::HOME_ID, CCC_Service::resolve_url( 'https://example.com' ) );

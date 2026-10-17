@@ -13,6 +13,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_posts']   = array(); // post_id => ['title' => ..., 'url' => ...]
 	$GLOBALS['cc_urls']    = array(); // url => post_id
 	$GLOBALS['cc_deny']    = array(); // post_ids current user may NOT edit
+	$GLOBALS['cc_deny_read'] = array(); // post_ids current user may NOT read (read_post)
 	$GLOBALS['cc_saved']   = array(); // wp_update_post calls
 	$GLOBALS['cc_actions'] = array(); // do_action() calls (tag name only)
 	$GLOBALS['cc_home']    = 'https://example.com';
@@ -112,6 +113,13 @@ function update_option( $name, $value, $autoload = null ) {
 function get_post( $post_id ) {
 	return isset( $GLOBALS['cc_posts'][ $post_id ] ) ? (object) array( 'ID' => $post_id ) : null;
 }
+function get_post_type( $post_id ) {
+	return isset( $GLOBALS['cc_posts'][ $post_id ]['type'] ) ? $GLOBALS['cc_posts'][ $post_id ]['type'] : 'post';
+}
+/** Stub: only core's internal types used in tests are non-viewable. */
+function is_post_type_viewable( $post_type ) {
+	return ! in_array( $post_type, array( 'user_request', 'wp_block', 'revision' ), true );
+}
 function get_the_title( $post_id ) {
 	return isset( $GLOBALS['cc_posts'][ $post_id ]['title'] ) ? $GLOBALS['cc_posts'][ $post_id ]['title'] : '';
 }
@@ -133,6 +141,9 @@ function url_to_postid( $url ) {
 function current_user_can( $cap, $post_id = null ) {
 	if ( 'edit_post' === $cap ) {
 		return ! in_array( (int) $post_id, $GLOBALS['cc_deny'], true );
+	}
+	if ( 'read_post' === $cap ) {
+		return ! in_array( (int) $post_id, $GLOBALS['cc_deny_read'], true );
 	}
 	if ( 'edit_term' === $cap ) {
 		return ! in_array( (int) $post_id, $GLOBALS['cc_deny_terms'], true );
@@ -156,8 +167,8 @@ function apply_filters( $tag, $value ) { return $value; }
 function do_action( $tag ) { $GLOBALS['cc_actions'][] = $tag; }
 
 /** Test helper: register a post with a resolvable URL. */
-function cc_add_post( $post_id, $url, $title = 'A post' ) {
-	$GLOBALS['cc_posts'][ $post_id ] = array( 'title' => $title, 'url' => $url );
+function cc_add_post( $post_id, $url, $title = 'A post', $type = 'post' ) {
+	$GLOBALS['cc_posts'][ $post_id ] = array( 'title' => $title, 'url' => $url, 'type' => $type );
 	$GLOBALS['cc_urls'][ $url ]      = $post_id;
 }
 

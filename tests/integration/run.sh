@@ -124,6 +124,11 @@ POST_HOME="$("${WPCLI[@]}" post create --post_type=page --post_title="Home" --po
 "${WPCLI[@]}" option update show_on_front page --path="$SITE" --quiet
 "${WPCLI[@]}" option update page_on_front "$POST_HOME" --path="$SITE" --quiet
 
+log "posts nobody but their owner may resolve: editor private + draft, a privacy request (review #227)"
+POST_PRIVATE="$("${WPCLI[@]}" post create --post_title="Private plan" --post_status=private --post_author="$EDITOR_ID" --porcelain --path="$SITE")"
+POST_DRAFT="$("${WPCLI[@]}" post create --post_title="Draft plan" --post_status=draft --post_author="$EDITOR_ID" --porcelain --path="$SITE")"
+POST_USER_REQUEST="$("${WPCLI[@]}" eval 'echo wp_create_user_request( "jane.doe@example.org", "export_personal_data" );' --path="$SITE")"
+
 log "starting php -S on $URL"
 ( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server.log" 2>&1 ) &
 SERVER_PID=$!
@@ -144,6 +149,9 @@ export CCC_SUBSCRIBER_PW="$SUBSCRIBER_PW"
 export CCC_POST_EDITOR="$POST_EDITOR"
 export CCC_POST_AUTHOR="$POST_AUTHOR"
 export CCC_POST_HOME="$POST_HOME"
+export CCC_POST_PRIVATE="$POST_PRIVATE"
+export CCC_POST_DRAFT="$POST_DRAFT"
+export CCC_POST_USER_REQUEST="$POST_USER_REQUEST"
 export CCC_ADAPTER="$ADAPTER"
 export CCC_SITE="$SITE"
 export CCC_CACHE="$CACHE"

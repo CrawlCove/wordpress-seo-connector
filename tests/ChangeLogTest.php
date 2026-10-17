@@ -22,6 +22,27 @@ class ChangeLogTest extends TestCase {
 		$this->assertSame( 2, $log[0]['id'] );
 	}
 
+	public function test_visible_hides_other_users_targets_from_a_non_admin() {
+		cc_add_post( 8, 'https://example.com/theirs' );
+		CCC_Change_Log::record( 7, 'title', 'Old', 'Mine', 'author' );
+		CCC_Change_Log::record( 8, 'title', 'Secret', 'Theirs', 'editor' );
+		CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'Home', 'New home', 'admin' );
+		$GLOBALS['cc_deny_manage_options'] = true;
+		$GLOBALS['cc_deny']                = array( 8 );
+
+		$visible = CCC_Change_Log::visible();
+		$this->assertCount( 1, $visible );
+		$this->assertSame( 7, $visible[0]['post_id'] );
+		$this->assertCount( 3, CCC_Change_Log::all() );
+	}
+
+	public function test_visible_is_the_full_log_for_an_admin() {
+		CCC_Change_Log::record( 7, 'title', 'Old', 'New', 'bloo' );
+		CCC_Change_Log::record( 999, 'title', 'Gone', 'Post', 'bloo' ); // deleted post: admin still sees it.
+		$GLOBALS['cc_deny'] = array( 999 );
+		$this->assertCount( 2, CCC_Change_Log::visible() );
+	}
+
 	public function test_log_is_capped_and_drops_oldest() {
 		for ( $i = 1; $i <= CCC_Change_Log::MAX_ENTRIES + 5; $i++ ) {
 			CCC_Change_Log::record( 7, 'title', "old$i", "new$i", 'bloo' );
