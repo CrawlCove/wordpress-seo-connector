@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.6 (2026-10-17)
 
 - **Security: `/resolve` and `/changes` no longer disclose what the user
   cannot read** (review ticket #227). A Contributor or Author could resolve

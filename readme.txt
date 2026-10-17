@@ -4,7 +4,7 @@ Tags: seo, yoast, rank math, seopress, aioseo
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.10.5
+Stable tag: 0.10.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 == Changelog ==
 
+= 0.10.6 =
+* Security: Contributors and Authors can no longer read other users' drafts, private posts or privacy requests through the API, and see only their own changes in the change log. Administrators still see the whole log.
+
 = 0.10.5 =
 * When a security plugin (Wordfence by default) switches Application Passwords off on an HTTPS site, the Tools page and the API now say so and name the setting, instead of blaming HTTPS; new FAQ.
 
@@ -76,11 +79,5 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 = 0.10.2 =
 * The change log keeps the most recent 1,000 entries (was 200). When it is full, entries you already reverted are dropped first, and the Tools page tells you.
 
-= 0.10.1 =
-* Tools → Crawl Cove links to the Crawl Cove desktop app as its first setup step. Links to crawlcove.com carry visible `utm_*` parameters; the plugin itself still makes no requests and sends nothing.
-
-= 0.10.0 =
-* TranslatePress: translated URLs such as `/fr/some-post/` now resolve to the right post, page or term.
-
-= 0.1.0 to 0.9.0 =
-* Released on GitHub only. Highlights: adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang per-language homepage with Yoast; WooCommerce products and categories; cache purge for common caching plugins after a change. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).
+= 0.1.0 to 0.10.1 =
+* Released on GitHub only. Highlights: adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang per-language homepage with Yoast; TranslatePress URLs; WooCommerce products and categories; cache purge for common caching plugins after a change. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).
