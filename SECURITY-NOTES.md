@@ -52,6 +52,12 @@ pass, 42 checks). Both adapters: 64/64 green.
    storage, and the admin page (`admin/class-ccc-admin.php`) escapes every
    logged value with `esc_html()` on output: defense in depth on both ends,
    and no stored-XSS path found.
+   Update 19 Oct 2026 (review #233): `/apply` now uses
+   `CCC_Service::sanitize_meta_text()`, which is core's sanitizer minus the
+   percent-octet removal that was deleting SEO template variables. Tag
+   stripping and the lone-`<` entity step are unchanged, so the conclusion
+   above still holds. An encoded octet left in the stored text is inert: it
+   is plain text and escaped on output.
 
 4. **Confirmed safe, not a finding**: capability checks (`current_user_can`)
    correctly deny `edit_post` for a non-existent post id, so even the

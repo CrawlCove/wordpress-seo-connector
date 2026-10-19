@@ -158,9 +158,46 @@ function is_user_logged_in() { return ! empty( $GLOBALS['cc_logged_in'] ); }
 function wp_is_application_passwords_supported() { return ! empty( $GLOBALS['cc_app_passwords_supported'] ); }
 function wp_is_application_passwords_available() { return ! empty( $GLOBALS['cc_app_passwords'] ); }
 
+// Mirrors core _sanitize_text_fields(), octet removal included, so a call
+// site that reaches for sanitize_text_field() on SEO text sees the same
+// %category% -> tegory% damage here that it does on a real site.
 function sanitize_text_field( $str ) {
-	$str = strip_tags( (string) $str );
-	return trim( preg_replace( '/[\r\n\t ]+/', ' ', $str ) );
+	$filtered = wp_check_invalid_utf8( (string) $str );
+	if ( false !== strpos( $filtered, '<' ) ) {
+		$filtered = wp_strip_all_tags( wp_pre_kses_less_than( $filtered ), false );
+		$filtered = str_replace( "<\n", "&lt;\n", $filtered );
+	}
+	$filtered = trim( preg_replace( '/[\r\n\t ]+/', ' ', $filtered ) );
+	$found    = false;
+	while ( preg_match( '/%[a-f0-9]{2}/i', $filtered, $match ) ) {
+		$filtered = str_replace( $match[0], '', $filtered );
+		$found    = true;
+	}
+	return $found ? trim( preg_replace( '/ +/', ' ', $filtered ) ) : $filtered;
+}
+
+function wp_check_invalid_utf8( $str ) {
+	return ( '' === $str || preg_match( '/^./su', $str ) ) ? $str : '';
+}
+
+// Core: a "<" that cannot open a tag becomes &lt; so strip_tags keeps it.
+function wp_pre_kses_less_than( $text ) {
+	return preg_replace_callback(
+		'%<[^>]*?((?=<)|>|$)%',
+		function ( $m ) {
+			return false === strpos( $m[0], '>' ) ? htmlspecialchars( $m[0] ) : $m[0];
+		},
+		$text
+	);
+}
+
+function wp_strip_all_tags( $text, $remove_breaks = false ) {
+	$text = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', (string) $text );
+	$text = strip_tags( $text );
+	if ( $remove_breaks ) {
+		$text = preg_replace( '/[\r\n\t ]+/', ' ', $text );
+	}
+	return trim( $text );
 }
 
 function apply_filters( $tag, $value ) { return $value; }

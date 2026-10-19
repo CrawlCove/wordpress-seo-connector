@@ -116,6 +116,29 @@ else
   FAIL=$((FAIL+1)); echo "  FAIL admin: desktop app link missing or its utm parameters were mangled"; echo "$ADMIN_HTML" | grep -o '<li>.*crawlcove.com[^<]*' | head -3
 fi
 
+echo "-- template variables (review #233) --"
+# Core sanitize_text_field() strips "%" + two hex digits, which ate "%ca" and
+# "%da" out of %category% / %%date%%. Each adapter must store its own native
+# variable syntax verbatim. Only Rank Math and Yoast protect variables in
+# their own savers; SEOPress (register_post_meta sanitize_callback) and
+# AIOSEO (Post::savePost) run core sanitize_text_field themselves, so their
+# native variables are the ones that survive their own editors too.
+case "$CCC_ADAPTER" in
+  rankmath) VARS_TITLE='%title% %sep% %category% %sep% %date%'
+            VARS_DESC='%excerpt% Filed under %category% on %date%' ;;
+  yoast)    VARS_TITLE='%%title%% %%sep%% %%category%% %%sep%% %%date%%'
+            VARS_DESC='%%excerpt%% Filed under %%category%% on %%date%%' ;;
+  seopress) VARS_TITLE='%%post_title%% %%sep%% %%_category_title%% %%sep%% %%sitetitle%%'
+            VARS_DESC='%%post_excerpt%% Filed under %%_category_title%% on %%post_date%%' ;;
+  aioseo)   VARS_TITLE='#post_title #separator_sa #categories #separator_sa #post_date'
+            VARS_DESC='#post_excerpt Filed under #categories on #post_date' ;;
+esac
+req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$CCC_POST_AUTHOR,\"title\":\"$VARS_TITLE\",\"description\":\"$VARS_DESC\"}]}"
+check "apply: template-variable values written ok" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
+req POST /resolve "$EDITOR" "{\"urls\":[\"$CCC_URL/?p=$CCC_POST_AUTHOR\"]}"
+check "apply: $CCC_ADAPTER template variables in the title stored verbatim" 200 "$RESP_HTTP" '.[0].current.title' "$VARS_TITLE" "$RESP_BODY"
+check "apply: $CCC_ADAPTER template variables in the description stored verbatim" 200 "$RESP_HTTP" '.[0].current.description' "$VARS_DESC" "$RESP_BODY"
+
 # Pagination: 100 rows a page, page 2 reachable, revert forms carry the page.
 # Seeds enough entries to need two pages (the log already holds this run's
 # earlier applies, so the total is asserted by shape, not by number).

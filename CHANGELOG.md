@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Fix: pushed titles and descriptions keep their SEO template variables**
+  (review ticket #233). The value was run through core
+  `sanitize_text_field()`, which deletes `%` plus two hex digits, so
+  `%category%` was stored as `tegory%` and `%%date%%` as `%te%%`, then
+  printed literally in the page title. Tags are still stripped. Verified on
+  real Rank Math, Yoast, SEOPress and AIOSEO.
+
 ## 0.10.6 (2026-10-17)
 
 - **Security: `/resolve` and `/changes` no longer disclose what the user

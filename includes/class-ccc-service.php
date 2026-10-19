@@ -459,7 +459,7 @@ class CCC_Service {
 				/* translators: %s: field name, either "title" or "description" */
 				return new WP_Error( 'ccc_bad_value', sprintf( __( '%s must be a string.', 'crawl-cove-connector' ), $field ), array( 'status' => 400 ) );
 			}
-			$value = sanitize_text_field( $item[ $field ] );
+			$value = self::sanitize_meta_text( $item[ $field ] );
 			if ( strlen( $value ) > $max ) {
 				return new WP_Error(
 					'ccc_too_long',
@@ -480,6 +480,30 @@ class CCC_Service {
 			'lang'    => $lang,
 			'fields'  => $fields,
 		);
+	}
+
+	/**
+	 * Core's sanitize_text_field() minus its percent-octet removal.
+	 *
+	 * sanitize_text_field() deletes every "%" followed by two hex digits, so
+	 * the SEO plugins' template variables lose letters: "%category%" becomes
+	 * "tegory%" and "%%date%%" becomes "%te%%" (review #233). Yoast and Rank
+	 * Math keep their variables intact in their own savers, so this does the
+	 * same: invalid UTF-8 check, lone "<" to entity, strip all tags, collapse
+	 * whitespace. The value is stored as plain text and escaped on output by
+	 * the SEO plugin, so an encoded octet left in it is inert.
+	 *
+	 * @param string $value Raw title or description from the request.
+	 * @return string
+	 */
+	private static function sanitize_meta_text( $value ) {
+		$filtered = wp_check_invalid_utf8( (string) $value );
+		if ( false !== strpos( $filtered, '<' ) ) {
+			$filtered = wp_pre_kses_less_than( $filtered );
+			$filtered = wp_strip_all_tags( $filtered, false );
+			$filtered = str_replace( "<\n", "&lt;\n", $filtered );
+		}
+		return trim( preg_replace( '/[\r\n\t ]+/', ' ', $filtered ) );
 	}
 
 	/**

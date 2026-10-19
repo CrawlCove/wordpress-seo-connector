@@ -108,6 +108,33 @@ class ServiceTest extends TestCase {
 		$this->assertSame( 'New title line', $valid['fields']['title'] );
 	}
 
+	public function test_validate_keeps_seo_template_variables_intact() {
+		// Review #233: core sanitize_text_field() strips %ca and %da as
+		// octets, turning these into "tegory%" and "%te%%" on a live site.
+		$cases = array(
+			'%title% %sep% %category% %sep% %date%',         // Rank Math
+			'%%title%% in %%category%% %%sep%% %%sitename%%', // Yoast, SEOPress
+			'Updated %%date%% %%sep%% Shop',
+			'50% off %%cf_ab%% deals',
+		);
+		foreach ( $cases as $sent ) {
+			$valid = CCC_Service::validate_change( array( 'post_id' => 7, 'title' => $sent, 'description' => $sent ) );
+			$this->assertSame( $sent, $valid['fields']['title'] );
+			$this->assertSame( $sent, $valid['fields']['description'] );
+		}
+	}
+
+	public function test_bootstrap_sanitize_text_field_strips_octets_like_core() {
+		// Guards the stub: if it stopped matching core, the test above could
+		// pass against a call site that would still corrupt variables.
+		$this->assertSame( '%title% %sep% tegory% %sep% te%', sanitize_text_field( '%title% %sep% %category% %sep% %date%' ) );
+	}
+
+	public function test_validate_still_strips_tags_and_keeps_a_lone_less_than() {
+		$valid = CCC_Service::validate_change( array( 'post_id' => 7, 'title' => 'Sizes <10mm <script>alert(1)</script><i>now</i>' ) );
+		$this->assertSame( 'Sizes &lt;10mm now', $valid['fields']['title'] );
+	}
+
 	public function test_validate_resolves_url_targets() {
 		$valid = CCC_Service::validate_change( array( 'url' => 'https://example.com/world', 'description' => 'D' ) );
 		$this->assertSame( 8, $valid['post_id'] );
