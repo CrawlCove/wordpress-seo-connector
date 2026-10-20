@@ -202,4 +202,22 @@ else
   FAIL=$((FAIL+1)); echo "  FAIL admin: value-changed notice missing or wrong (seed id '$OLD_SEED_ID')"; echo "$CHANGED_HTML" | grep -o 'Not reverted[^<]*' | head -2
 fi
 
+# The Tools page form handler itself: refused without force (notice=changed,
+# nothing written), reverted with it.
+TITLE_BEFORE="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CCC_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
+HR_LOC="$(CCC_HR_ID="$OLD_SEED_ID" php "$CCC_CACHE/wp-cli.phar" eval-file "$HERE/admin-revert.php" --path="$CCC_SITE" 2>/dev/null)"
+TITLE_AFTER="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CCC_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
+if [[ "$HR_LOC" == *'ccc_notice=changed'* && "$HR_LOC" == *"change_id=$OLD_SEED_ID"* && "$TITLE_AFTER" == "$TITLE_BEFORE" ]]; then
+  PASS=$((PASS+1)); echo "  ok   admin: Revert on a changed value redirects with notice=changed and writes nothing"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL admin: refused Revert wrong (redirect '$HR_LOC', title '$TITLE_BEFORE' -> '$TITLE_AFTER')"
+fi
+HR_LOC="$(CCC_HR_ID="$OLD_SEED_ID" CCC_HR_FORCE=1 php "$CCC_CACHE/wp-cli.phar" eval-file "$HERE/admin-revert.php" --path="$CCC_SITE" 2>/dev/null)"
+TITLE_AFTER="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CCC_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
+if [[ "$HR_LOC" == *'ccc_notice=reverted'* && "$TITLE_AFTER" == 'seed-old-0' ]]; then
+  PASS=$((PASS+1)); echo "  ok   admin: Revert anyway restores the entry's previous value"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL admin: Revert anyway wrong (redirect '$HR_LOC', title now '$TITLE_AFTER')"
+fi
+
 summary
