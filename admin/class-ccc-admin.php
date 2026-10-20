@@ -62,17 +62,22 @@ class CCC_Admin {
 		$change_id = isset( $_POST['change_id'] ) ? (int) $_POST['change_id'] : 0;
 		check_admin_referer( 'ccc_revert_' . $change_id );
 		$paged = isset( $_POST['paged'] ) ? max( 1, (int) $_POST['paged'] ) : 1;
+		$force = ! empty( $_POST['force'] );
 
 		$adapter = CCC_Adapter::detect();
 		$notice  = 'error';
-		if ( $adapter && ! is_wp_error( CCC_Change_Log::revert( $change_id, $adapter ) ) ) {
+		$done    = $adapter ? CCC_Change_Log::revert( $change_id, $adapter, $force ) : null;
+		if ( true === $done ) {
 			$notice = 'reverted';
+		} elseif ( is_wp_error( $done ) && 'ccc_value_changed' === $done->get_error_code() ) {
+			$notice = 'changed';
 		}
 		wp_safe_redirect(
 			add_query_arg(
 				array(
 					'page'       => 'crawl-cove-connector',
 					'ccc_notice' => $notice,
+					'change_id'  => $change_id,
 					'paged'      => $paged,
 				),
 				admin_url( 'tools.php' )
@@ -93,6 +98,9 @@ class CCC_Admin {
 		// notice); nothing here changes state.
 		$notice = isset( $_GET['ccc_notice'] ) ? sanitize_key( wp_unslash( $_GET['ccc_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$paged  = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$failed = isset( $_GET['change_id'] ) ? CCC_Change_Log::find( (int) $_GET['change_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$superseded = CCC_Change_Log::superseded( $log );
 
 		$total = count( $log );
 		$pages = max( 1, (int) ceil( $total / self::PER_PAGE ) );
@@ -115,7 +123,36 @@ class CCC_Admin {
 
 			<?php if ( 'reverted' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Change reverted.', 'crawl-cove-connector' ); ?></p></div>
-			<?php elseif ( 'error' === $notice ) : ?>
+			<?php elseif ( 'changed' === $notice && $failed && $adapter && empty( $failed['reverted'] ) ) : ?>
+				<?php $now = CCC_Change_Log::current_value( $failed, $adapter ); ?>
+				<div class="notice notice-warning">
+					<p>
+					<?php
+					if ( 'title' === $failed['field'] ) {
+						/* translators: %s: the title currently stored in the SEO plugin */
+						$changed_msg = __( 'Not reverted: this title has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' );
+					} else {
+						/* translators: %s: the description currently stored in the SEO plugin */
+						$changed_msg = __( 'Not reverted: this description has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' );
+					}
+					echo esc_html( sprintf( $changed_msg, '' === $now ? '—' : $now ) );
+					?>
+					</p>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
+						<input type="hidden" name="action" value="ccc_revert" />
+						<input type="hidden" name="change_id" value="<?php echo (int) $failed['id']; ?>" />
+						<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
+						<input type="hidden" name="force" value="1" />
+						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
+						<button type="submit" class="button button-small">
+						<?php
+						/* translators: %s: the value the revert would restore */
+						echo esc_html( sprintf( __( 'Revert anyway to "%s"', 'crawl-cove-connector' ), '' === $failed['from'] ? '—' : $failed['from'] ) );
+						?>
+						</button>
+					</form>
+				</div>
+			<?php elseif ( 'error' === $notice || 'changed' === $notice ) : ?>
 				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Could not revert that change.', 'crawl-cove-connector' ); ?></p></div>
 			<?php endif; ?>
 
@@ -294,7 +331,9 @@ class CCC_Admin {
 							<td><?php echo esc_html( '' === $e['to'] ? '—' : $e['to'] ); ?></td>
 							<td><?php echo esc_html( $e['source'] ); ?></td>
 							<td>
-								<?php if ( empty( $e['reverted'] ) ) : ?>
+								<?php if ( isset( $superseded[ (int) $e['id'] ] ) ) : ?>
+									<em><?php esc_html_e( 'replaced by a later change', 'crawl-cove-connector' ); ?></em>
+								<?php elseif ( empty( $e['reverted'] ) ) : ?>
 									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 										<input type="hidden" name="action" value="ccc_revert" />
 										<input type="hidden" name="change_id" value="<?php echo (int) $e['id']; ?>" />

@@ -35,14 +35,14 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 | `/resolve` | POST | Map crawled URLs to posts, return current title/description |
 | `/apply` | POST | Apply a batch of reviewed fixes (`dry_run` supported) |
 | `/changes` | GET | The change log (entries this user may edit; all of it for an administrator) |
-| `/revert` | POST | Restore a change's previous value |
+| `/revert` | POST | Restore a change's previous value (refused if the value has changed since, unless `force`) |
 
 Safety model:
 
 - Nothing is written that wasn't sent by an authenticated user with the right capability for that specific target: `edit_post` for a post/page, `manage_options` for the homepage, `edit_term` for a taxonomy term.
 - Nothing is read back that the user could not read in WordPress itself: `/resolve` answers `ccc_unresolvable` (the same reply as a missing post) for a post the user may not `read_post` (another user's draft or private post) or whose type has no public page (a privacy request, a reusable block), and `/changes` lists only the entries on targets the user may edit (administrators, `manage_options`, see the whole log).
 - Values are sanitized and length-capped; batches are capped at 50 changes. Sanitizing strips tags and collapses whitespace but keeps SEO template variables (`%category%`, `%%date%%`) exactly as sent. Core `sanitize_text_field()` would delete `%ca`, `%da` and any other `%` plus two hex digits. SEOPress and AIOSEO still run core sanitizing in their own savers, so on those sites only their native variables (`%%post_title%%`, `#post_title`) survive, the same as in their editors.
-- Every write records the previous value; revert from the app or from **Tools → Crawl Cove**.
+- Every write records the previous value; revert from the app or from **Tools → Crawl Cove**. A revert never silently overwrites a newer value: if the field no longer holds what that change wrote, nothing is written.
 - Empty string means "remove the override, fall back to the SEO plugin's template".
 - No external requests, no tracking, no data leaves the site.
 
@@ -297,6 +297,24 @@ longest. `/revert` with an id that has been dropped returns `ccc_not_found`
 (HTTP 404), the same as an id that never existed; the app should treat that
 as "no longer revertable from here", not as a transport error. The Tools page
 shows 100 rows a page and says so when the log is full.
+
+`/revert` takes `{"change_id": 12}` and an optional `"force": true`. It first
+reads the field's current value. If that is no longer the entry's `to` (a
+later push to the same field, or a hand edit in the SEO plugin), it writes
+nothing and returns HTTP 409:
+
+```json
+{"code": "ccc_value_changed", "message": "The value has changed since ...",
+ "data": {"status": 409, "current": "Typed in Yoast", "expected": "Pushed title"}}
+```
+
+The app should show `current` and offer "Revert anyway", which re-sends with
+`"force": true`. Undoing pushes newest first always works without `force`:
+reverting the later change puts its `from` back, which is the earlier
+change's `to`. On the Tools page a live entry with a later live change on the
+same target, field and language says "replaced by a later change" instead of
+offering Revert; a refused Revert shows the current value and a "Revert
+anyway" button.
 
 ### The connection status
 

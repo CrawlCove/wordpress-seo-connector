@@ -485,7 +485,7 @@ class CCC_Service {
 	/**
 	 * Core's sanitize_text_field() minus its percent-octet removal.
 	 *
-	 * sanitize_text_field() deletes every "%" followed by two hex digits, so
+	 * Core sanitize_text_field() deletes every "%" followed by two hex digits, so
 	 * the SEO plugins' template variables lose letters: "%category%" becomes
 	 * "tegory%" and "%%date%%" becomes "%te%%" (review #233). Yoast and Rank
 	 * Math keep their variables intact in their own savers, so this does the

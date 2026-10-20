@@ -90,6 +90,10 @@ class CCC_Rest {
 						'required' => true,
 						'type'     => 'integer',
 					),
+					'force'     => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
 				),
 			)
 		);
@@ -214,9 +218,11 @@ class CCC_Rest {
 	}
 
 	/**
-	 * POST /revert — write a logged change's previous value back.
+	 * POST /revert — write a logged change's previous value back. Refused
+	 * with ccc_value_changed if the field no longer holds the change's value,
+	 * unless 'force' is true.
 	 *
-	 * @param WP_REST_Request $request Request with a 'change_id' integer param.
+	 * @param WP_REST_Request $request Request with a 'change_id' integer param and an optional 'force' boolean.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function revert( $request ) {
@@ -231,7 +237,7 @@ class CCC_Rest {
 			return new WP_Error( 'ccc_forbidden', __( 'This user may not edit that target.', 'crawl-cove-connector' ), array( 'status' => 403 ) );
 		}
 
-		$done = CCC_Change_Log::revert( $change_id, $adapter );
+		$done = CCC_Change_Log::revert( $change_id, $adapter, (bool) $request->get_param( 'force' ) );
 		return is_wp_error( $done ) ? $done : rest_ensure_response(
 			array(
 				'ok'        => true,

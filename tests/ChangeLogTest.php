@@ -59,8 +59,10 @@ class ChangeLogTest extends TestCase {
 		for ( $i = 1; $i <= CCC_Change_Log::MAX_ENTRIES; $i++ ) {
 			CCC_Change_Log::record( 7, 'title', "old$i", "new$i", 'bloo' );
 		}
-		CCC_Change_Log::revert( CCC_Change_Log::MAX_ENTRIES - 3, $this->adapter );
-		CCC_Change_Log::revert( CCC_Change_Log::MAX_ENTRIES - 8, $this->adapter );
+		// force: these entries never touched the stored value; the test is
+		// about eviction order, not the value-changed guard.
+		CCC_Change_Log::revert( CCC_Change_Log::MAX_ENTRIES - 3, $this->adapter, true );
+		CCC_Change_Log::revert( CCC_Change_Log::MAX_ENTRIES - 8, $this->adapter, true );
 
 		CCC_Change_Log::record( 7, 'title', 'oldX', 'newX', 'bloo' );
 
@@ -112,7 +114,8 @@ class ChangeLogTest extends TestCase {
 
 	public function test_double_revert_is_refused() {
 		$entry = CCC_Change_Log::record( 7, 'title', 'A', 'B', 'bloo' );
-		CCC_Change_Log::revert( $entry['id'], $this->adapter );
+		$this->adapter->set_title( 7, 'B' );
+		$this->assertTrue( CCC_Change_Log::revert( $entry['id'], $this->adapter ) );
 		$err = CCC_Change_Log::revert( $entry['id'], $this->adapter );
 		$this->assertTrue( is_wp_error( $err ) );
 		$this->assertSame( 'ccc_already_reverted', $err->get_error_code() );
@@ -135,5 +138,77 @@ class ChangeLogTest extends TestCase {
 
 		$this->assertTrue( CCC_Change_Log::revert( $entry['id'], $this->adapter ) );
 		$this->assertSame( 'Original home title', $this->adapter->get_title( 0 ) );
+	}
+
+	// ── value changed since (review #248) ──────────────────────────
+
+	private function push_title( $title ) {
+		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => $title ) ), false, $this->adapter, 'bloo' );
+		return $res[0]['applied']['title']['change_id'];
+	}
+
+	public function test_reverting_an_older_push_does_not_wipe_a_newer_one() {
+		$this->adapter->set_title( 7, 'Original' );
+		$first  = $this->push_title( 'First push' );
+		$second = $this->push_title( 'Second push' );
+
+		$err = CCC_Change_Log::revert( $first, $this->adapter );
+		$this->assertTrue( is_wp_error( $err ) );
+		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
+		$data = $err->get_error_data();
+		$this->assertSame( 409, $data['status'] );
+		$this->assertSame( 'Second push', $data['current'] );
+		$this->assertSame( 'First push', $data['expected'] );
+		$this->assertSame( 'Second push', $this->adapter->get_title( 7 ), 'nothing written' );
+		$this->assertFalse( CCC_Change_Log::find( $first )['reverted'] );
+
+		// Undo newest first and each step is allowed, ending at the original.
+		$this->assertTrue( CCC_Change_Log::revert( $second, $this->adapter ) );
+		$this->assertSame( 'First push', $this->adapter->get_title( 7 ) );
+		$this->assertTrue( CCC_Change_Log::revert( $first, $this->adapter ) );
+		$this->assertSame( 'Original', $this->adapter->get_title( 7 ) );
+	}
+
+	public function test_reverting_after_a_hand_edit_is_refused_unless_forced() {
+		$this->adapter->set_title( 7, 'Original' );
+		$push = $this->push_title( 'Third push' );
+		$this->adapter->set_title( 7, 'Typed in Yoast' );
+
+		$err = CCC_Change_Log::revert( $push, $this->adapter );
+		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
+		$this->assertSame( 'Typed in Yoast', $err->get_error_data()['current'] );
+		$this->assertSame( 'Typed in Yoast', $this->adapter->get_title( 7 ) );
+
+		$this->assertTrue( CCC_Change_Log::revert( $push, $this->adapter, true ) );
+		$this->assertSame( 'Original', $this->adapter->get_title( 7 ) );
+		$this->assertTrue( CCC_Change_Log::find( $push )['reverted'] );
+	}
+
+	public function test_a_cleared_description_reverts_while_it_is_still_cleared() {
+		$this->adapter->set_description( 7, 'Old desc' );
+		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'description' => '' ) ), false, $this->adapter, 'bloo' );
+		$this->assertTrue( CCC_Change_Log::revert( $res[0]['applied']['description']['change_id'], $this->adapter ) );
+		$this->assertSame( 'Old desc', $this->adapter->get_description( 7 ) );
+	}
+
+	public function test_superseded_maps_overwritten_live_entries_to_their_successor() {
+		CCC_Change_Log::record( 7, 'title', 'a', 'b', 'bloo' );              // 1, superseded by 3
+		CCC_Change_Log::record( 7, 'description', 'a', 'b', 'bloo' );        // 2, other field
+		CCC_Change_Log::record( 7, 'title', 'b', 'c', 'bloo' );              // 3, superseded by 5
+		CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'a', 'b', 'bloo', 'fr' ); // 4
+		CCC_Change_Log::record( 7, 'title', 'c', 'd', 'bloo' );              // 5, latest
+		CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'x', 'y', 'bloo' );       // 6, other lang than 4
+
+		$this->assertSame( array( 3 => 5, 1 => 3 ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+	}
+
+	public function test_a_reverted_change_does_not_supersede_the_one_before_it() {
+		$this->adapter->set_title( 7, 'Original' );
+		$first  = $this->push_title( 'First push' );
+		$second = $this->push_title( 'Second push' );
+		$this->assertSame( array( $first => $second ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+
+		CCC_Change_Log::revert( $second, $this->adapter );
+		$this->assertSame( array(), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
 	}
 }

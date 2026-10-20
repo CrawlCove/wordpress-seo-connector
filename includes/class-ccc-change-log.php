@@ -147,11 +147,18 @@ class CCC_Change_Log {
 	/**
 	 * Revert one change: write its previous value back through the adapter.
 	 *
+	 * Only while the field still holds what this change wrote: undoing an
+	 * older push after a newer one, or after a hand edit in the SEO plugin,
+	 * would otherwise silently overwrite the newer value (review #248). On a
+	 * mismatch nothing is written and the error carries the current value;
+	 * $force reverts anyway.
+	 *
 	 * @param int         $change_id Change id.
 	 * @param CCC_Adapter $adapter   Active SEO adapter to write the reverted value through.
+	 * @param bool        $force     Revert even if the value changed since.
 	 * @return true|WP_Error
 	 */
-	public static function revert( $change_id, CCC_Adapter $adapter ) {
+	public static function revert( $change_id, CCC_Adapter $adapter, $force = false ) {
 		$entry = self::find( $change_id );
 		if ( ! $entry ) {
 			return new WP_Error( 'ccc_not_found', __( 'No change with that id.', 'crawl-cove-connector' ), array( 'status' => 404 ) );
@@ -177,6 +184,20 @@ class CCC_Change_Log {
 		// and must revert exactly as they always did (the plain/default-
 		// language target), not error or misbehave.
 		$lang = isset( $entry['lang'] ) ? $entry['lang'] : '';
+		if ( ! $force ) {
+			$current = self::current_value( $entry, $adapter );
+			if ( (string) $entry['to'] !== $current ) {
+				return new WP_Error(
+					'ccc_value_changed',
+					__( 'The value has changed since this change was made, so reverting it would overwrite the newer value. Nothing was written.', 'crawl-cove-connector' ),
+					array(
+						'status'   => 409,
+						'current'  => $current,
+						'expected' => (string) $entry['to'],
+					)
+				);
+			}
+		}
 		if ( 'title' === $entry['field'] ) {
 			$adapter->set_title( $entry['post_id'], $entry['from'], $lang );
 		} else {
@@ -198,5 +219,44 @@ class CCC_Change_Log {
 		update_option( self::OPTION, $log, false );
 
 		return true;
+	}
+
+	/**
+	 * The value a logged change's field holds right now.
+	 *
+	 * @param array       $entry   Log entry.
+	 * @param CCC_Adapter $adapter Active SEO adapter.
+	 * @return string
+	 */
+	public static function current_value( array $entry, CCC_Adapter $adapter ) {
+		$lang = isset( $entry['lang'] ) ? $entry['lang'] : '';
+		return (string) ( 'title' === $entry['field']
+			? $adapter->get_title( (int) $entry['post_id'], $lang )
+			: $adapter->get_description( (int) $entry['post_id'], $lang ) );
+	}
+
+	/**
+	 * For each live entry that a later live change on the same target, field
+	 * and language has overwritten, the id of the next such change. Reverting
+	 * the later one first makes the earlier one revertable again, so
+	 * reverted entries never supersede.
+	 *
+	 * @param array[] $log Log entries, newest first (all()).
+	 * @return int[] Superseded entry id => id of the change that superseded it.
+	 */
+	public static function superseded( array $log ) {
+		$newer = array();
+		$out   = array();
+		foreach ( $log as $entry ) {
+			if ( ! empty( $entry['reverted'] ) ) {
+				continue;
+			}
+			$key = (int) $entry['post_id'] . '|' . $entry['field'] . '|' . ( isset( $entry['lang'] ) ? $entry['lang'] : '' );
+			if ( isset( $newer[ $key ] ) ) {
+				$out[ (int) $entry['id'] ] = $newer[ $key ];
+			}
+			$newer[ $key ] = (int) $entry['id'];
+		}
+		return $out;
 	}
 }

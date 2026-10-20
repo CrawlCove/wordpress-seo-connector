@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Fix: reverting an older change no longer wipes a newer one** (review
+  ticket #248). Revert wrote the old value back without looking, so undoing
+  an earlier push after a re-push, or after a hand edit in the SEO plugin,
+  silently overwrote the newer value. `/revert` now answers 409
+  `ccc_value_changed` with the current value and writes nothing, unless sent
+  `force: true`. The Tools page marks overwritten entries "replaced by a
+  later change" and offers "Revert anyway" when a revert is refused.
 - **Fix: pushed titles and descriptions keep their SEO template variables**
   (review ticket #233). The value was run through core
   `sanitize_text_field()`, which deletes `%` plus two hex digits, so

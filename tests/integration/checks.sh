@@ -67,12 +67,26 @@ check "apply: empty batch rejected" 400 "$RESP_HTTP" '.code' 'ccc_empty_batch' "
 
 req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$CCC_POST_EDITOR,\"title\":\"日本語 — émoji 🚀\"}]}"
 check "apply: unicode written ok" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
+CHANGE_ID_UNICODE="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 req POST /resolve "$EDITOR" "{\"urls\":[\"$EDITOR_URL\"]}"
 check "apply: unicode round-trips exactly" 200 "$RESP_HTTP" '.[0].current.title' '日本語 — émoji 🚀' "$RESP_BODY"
 
 echo "-- changes / revert --"
 req GET /changes "$EDITOR"
 check "changes: newest first" 200 "$RESP_HTTP" '.[0].to' '日本語 — émoji 🚀' "$RESP_BODY"
+
+# Review #248: "Real Title" has since been overwritten by the unicode push,
+# so reverting it must refuse and write nothing until the newer one is undone.
+req POST /revert "$EDITOR" "{\"change_id\":$CHANGE_ID_TITLE}"
+check "revert: older push under a newer one is 409 value-changed" 409 "$RESP_HTTP" '.code' 'ccc_value_changed' "$RESP_BODY"
+check "revert: value-changed reports the current value" 409 "$RESP_HTTP" '.data.current' '日本語 — émoji 🚀' "$RESP_BODY"
+req POST /resolve "$EDITOR" "{\"urls\":[\"$EDITOR_URL\"]}"
+check "revert: refused revert wrote nothing" 200 "$RESP_HTTP" '.[0].current.title' '日本語 — émoji 🚀' "$RESP_BODY"
+
+req POST /revert "$EDITOR" "{\"change_id\":$CHANGE_ID_UNICODE}"
+check "revert: newest push ok" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
+req POST /resolve "$EDITOR" "{\"urls\":[\"$EDITOR_URL\"]}"
+check "revert: newest push restores the push before it" 200 "$RESP_HTTP" '.[0].current.title' 'Real Title' "$RESP_BODY"
 
 req POST /revert "$EDITOR" "{\"change_id\":$CHANGE_ID_TITLE}"
 check "revert: valid change ok" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
@@ -82,6 +96,15 @@ check "revert: repeat is 409 already-reverted" 409 "$RESP_HTTP" '.code' 'ccc_alr
 
 req POST /revert "" "{\"change_id\":$CHANGE_ID_TITLE}"
 check "revert: unauthenticated is 401" 401 "$RESP_HTTP" '.code' 'rest_forbidden' "$RESP_BODY"
+
+req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$CCC_POST_EDITOR,\"title\":\"Force A\"}]}"
+CHANGE_ID_FORCE_A="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
+FORCE_A_FROM="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.from')"
+req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$CCC_POST_EDITOR,\"title\":\"Force B\"}]}"
+req POST /revert "$EDITOR" "{\"change_id\":$CHANGE_ID_FORCE_A,\"force\":true}"
+check "revert: force overrides value-changed" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
+req POST /resolve "$EDITOR" "{\"urls\":[\"$EDITOR_URL\"]}"
+check "revert: forced revert restores the older value" 200 "$RESP_HTTP" '.[0].current.title' "$FORCE_A_FROM" "$RESP_BODY"
 
 echo "-- static front page (site root) --"
 # run.sh configures show_on_front=page/page_on_front=$CCC_POST_HOME. Both
@@ -145,8 +168,11 @@ check "apply: $CCC_ADAPTER template variables in the description stored verbatim
 php "$CCC_CACHE/wp-cli.phar" eval "for (\$i = 0; \$i < 101; \$i++) { CCC_Change_Log::record( $CCC_POST_EDITOR, 'title', 'seed-old-' . \$i, 'seed-new-' . \$i, 'harness' ); }" --path="$CCC_SITE" >/dev/null 2>&1
 PAGE1="$(php "$CCC_CACHE/wp-cli.phar" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CCC_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
 PAGE2="$(php "$CCC_CACHE/wp-cli.phar" eval '$_GET["paged"] = "2"; require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CCC_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
-P1_FORMS="$(echo "$PAGE1" | grep -c 'name="change_id"')"
-P2_FORMS="$(echo "$PAGE2" | grep -c 'name="change_id"')"
+# A row ends in a Revert form, "reverted" or (review #248) "replaced by a
+# later change"; the seeds all hit one title, so most are the last kind.
+ROW_MARK='name="change_id"\|<em>reverted</em>\|replaced by a later change'
+P1_FORMS="$(echo "$PAGE1" | grep -c "$ROW_MARK")"
+P2_FORMS="$(echo "$PAGE2" | grep -c "$ROW_MARK")"
 if [[ "$PAGE1" == *'Showing changes 1 to 100 of'* && "$P1_FORMS" == "100" ]]; then
   PASS=$((PASS+1)); echo "  ok   admin: change log page 1 shows exactly 100 rows with the range line"
 else
@@ -156,6 +182,24 @@ if [[ "$PAGE2" == *'Showing changes 101 to'* && "$P2_FORMS" -ge 1 && "$P2_FORMS"
   PASS=$((PASS+1)); echo "  ok   admin: page 2 shows the remainder and its revert forms carry paged=2"
 else
   FAIL=$((FAIL+1)); echo "  FAIL admin: page 2 wrong (rows=$P2_FORMS)"; echo "$PAGE2" | grep -o 'Showing changes[^<]*' | head -2
+fi
+
+# Review #248 on the Tools page: the 101 seeds overwrite one another, so all
+# but the newest are marked replaced, and a value-changed notice offers a
+# forced revert for the row that was refused.
+P1_SUPERSEDED="$(echo "$PAGE1" | grep -c 'replaced by a later change')"
+if [[ "$P1_SUPERSEDED" -ge 99 ]]; then
+  PASS=$((PASS+1)); echo "  ok   admin: overwritten pushes say replaced by a later change, not Revert ($P1_SUPERSEDED rows)"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL admin: expected >=99 replaced rows on page 1, got $P1_SUPERSEDED"
+fi
+OLD_SEED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval 'foreach ( CCC_Change_Log::all() as $e ) { if ( "seed-new-0" === $e["to"] ) { echo (int) $e["id"]; break; } }' --path="$CCC_SITE" 2>/dev/null)"
+CHANGED_HTML="$(php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$OLD_SEED_ID'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" --path="$CCC_SITE" 2>/dev/null)"
+if [[ -n "$OLD_SEED_ID" && "$CHANGED_HTML" == *'Not reverted: this title has changed since that push and now reads &quot;'* \
+   && "$CHANGED_HTML" == *'name="force" value="1"'* && "$CHANGED_HTML" == *'Revert anyway to &quot;seed-old-0&quot;'* ]]; then
+  PASS=$((PASS+1)); echo "  ok   admin: value-changed notice names the current value and offers Revert anyway"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL admin: value-changed notice missing or wrong (seed id '$OLD_SEED_ID')"; echo "$CHANGED_HTML" | grep -o 'Not reverted[^<]*' | head -2
 fi
 
 summary
