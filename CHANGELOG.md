@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.7 (2026-10-20)
 
 - **Fix: reverting an older change no longer wipes a newer one** (review
   ticket #248). Revert wrote the old value back without looking, so undoing
