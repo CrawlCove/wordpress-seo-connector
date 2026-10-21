@@ -12,6 +12,12 @@
   Cache, WP Fastest Cache). Yoast still rebuilds its indexable from its own
   meta watcher. The post's modified date no longer changes on a push. New
   `ccc_after_post_write` action.
+- **Fix: Revert no longer refuses a change that cleared a value.** 0.10.7's
+  check compared the field with the pushed text, but a cleared value can read
+  back as a fallback (an empty Polylang French homepage title reads as the
+  English one), so Revert reported a newer value that did not exist. It now
+  compares with what the SEO plugin served right after the push, recorded
+  as `after` in the change log entry when it differs from `to`.
 - **Docs: the wordpress.org copy installs from the directory.** `bin/build-zip.sh
   --wporg` now also rewrites readme.txt Installation step 1 to "Plugins → Add
   Plugin, search for Crawl Cove Connector", so the listing never sends a

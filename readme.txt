@@ -65,6 +65,7 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 = 0.10.8 =
 * Pushing a title or description no longer strips embeds, scripts or forms from the post itself. This hit Authors, and site administrators on multisite. Only the SEO fields are written now, and the post's modified date stays as it was.
+* Revert no longer refuses to undo a change that cleared a title or description (for example a Polylang homepage title that falls back to the default language).
 
 = 0.10.7 =
 * Revert no longer overwrites a newer value: if a title or description has changed since a push (a later push or your own edit), Revert says so, shows what it reads now and offers Revert anyway. Entries a later change replaced are marked.
