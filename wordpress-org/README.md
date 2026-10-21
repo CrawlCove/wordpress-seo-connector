@@ -24,7 +24,9 @@ not this repo.
 
 SVN trunk/tags must be built with `bash bin/build-zip.sh --wporg`
 (or `--stage-to DIR --wporg`), never from the GitHub release zip: the only
-difference is that the `Update URI:` header line is removed. The directory
+differences are that the `Update URI:` header line is removed and readme.txt
+Installation step 1 says to search the directory instead of downloading the
+GitHub zip (keep step 1's opening words as they are, or the build refuses). The directory
 serves updates only to plugins that do not point their updates elsewhere,
 and Plugin Check flags the header; the GitHub copy keeps it so a GitHub
 install can never be offered whatever plugin might one day own this slug

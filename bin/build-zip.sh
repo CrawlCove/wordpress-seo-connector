@@ -13,7 +13,10 @@
 #                                          # (the release workflow passes the tag)
 #   bash bin/build-zip.sh --wporg          # the wordpress.org SVN copy: identical
 #                                          # except the `Update URI:` header line
-#                                          # is removed. The directory only serves
+#                                          # is removed and readme.txt Installation
+#                                          # step 1 says "search the directory"
+#                                          # instead of "download the GitHub zip"
+#                                          # (WPORG_STEP1 below). The directory only serves
 #                                          # updates to plugins WITHOUT a foreign
 #                                          # Update URI, and Plugin Check flags one;
 #                                          # the GitHub zip keeps it so a GitHub
@@ -39,6 +42,8 @@ BUILD="$PLUGIN_ROOT/build"
 STAGE_TO=""
 EXPECT_VERSION=""
 WPORG=0
+GITHUB_STEP1_PREFIX='1. Download `crawl-cove-connector.zip` from the latest GitHub release'
+WPORG_STEP1='1. In your WordPress admin go to Plugins → Add Plugin, search for "Crawl Cove Connector", then install and activate it.'
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -96,7 +101,17 @@ stage() {
       echo "--wporg: failed to strip the Update URI header" >&2
       exit 1
     fi
-    log "wordpress.org copy: Update URI header removed"
+    if [[ "$(grep -cF -- "$GITHUB_STEP1_PREFIX" "$dest/readme.txt")" != 1 ]]; then
+      echo "--wporg: readme.txt must have exactly one line starting '$GITHUB_STEP1_PREFIX'" >&2
+      exit 1
+    fi
+    WPORG_STEP1="$WPORG_STEP1" PREFIX="$GITHUB_STEP1_PREFIX" perl -i -pe \
+      '$_ = "$ENV{WPORG_STEP1}\n" if index($_, $ENV{PREFIX}) == 0' "$dest/readme.txt"
+    if grep -qF -- "$GITHUB_STEP1_PREFIX" "$dest/readme.txt" || ! grep -qxF -- "$WPORG_STEP1" "$dest/readme.txt"; then
+      echo "--wporg: failed to rewrite readme.txt Installation step 1" >&2
+      exit 1
+    fi
+    log "wordpress.org copy: Update URI header removed, readme.txt step 1 points at the directory"
   else
     if ! grep -q '^ \* Update URI: *https://crawlcove.com/' "$dest/$SLUG.php"; then
       echo "the GitHub copy must carry a crawlcove.com Update URI header (see --wporg)" >&2

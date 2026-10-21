@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Docs: the wordpress.org copy installs from the directory.** `bin/build-zip.sh
+  --wporg` now also rewrites readme.txt Installation step 1 to "Plugins → Add
+  Plugin, search for Crawl Cove Connector", so the listing never sends a
+  directory user to the GitHub zip. The GitHub copy keeps the download step,
+  and both readmes now use the current "Add Plugin" menu name.
+
 ## 0.10.7 (2026-10-20)
 
 - **Fix: reverting an older change no longer wipes a newer one** (review

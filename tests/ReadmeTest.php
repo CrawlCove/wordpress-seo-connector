@@ -39,6 +39,31 @@ class ReadmeTest extends TestCase {
 		$this->assertSame( 'https://crawlcove.com/wordpress-plugin', $uri[1] );
 	}
 
+	/**
+	 * The GitHub zip tells people to download the zip; the wordpress.org copy
+	 * (bin/build-zip.sh --wporg) must tell them to search the directory
+	 * instead, so the listing never sends a directory user off to GitHub.
+	 * Runs the real script on both copies, so a reworded step 1 that the
+	 * script no longer recognises fails here, not at SVN time.
+	 */
+	public function test_wporg_copy_rewrites_install_step_one_to_the_directory() {
+		$root = dirname( __DIR__ );
+		$dir  = sys_get_temp_dir() . '/ccc-readme-' . uniqid();
+		$copy = array();
+		foreach ( array( 'github' => '', 'wporg' => ' --wporg' ) as $name => $flag ) {
+			exec( 'bash ' . escapeshellarg( $root . '/bin/build-zip.sh' ) . ' --stage-to ' . escapeshellarg( "$dir/$name" ) . $flag . ' 2>&1', $out, $code );
+			$this->assertSame( 0, $code, implode( "\n", $out ) );
+			$copy[ $name ] = (string) file_get_contents( "$dir/$name/readme.txt" );
+		}
+		exec( 'rm -rf ' . escapeshellarg( $dir ) );
+
+		$this->assertStringContainsString( "\n1. Download `crawl-cove-connector.zip` from the latest GitHub release", $copy['github'] );
+		$this->assertStringContainsString( "\n1. In your WordPress admin go to Plugins → Add Plugin, search for \"Crawl Cove Connector\", then install and activate it.\n", $copy['wporg'] );
+		$this->assertStringNotContainsString( 'releases/latest', $copy['wporg'] );
+		$this->assertStringNotContainsString( 'Upload Plugin', $copy['wporg'] );
+		$this->assertSame( $copy['github'], (string) file_get_contents( $root . '/readme.txt' ) );
+	}
+
 	public function test_readmes_say_the_desktop_app_is_paid_with_a_free_trial() {
 		foreach ( array( 'readme.txt', 'README.md' ) as $name ) {
 			$text = $this->file( $name );
