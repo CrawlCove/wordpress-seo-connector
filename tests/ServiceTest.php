@@ -176,10 +176,10 @@ class ServiceTest extends TestCase {
 		$this->assertSame( 'Old title', $res[0]['applied']['title']['from'] );
 		$this->assertSame( 'Old title', $this->adapter->get_title( 7 ) );
 		$this->assertSame( array(), CCC_Change_Log::all() );
-		$this->assertSame( array(), $GLOBALS['cc_saved'] );
+		$this->assertSame( array(), $GLOBALS['cc_purged'] );
 	}
 
-	public function test_apply_writes_logs_and_resaves_posts() {
+	public function test_apply_writes_logs_and_purges_the_post_without_resaving_it() {
 		$this->adapter->set_title( 7, 'Old title' );
 		$res = CCC_Service::apply(
 			array( array( 'url' => 'https://example.com/hello', 'title' => 'New title', 'description' => 'New desc' ) ),
@@ -190,25 +190,32 @@ class ServiceTest extends TestCase {
 		$this->assertSame( 'New desc', $this->adapter->get_description( 7 ) );
 		$this->assertArrayHasKey( 'change_id', $res[0]['applied']['title'] );
 		$this->assertCount( 2, CCC_Change_Log::all() );
-		$this->assertSame( array( 7 ), $GLOBALS['cc_saved'] );
+		$this->assertSame( array( 7 ), $GLOBALS['cc_purged'] );
+		// A re-save runs the content through kses as the pushing user and
+		// strips embeds an admin added (21 Oct 2026). Meta only, never the post.
+		$this->assertSame( array(), $GLOBALS['cc_resaved'] );
+		$this->assertContains( 'litespeed_purge_post', $GLOBALS['cc_actions'] );
+		$this->assertContains( 'wpfc_clear_post_cache_by_id', $GLOBALS['cc_actions'] );
+		$this->assertContains( 'ccc_after_post_write', $GLOBALS['cc_actions'] );
+		$this->assertNotContains( 'ccc_after_uncached_write', $GLOBALS['cc_actions'] );
 
 		$log = CCC_Change_Log::all();
 		$this->assertSame( 'bloo', $log[0]['source'] );
 	}
 
-	public function test_revert_resaves_the_post_too() {
-		// A revert is a real write, same as apply — it must rebuild the
-		// Yoast indexable and fire clean_post_cache (via wp_update_post)
-		// exactly like the original apply did, or a reverted post keeps
-		// serving a stale indexable/cached page.
+	public function test_revert_purges_the_post_too() {
+		// A revert is a real write, same as apply: it must fire
+		// clean_post_cache exactly like the original apply did, or a
+		// reverted post keeps serving a stale cached page.
 		$this->adapter->set_title( 7, 'Old title' );
 		$res = CCC_Service::apply(
 			array( array( 'post_id' => 7, 'title' => 'New title' ) ),
 			false, $this->adapter, 'bloo'
 		);
-		$GLOBALS['cc_saved'] = array();
+		$GLOBALS['cc_purged'] = array();
 		CCC_Change_Log::revert( $res[0]['applied']['title']['change_id'], $this->adapter );
-		$this->assertSame( array( 7 ), $GLOBALS['cc_saved'] );
+		$this->assertSame( array( 7 ), $GLOBALS['cc_purged'] );
+		$this->assertSame( array(), $GLOBALS['cc_resaved'] );
 	}
 
 	public function test_apply_skips_unchanged_values() {
@@ -220,7 +227,7 @@ class ServiceTest extends TestCase {
 		$this->assertFalse( $res[0]['applied']['title']['changed'] );
 		$this->assertArrayNotHasKey( 'change_id', $res[0]['applied']['title'] );
 		$this->assertSame( array(), CCC_Change_Log::all() );
-		$this->assertSame( array(), $GLOBALS['cc_saved'] );
+		$this->assertSame( array(), $GLOBALS['cc_purged'] );
 	}
 
 	public function test_apply_enforces_per_post_capability() {
@@ -279,7 +286,7 @@ class ServiceTest extends TestCase {
 		// Yoast's own wpseo_titles watcher rebuilds the home indexable on the
 		// option write itself; wp_update_post( ['ID' => 0] ) must never run —
 		// WordPress core treats ID 0 as "insert a new post", not "no-op".
-		$this->assertSame( array(), $GLOBALS['cc_saved'] );
+		$this->assertSame( array(), $GLOBALS['cc_purged'] );
 		// No post row for a caching plugin's clean_post_cache to fire against —
 		// the best-effort full-cache-purge path runs instead. WP Fastest Cache
 		// and LiteSpeed Cache both expose their purge-all as an ACTION, not a
@@ -597,7 +604,7 @@ class ServiceTest extends TestCase {
 		// re-save path (this is the exact class of bug wp_update_post(['ID'
 		// => 0]) was for the homepage; a negative "ID" would be nonsense to
 		// core entirely).
-		$this->assertSame( array(), $GLOBALS['cc_saved'] );
+		$this->assertSame( array(), $GLOBALS['cc_purged'] );
 		$this->assertContains( 'ccc_after_uncached_write', $GLOBALS['cc_actions'] );
 	}
 

@@ -5,9 +5,10 @@
 # `clean_post_cache` action that page-caching plugins hook to purge a
 # stale cached page.
 #
-# WHY THIS EXISTS: a real post apply() already re-saves the post via
-# wp_update_post() (to rebuild Yoast's indexable), which as a side effect
-# fires clean_post_cache — the action WP Super Cache's own
+# WHY THIS EXISTS: a real post apply() calls clean_post_cache() (until
+# 0.10.7 it re-saved the post via wp_update_post(), which fired it as a side
+# effect but also re-ran the content through kses, see
+# content-integrity-checks.sh) — the action WP Super Cache's own
 # wp_cache_post_edit()/wp_cache_post_change() hook (confirmed against WP
 # Super Cache's real source, wp-cache-phase2.php: both bail immediately on
 # `$post_id === 0` and are registered ONLY on clean_post_cache, never on
@@ -111,6 +112,18 @@ add_action( 'wpfc_clear_all_cache', function () {
 	ccc_probe_log( 'wpfc_clear_all_cache' );
 } );
 
+add_action( 'litespeed_purge_post', function ( \$post_id ) {
+	ccc_probe_log( "litespeed_purge_post:\$post_id" );
+} );
+
+add_action( 'wpfc_clear_post_cache_by_id', function ( \$comment_id, \$post_id ) {
+	ccc_probe_log( "wpfc_clear_post_cache_by_id:\$post_id" );
+}, 10, 2 );
+
+add_action( 'save_post', function ( \$post_id ) {
+	ccc_probe_log( "save_post:\$post_id" );
+} );
+
 add_action( 'ccc_after_uncached_write', function () {
 	ccc_probe_log( 'ccc_after_uncached_write' );
 } );
@@ -189,6 +202,9 @@ reset_log
 req POST /apply "{\"changes\":[{\"post_id\":$POST_ID,\"title\":\"Post Title v1\"}]}"
 CHANGE_ID_POST="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 expect_contains "apply(real post): clean_post_cache fired for post $POST_ID" "clean_post_cache:$POST_ID"
+expect_contains "apply(real post): LiteSpeed per-post purge fired" "litespeed_purge_post:$POST_ID"
+expect_contains "apply(real post): WP Fastest Cache per-post purge fired" "wpfc_clear_post_cache_by_id:$POST_ID"
+expect_absent "apply(real post): the post is never re-saved (save_post would mean wp_update_post ran)" "save_post:$POST_ID"
 
 echo "-- ordinary post: revert ALSO fires clean_post_cache (previously it fired nothing at all) --"
 reset_log

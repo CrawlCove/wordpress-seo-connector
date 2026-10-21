@@ -203,11 +203,9 @@ class CCC_Change_Log {
 		} else {
 			$adapter->set_description( $entry['post_id'], $entry['from'], $lang );
 		}
-		// Same cache/indexable invalidation apply() runs after a real write —
-		// without this a revert silently leaves stale cached HTML (or, for a
-		// real post, a stale Yoast indexable) exactly like an un-invalidated
-		// apply would. See CCC_Service::invalidate_caches_for() for why HOME_ID
-		// and a negative term id can't go through wp_update_post().
+		// Same cache invalidation apply() runs after a real write: without
+		// this a revert silently leaves stale cached HTML exactly like an
+		// un-invalidated apply would. See CCC_Service::invalidate_caches_for().
 		CCC_Service::invalidate_caches_for( (int) $entry['post_id'] );
 
 		$log = self::all();

@@ -474,3 +474,35 @@ includes the author's). All 8 leak checks FAIL against the 0.10.5 code and
 pass with the fix: AIOSEO 148/148, Rank Math 156/156, Yoast 154/154. Unit
 suite 127 -> 132.
 
+
+## Addendum, 21 Oct 2026 (a push re-filtered the post body: a real data-loss bug, now fixed)
+
+Found by hand on the harness, no report. After every real write to a post,
+`CCC_Service::invalidate_caches_for()` called `wp_update_post( array( 'ID' =>
+$id ) )` to rebuild Yoast's indexable and fire `clean_post_cache`. That
+re-saves every field through `content_save_pre`, and core adds
+`wp_filter_post_kses` there for a user without `unfiltered_html`: any Author,
+every site administrator on multisite, and everyone on a site with
+`DISALLOW_UNFILTERED_HTML`. An Author's title push to their own post deleted
+the iframe, `<script>` tags and form an admin had added; on multisite a
+subsite admin's push deleted the super admin's YouTube embed. Not a privilege
+escalation (it removes markup, never adds it), but silent loss of content the
+plugin promises never to touch, plus a modified-date bump and a `save_post`
+for every other plugin on each push.
+
+Fix: no re-save. A post write now calls `clean_post_cache()` and the per-post
+purge APIs of W3 Total Cache, LiteSpeed Cache and WP Fastest Cache (each read
+from the plugin's current source; the last three only purged on the re-save's
+`save_post`/`transition_post_status`). Yoast's `Indexable_Post_Meta_Watcher`
+rebuilds the indexable from the `_yoast_wpseo_*` meta write at shutdown, so
+the re-save was never needed for that.
+
+Verified: new `content-integrity-checks.sh` (wired into run.sh) fails 4 checks
+on the 0.10.7 code (body stripped, modified date moved, on apply and revert)
+and passes with the fix on all four adapters; on Yoast it also pins the
+indexable title after apply and after revert. `multisite-checks.sh` gained a
+subsite-admin embed check (fails on 0.10.7, passes now). `caching-checks.sh`
+pins the LiteSpeed and WPFC per-post hooks and that `save_post` never fires.
+Harness: Yoast 178, Rank Math 177, SEOPress 175, AIOSEO 170, caching 16,
+multisite 6, all green. Unit suite 141, with no `wp_update_post()` call
+allowed.

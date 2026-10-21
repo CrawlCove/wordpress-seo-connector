@@ -642,35 +642,54 @@ class CCC_Service {
 	 * After a real (non-dry-run) write, tell WordPress and any active
 	 * caching plugin that this target's rendered page is now stale.
 	 *
-	 * A real post id is re-saved via wp_update_post(), which both rebuilds
-	 * Yoast's indexable (it hooks save_post) and fires core's
-	 * clean_post_cache action — the action WP Super Cache's own
-	 * wp_cache_post_edit() hooks to purge that page's cached HTML, and the
-	 * same convention W3 Total Cache and similar plugins follow. Filterable
-	 * off for hosts that object to the modified-date bump.
+	 * A real post id gets a per-post purge and nothing else. It is NOT
+	 * re-saved: wp_update_post() re-runs the whole post through
+	 * content_save_pre, which strips iframes, scripts and forms from the
+	 * content when the pushing user lacks unfiltered_html (any Author, and
+	 * every site admin on multisite), so a title push deleted embeds an
+	 * admin had added. Yoast rebuilds the indexable from its own post-meta
+	 * watcher at shutdown, so the re-save was never needed for that.
+	 * clean_post_cache() fires the action WP Super Cache, W3 Total Cache's
+	 * database cache and core's object cache listen to; W3 Total Cache's page
+	 * cache, LiteSpeed Cache and WP Fastest Cache only purged on the re-save's
+	 * save_post/transition_post_status, so their own per-post purge APIs are
+	 * called directly (each verified against the plugin's source). Filterable
+	 * off via ccc_touch_post_after_apply.
 	 *
-	 * HOME_ID (0) and a negative term-id sentinel have no post row —
-	 * wp_update_post( [ 'ID' => 0 ] ) is core's INSERT signal, not a no-op,
-	 * so it must never run for either (the exact bug the homepage work
-	 * caught and fixed). Neither target's write fires clean_post_cache by
-	 * any other path, so a caching plugin never learns the homepage or a
-	 * taxonomy archive changed — verified against WP Super Cache's real
-	 * source, whose wp_cache_post_edit()/wp_cache_post_change() both bail
-	 * immediately on post_id === 0 and are never called for term edits at
-	 * all. A best-effort full-site purge covers that gap instead.
+	 * HOME_ID (0) and a negative term-id sentinel have no post row, and
+	 * neither target's write fires clean_post_cache by any other path, so a
+	 * caching plugin never learns the homepage or a taxonomy archive changed
+	 * (WP Super Cache's wp_cache_post_edit()/wp_cache_post_change() both bail
+	 * on post_id === 0 and are never called for term edits at all). A
+	 * best-effort full-site purge covers that gap instead.
 	 *
 	 * @param int $post_id Post id, HOME_ID, or a negative term-id sentinel.
 	 */
 	public static function invalidate_caches_for( $post_id ) {
 		if ( $post_id > 0 ) {
 			if ( apply_filters( 'ccc_touch_post_after_apply', true ) ) {
-				wp_update_post( array( 'ID' => $post_id ) );
+				self::clear_post_page_cache( $post_id );
 			}
 			return;
 		}
 		if ( apply_filters( 'ccc_clear_full_cache_after_write', true ) ) {
 			self::clear_full_page_cache();
 		}
+	}
+
+	/**
+	 * Per-post page-cache purge for one real post, without writing the post.
+	 *
+	 * @param int $post_id Post id (> 0).
+	 */
+	private static function clear_post_page_cache( $post_id ) {
+		clean_post_cache( $post_id );
+		if ( function_exists( 'w3tc_flush_post' ) ) { // W3 Total Cache page cache.
+			w3tc_flush_post( $post_id );
+		}
+		do_action( 'litespeed_purge_post', $post_id ); // LiteSpeed Cache's documented API hook.
+		do_action( 'wpfc_clear_post_cache_by_id', false, $post_id ); // WP Fastest Cache (comment id, post id).
+		do_action( 'ccc_after_post_write', $post_id );
 	}
 
 	/**

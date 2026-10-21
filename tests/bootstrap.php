@@ -14,7 +14,8 @@ function cc_reset_wp() {
 	$GLOBALS['cc_urls']    = array(); // url => post_id
 	$GLOBALS['cc_deny']    = array(); // post_ids current user may NOT edit
 	$GLOBALS['cc_deny_read'] = array(); // post_ids current user may NOT read (read_post)
-	$GLOBALS['cc_saved']   = array(); // wp_update_post calls
+	$GLOBALS['cc_purged']  = array(); // clean_post_cache calls
+	$GLOBALS['cc_resaved'] = array(); // wp_update_post calls (must stay empty)
 	$GLOBALS['cc_actions'] = array(); // do_action() calls (tag name only)
 	$GLOBALS['cc_home']    = 'https://example.com';
 	$GLOBALS['cc_aioseo']  = array(); // post_id => ['title' => ..., 'description' => ...]
@@ -127,8 +128,11 @@ function get_permalink( $post_id ) {
 	return isset( $GLOBALS['cc_posts'][ $post_id ]['url'] ) ? $GLOBALS['cc_posts'][ $post_id ]['url'] : '';
 }
 function wp_update_post( $args ) {
-	$GLOBALS['cc_saved'][] = $args['ID'];
+	$GLOBALS['cc_resaved'][] = $args['ID'];
 	return $args['ID'];
+}
+function clean_post_cache( $post_id ) {
+	$GLOBALS['cc_purged'][] = $post_id;
 }
 
 function home_url( $path = '' ) { return rtrim( $GLOBALS['cc_home'], '/' ) . $path; }

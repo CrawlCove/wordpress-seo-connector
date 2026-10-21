@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Fix: pushing a title or description no longer strips embeds from the
+  post.** After every write the plugin re-saved the whole post to refresh
+  caches, and WordPress re-filtered the body as the pushing user. For a user
+  without the `unfiltered_html` capability (any Author, and every site
+  administrator on multisite) that deleted iframes, scripts and forms an
+  admin had put in the content. The plugin now writes SEO meta only and
+  purges caches directly (`clean_post_cache()`, W3 Total Cache, LiteSpeed
+  Cache, WP Fastest Cache). Yoast still rebuilds its indexable from its own
+  meta watcher. The post's modified date no longer changes on a push. New
+  `ccc_after_post_write` action.
 - **Docs: the wordpress.org copy installs from the directory.** `bin/build-zip.sh
   --wporg` now also rewrites readme.txt Installation step 1 to "Plugins → Add
   Plugin, search for Crawl Cove Connector", so the listing never sends a

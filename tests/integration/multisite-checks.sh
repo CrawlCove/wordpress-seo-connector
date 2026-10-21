@@ -158,6 +158,20 @@ else
   FAIL=$((FAIL+1)); echo "  FAIL subsite post title did not land correctly (got: $RM_TITLE)"
 fi
 
+echo "-- a subsite admin (no unfiltered_html on multisite) pushing a title keeps the post body --"
+"${WPCLI[@]}" user create cccsiteadmin siteadmin@example.com --role=administrator --user_pass=siteadmin-pass --url="$SUBSITE_URL" --path="$SITE" --quiet
+SITEADMIN_PW="$("${WPCLI[@]}" user application-password create cccsiteadmin ccc-test --porcelain --url="$SUBSITE_URL" --path="$SITE")"
+"${WPCLI[@]}" eval "kses_remove_filters(); wp_update_post( array( 'ID' => $POST_ID, 'post_content' => '<p>Watch:</p><iframe src=\"https://www.youtube.com/embed/abc\"></iframe>' ) );" --url="$SUBSITE_URL" --path="$SITE" >/dev/null 2>&1
+BODY_BEFORE="$("${WPCLI[@]}" post get "$POST_ID" --field=post_content --url="$SUBSITE_URL" --path="$SITE")"
+req POST "$BASE_SUBSITE/apply" "{\"changes\":[{\"post_id\":$POST_ID,\"title\":\"Site Admin Title\"}]}" "cccsiteadmin:$SITEADMIN_PW"
+check "apply: subsite admin title push ok" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
+BODY_AFTER="$("${WPCLI[@]}" post get "$POST_ID" --field=post_content --url="$SUBSITE_URL" --path="$SITE")"
+if [[ "$BODY_BEFORE" == *"<iframe"* && "$BODY_AFTER" == "$BODY_BEFORE" ]]; then
+  PASS=$((PASS+1)); echo "  ok   subsite admin push left the super admin's iframe in the post body"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL post body changed: before [$BODY_BEFORE] after [$BODY_AFTER]"
+fi
+
 echo
 echo "== $PASS passed, $FAIL failed =="
 [[ $FAIL -eq 0 ]]

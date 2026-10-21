@@ -184,6 +184,10 @@ log "running Application Passwords off/on checks (named 401 + Tools page row)"
 bash "$HERE/app-passwords-checks.sh"
 APPPW_STATUS=$?
 
+log "running content integrity checks (a push never re-saves the post body)"
+bash "$HERE/content-integrity-checks.sh"
+INTEGRITY_STATUS=$?
+
 AIOSEO_STATUS=0
 if [[ "$ADAPTER" == "aioseo" ]]; then
   log "running AIOSEO corruption regression check (patch-safety of Post::savePost)"
@@ -192,7 +196,7 @@ if [[ "$ADAPTER" == "aioseo" ]]; then
 fi
 
 STATUS=0
-[[ $CHECKS_STATUS -ne 0 || $SECURITY_STATUS -ne 0 || $HOMEPAGE_STATUS -ne 0 || $TAXONOMY_STATUS -ne 0 || $CONNECTION_STATUS -ne 0 || $RESTROOT_STATUS -ne 0 || $APPPW_STATUS -ne 0 || $AIOSEO_STATUS -ne 0 ]] && STATUS=1
+[[ $CHECKS_STATUS -ne 0 || $SECURITY_STATUS -ne 0 || $HOMEPAGE_STATUS -ne 0 || $TAXONOMY_STATUS -ne 0 || $CONNECTION_STATUS -ne 0 || $RESTROOT_STATUS -ne 0 || $APPPW_STATUS -ne 0 || $INTEGRITY_STATUS -ne 0 || $AIOSEO_STATUS -ne 0 ]] && STATUS=1
 
 if [[ $STATUS -eq 0 ]]; then
   log "ALL CHECKS PASSED (route checks + security pass)"

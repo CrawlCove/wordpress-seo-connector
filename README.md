@@ -332,9 +332,14 @@ nothing, and a successful `GET /status` is enough to flip it.
 Every applied or reverted change tells WordPress (and, in turn, most page
 caching plugins) that the affected page is stale:
 
-- **An ordinary post or page**: re-saved via `wp_update_post()`, which fires
-  core's `clean_post_cache` action, the hook WP Super Cache, W3 Total
-  Cache and similar plugins use to purge that page's cached HTML.
+- **An ordinary post or page**: core's `clean_post_cache()` (the hook WP
+  Super Cache purges on), W3 Total Cache's `w3tc_flush_post()`,
+  and LiteSpeed Cache's and WP Fastest Cache's own per-post purge hooks
+  (`litespeed_purge_post`, `wpfc_clear_post_cache_by_id`). The post itself
+  is never re-saved: its content and modified date stay exactly as they
+  were. (Before 0.10.8 it was re-saved with `wp_update_post()`, which ran the
+  body through WordPress's HTML filter as the pushing user and could delete
+  embeds an admin had added.)
 - **The homepage (`post_id: 0`) or a taxonomy archive**: neither has a post
   row for `clean_post_cache` to fire against, so instead this plugin runs a
   best-effort full-site cache purge: it calls WP Super Cache's, W3 Total
@@ -342,11 +347,12 @@ caching plugins) that the affected page is stale:
   active, and fires WP Fastest Cache's and LiteSpeed Cache's own
   documented `wpfc_clear_all_cache`/`litespeed_purge_all` action hooks.
 
-For anything else, hook the plugin-agnostic `ccc_after_uncached_write`
-action (fires after every homepage/taxonomy write) or filter
-`ccc_clear_full_cache_after_write`/`ccc_touch_post_after_apply` (both
-default `true`; return `false` to opt out of the automatic purge/re-save
-entirely).
+For anything else, hook the plugin-agnostic `ccc_after_post_write` action
+(fires after every post write, with the post id) or `ccc_after_uncached_write`
+(fires after every homepage/taxonomy write), or filter
+`ccc_touch_post_after_apply`/`ccc_clear_full_cache_after_write` (both
+default `true`; return `false` to opt out of the automatic per-post or
+full-site purge).
 
 ## Installation
 
