@@ -171,6 +171,18 @@ CHANGE_ID="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 
 req POST /resolve "{\"urls\":[\"$URL/fr/\"]}"
 check "resolve: French homepage now reads back the just-written title" 200 "$RESP_HTTP" '.[0].current.title' 'Titre Accueil Francais' "$RESP_BODY"
+FR_PAGE="$(curl -sL --max-time 10 "$URL/fr/")"
+if grep -o '<title>[^<]*</title>' <<<"$FR_PAGE" | grep -qF 'Titre Accueil Francais'; then
+  PASS=$((PASS+1)); echo "  ok   front end: /fr/ serves the pushed French homepage title"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL front end: /fr/ <title> is [$(grep -o '<title>[^<]*</title>' <<<"$FR_PAGE")], not the pushed French title"
+fi
+EN_PAGE="$(curl -sL --max-time 10 "$URL/")"
+if grep -o '<title>[^<]*</title>' <<<"$EN_PAGE" | grep -qF 'English Home Title'; then
+  PASS=$((PASS+1)); echo "  ok   front end: / still serves the English homepage title"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL front end: / <title> is [$(grep -o '<title>[^<]*</title>' <<<"$EN_PAGE")], not the English title"
+fi
 
 req POST /resolve "{\"urls\":[\"$URL/\"]}"
 check "resolve: the ENGLISH homepage title is untouched by the French-only write" 200 "$RESP_HTTP" '.[0].current.title' 'English Home Title' "$RESP_BODY"
