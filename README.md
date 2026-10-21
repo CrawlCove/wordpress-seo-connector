@@ -315,7 +315,10 @@ edit in the SEO plugin, it writes nothing and returns HTTP 409:
 ```
 
 The app should show `current` and offer "Revert anyway", which re-sends with
-`"force": true`. Undoing pushes newest first always works without `force`:
+`"force": true`. A per-language homepage entry (`lang` set) that the site can
+no longer write (Polylang deactivated, or the site moved off Yoast) answers
+409 `ccc_language_unavailable` even with `force`; show its `message`, there
+is nothing to retry. Undoing pushes newest first always works without `force`:
 reverting the later change puts its `from` back, which is the earlier
 change's `to`. On the Tools page a live entry with a later live change on the
 same target, field and language says "replaced by a later change" instead of
