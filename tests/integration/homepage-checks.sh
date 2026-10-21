@@ -78,6 +78,13 @@ if [[ "$CCC_ADAPTER" == "yoast" || "$CCC_ADAPTER" == "rankmath" || "$CCC_ADAPTER
   check "resolve: homepage title round-trips" 200 "$RESP_HTTP" '.[0].current.title' 'Homepage Title From CCC' "$RESP_BODY"
   check "resolve: homepage description round-trips" 200 "$RESP_HTTP" '.[0].current.description' 'Homepage Desc From CCC' "$RESP_BODY"
 
+  HOME_PAGE="$(curl -sL --max-time 10 "$CCC_URL/")"
+  if grep -o '<title>[^<]*</title>' <<<"$HOME_PAGE" | grep -qF 'Homepage Title From CCC'; then
+    PASS=$((PASS+1)); echo "  ok   front end: the homepage <title> serves the pushed title"
+  else
+    FAIL=$((FAIL+1)); echo "  FAIL front end: homepage <title> is [$(grep -o '<title>[^<]*</title>' <<<"$HOME_PAGE")], not the pushed title"
+  fi
+
   echo "-- homepage: revert --"
   req POST /revert "$EDITOR" "{\"change_id\":$CHANGE_ID_HOME_TITLE}"
   check "revert: homepage change ok" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
