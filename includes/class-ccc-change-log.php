@@ -81,17 +81,24 @@ class CCC_Change_Log {
 	/**
 	 * Record one applied change and return its entry.
 	 *
-	 * @param int    $post_id Post the change was applied to.
-	 * @param string $field   'title' or 'description'.
-	 * @param string $from    Previous stored value ('' = was unset).
-	 * @param string $to      New stored value ('' = override removed).
-	 * @param string $source  Who applied it (REST user login).
-	 * @param string $lang    Non-default Polylang language slug, HOME_ID
-	 *                        changes only (see CCC_Adapter::
-	 *                        supports_language_home()); '' otherwise.
+	 * @param int         $post_id Post the change was applied to.
+	 * @param string      $field   'title' or 'description'.
+	 * @param string      $from    Previous stored value ('' = was unset).
+	 * @param string      $to      New stored value ('' = override removed).
+	 * @param string      $source  Who applied it (REST user login).
+	 * @param string      $lang    Non-default Polylang language slug, HOME_ID
+	 *                             changes only (see CCC_Adapter::
+	 *                             supports_language_home()); '' otherwise.
+	 * @param string|null $after   What the SEO plugin reads back right after
+	 *                             the write, when that differs from $to: a
+	 *                             cleared value that falls back (an empty
+	 *                             Polylang title reads as the default
+	 *                             language's), or a saver that rewrites the
+	 *                             text. revert() compares the current value
+	 *                             against this. Null = same as $to.
 	 * @return array The stored entry, including its id.
 	 */
-	public static function record( $post_id, $field, $from, $to, $source, $lang = '' ) {
+	public static function record( $post_id, $field, $from, $to, $source, $lang = '', $after = null ) {
 		$id = (int) get_option( self::SEQ_OPTION, 0 ) + 1;
 		update_option( self::SEQ_OPTION, $id, false );
 
@@ -106,6 +113,9 @@ class CCC_Change_Log {
 			'time'     => time(),
 			'reverted' => false,
 		);
+		if ( null !== $after && (string) $after !== (string) $to ) {
+			$entry['after'] = (string) $after;
+		}
 
 		$log = self::all();
 		array_unshift( $log, $entry );
@@ -185,15 +195,16 @@ class CCC_Change_Log {
 		// language target), not error or misbehave.
 		$lang = isset( $entry['lang'] ) ? $entry['lang'] : '';
 		if ( ! $force ) {
-			$current = self::current_value( $entry, $adapter );
-			if ( (string) $entry['to'] !== $current ) {
+			$current  = self::current_value( $entry, $adapter );
+			$expected = isset( $entry['after'] ) ? (string) $entry['after'] : (string) $entry['to'];
+			if ( $expected !== $current ) {
 				return new WP_Error(
 					'ccc_value_changed',
 					__( 'The value has changed since this change was made, so reverting it would overwrite the newer value. Nothing was written.', 'crawl-cove-connector' ),
 					array(
 						'status'   => 409,
 						'current'  => $current,
-						'expected' => (string) $entry['to'],
+						'expected' => $expected,
 					)
 				);
 			}

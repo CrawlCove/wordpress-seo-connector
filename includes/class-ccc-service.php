@@ -615,7 +615,11 @@ class CCC_Service {
 					} else {
 						$adapter->set_description( $post_id, $to, $lang );
 					}
-					$entry                       = CCC_Change_Log::record( $post_id, $field, $from, $to, $source, $lang );
+					// What the SEO plugin serves now, which revert() later
+					// checks against: a cleared value can read back as a
+					// fallback, and some savers rewrite the text.
+					$after                       = ( 'title' === $field ) ? $adapter->get_title( $post_id, $lang ) : $adapter->get_description( $post_id, $lang );
+					$entry                       = CCC_Change_Log::record( $post_id, $field, $from, $to, $source, $lang, $after );
 					$step['change_id']           = $entry['id'];
 					$touched_targets[ $post_id ] = true;
 				}

@@ -299,9 +299,11 @@ as "no longer revertable from here", not as a transport error. The Tools page
 shows 100 rows a page and says so when the log is full.
 
 `/revert` takes `{"change_id": 12}` and an optional `"force": true`. It first
-reads the field's current value. If that is no longer the entry's `to` (a
-later push to the same field, or a hand edit in the SEO plugin), it writes
-nothing and returns HTTP 409:
+reads the field's current value. If that is no longer what the SEO plugin
+served right after the push (normally the entry's `to`; a cleared value can
+read back as a fallback, such as an empty Polylang homepage title reading as
+the default language's), because of a later push to the same field or a hand
+edit in the SEO plugin, it writes nothing and returns HTTP 409:
 
 ```json
 {"code": "ccc_value_changed", "message": "The value has changed since ...",

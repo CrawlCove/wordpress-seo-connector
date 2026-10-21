@@ -191,6 +191,37 @@ class ChangeLogTest extends TestCase {
 		$this->assertSame( 'Old desc', $this->adapter->get_description( 7 ) );
 	}
 
+	public function test_a_cleared_value_that_reads_back_as_a_fallback_still_reverts() {
+		// An empty Polylang homepage title reads back as the default
+		// language's title, so the field never "holds" ''. Revert compares
+		// against what the SEO plugin served right after the push.
+		$adapter = new CC_Test_Fallback_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
+		$adapter->set_title( 7, 'Old title' );
+		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => '' ) ), false, $adapter, 'bloo' );
+		$id  = $res[0]['applied']['title']['change_id'];
+		$this->assertSame( 'Fallback title', CCC_Change_Log::find( $id )['after'] );
+
+		$this->assertTrue( CCC_Change_Log::revert( $id, $adapter ) );
+		$this->assertSame( 'Old title', $adapter->get_title( 7 ) );
+	}
+
+	public function test_a_fallback_entry_still_refuses_after_a_hand_edit() {
+		$adapter = new CC_Test_Fallback_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
+		$adapter->set_title( 7, 'Old title' );
+		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => '' ) ), false, $adapter, 'bloo' );
+		$adapter->set_title( 7, 'Typed by hand' );
+
+		$err = CCC_Change_Log::revert( $res[0]['applied']['title']['change_id'], $adapter );
+		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
+		$this->assertSame( 'Fallback title', $err->get_error_data()['expected'] );
+		$this->assertSame( 'Typed by hand', $adapter->get_title( 7 ) );
+	}
+
+	public function test_an_entry_that_reads_back_as_written_stores_no_after() {
+		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => 'New' ) ), false, $this->adapter, 'bloo' );
+		$this->assertArrayNotHasKey( 'after', CCC_Change_Log::find( $res[0]['applied']['title']['change_id'] ) );
+	}
+
 	public function test_superseded_maps_overwritten_live_entries_to_their_successor() {
 		CCC_Change_Log::record( 7, 'title', 'a', 'b', 'bloo' );              // 1, superseded by 3
 		CCC_Change_Log::record( 7, 'description', 'a', 'b', 'bloo' );        // 2, other field
@@ -210,5 +241,16 @@ class ChangeLogTest extends TestCase {
 
 		CCC_Change_Log::revert( $second, $this->adapter );
 		$this->assertSame( array(), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+	}
+}
+
+/**
+ * An SEO plugin whose empty title reads back as a fallback (Polylang's
+ * per-language homepage with Yoast does this).
+ */
+class CC_Test_Fallback_Adapter extends CCC_Adapter {
+	public function get_title( $post_id, $lang = '' ) {
+		$value = parent::get_title( $post_id, $lang );
+		return '' === $value ? 'Fallback title' : $value;
 	}
 }
