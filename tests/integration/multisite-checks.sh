@@ -176,6 +176,17 @@ else
   FAIL=$((FAIL+1)); echo "  FAIL post body changed: before [$BODY_BEFORE] after [$BODY_AFTER]"
 fi
 
+echo "-- uninstall (run once, on the main site, as WordPress does) clears the SUBSITE's change log too --"
+"${WPCLI[@]}" option get ccc_change_log --url="$SUBSITE_URL" --path="$SITE" >/dev/null 2>&1 && HAD_LOG=1 || HAD_LOG=0
+"${WPCLI[@]}" plugin uninstall crawl-cove-connector --skip-delete --path="$SITE" --quiet 2>/dev/null
+if [[ "$HAD_LOG" == "1" ]] && ! "${WPCLI[@]}" option get ccc_change_log --url="$SUBSITE_URL" --path="$SITE" >/dev/null 2>&1 \
+  && ! "${WPCLI[@]}" option get ccc_change_seq --url="$SUBSITE_URL" --path="$SITE" >/dev/null 2>&1 \
+  && ! "${WPCLI[@]}" option get ccc_last_connection --url="$SUBSITE_URL" --path="$SITE" >/dev/null 2>&1; then
+  PASS=$((PASS+1)); echo "  ok   uninstall removed the subsite's ccc_change_log, ccc_change_seq and ccc_last_connection"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL subsite options survived uninstall (had log before: $HAD_LOG)"
+fi
+
 echo
 echo "== $PASS passed, $FAIL failed =="
 [[ $FAIL -eq 0 ]]

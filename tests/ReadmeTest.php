@@ -78,8 +78,12 @@ class ReadmeTest extends TestCase {
 			$this->assertStringContainsString( 'What happens to the change log if I delete the plugin?', $this->file( $name ), $name );
 		}
 
-		// The FAQ is only true while uninstall.php really deletes the log.
-		$this->assertStringContainsString( "delete_option( 'ccc_change_log' );", $this->file( 'uninstall.php' ) );
+		// The FAQ is only true while uninstall.php really deletes the log, on
+		// every site of a network too (multisite-checks.sh runs it for real).
+		$uninstall = $this->file( 'uninstall.php' );
+		$this->assertStringContainsString( "'ccc_change_log'", $uninstall );
+		$this->assertStringContainsString( 'delete_option( $ccc_option );', $uninstall );
+		$this->assertStringContainsString( 'switch_to_blog( $ccc_site_id );', $uninstall );
 	}
 
 	public function test_public_docs_carry_no_em_dashes_outside_code_blocks() {

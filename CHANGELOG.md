@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Fix: deleting the plugin on multisite clears every site's change log.**
+  WordPress runs `uninstall.php` once, on the main site, so each subsite's
+  `ccc_change_log` (logins, old and new titles), `ccc_change_seq` and
+  `ccc_last_connection` outlived the plugin, contrary to the FAQ. It now
+  walks every site of the network.
+
 ## 0.10.8 (2026-10-21)
 
 - **Fix: pushing a title or description no longer strips embeds from the
