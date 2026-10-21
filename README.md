@@ -39,7 +39,7 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 
 Safety model:
 
-- Nothing is written that wasn't sent by an authenticated user with the right capability for that specific target: `edit_post` for a post/page, `manage_options` for the homepage, `edit_term` for a taxonomy term.
+- Nothing is written that wasn't sent by an authenticated user with the right capability for that specific target: `edit_post` for a post/page (of a type with a public page, so never a privacy request or revision), `manage_options` for the homepage, `edit_term` for a taxonomy term. Only SEO fields are written; the post itself is never re-saved.
 - Nothing is read back that the user could not read in WordPress itself: `/resolve` answers `ccc_unresolvable` (the same reply as a missing post) for a post the user may not `read_post` (another user's draft or private post) or whose type has no public page (a privacy request, a reusable block), and `/changes` lists only the entries on targets the user may edit (administrators, `manage_options`, see the whole log).
 - Values are sanitized and length-capped; batches are capped at 50 changes. Sanitizing strips tags and collapses whitespace but keeps SEO template variables (`%category%`, `%%date%%`) exactly as sent. Core `sanitize_text_field()` would delete `%ca`, `%da` and any other `%` plus two hex digits. SEOPress and AIOSEO still run core sanitizing in their own savers, so on those sites only their native variables (`%%post_title%%`, `#post_title`) survive, the same as in their editors.
 - Every write records the previous value; revert from the app or from **Tools → Crawl Cove**. A revert never silently overwrites a newer value: if the field no longer holds what that change wrote, nothing is written.
@@ -289,7 +289,11 @@ returned for a TranslatePress site.
 
 Every write `/apply` makes is recorded with its previous value, one entry per
 field (a title and a description on the same post are two entries), and
-`/changes` returns the log newest first. The log is a single non-autoloaded
+`/changes` returns the log newest first. Each entry has `id`, `post_id`,
+`lang`, `field`, `from`, `to`, `source`, `time` and `reverted`, plus `after`
+when the SEO plugin read the value back differently from `to` right after
+the write (a cleared value showing its fallback); clients should ignore keys
+they do not know. The log is a single non-autoloaded
 option capped at **1,000 entries**. When a new entry would take it past the
 cap, already-reverted entries are dropped first (oldest first) and only then
 the oldest live ones, so the entries that can still undo something survive
