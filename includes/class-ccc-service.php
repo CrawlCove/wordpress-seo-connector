@@ -402,7 +402,11 @@ class CCC_Service {
 				if ( ! $taxonomy || ! $taxonomy->public ) {
 					return new WP_Error( 'ccc_no_term', __( 'No term with that id.', 'crawl-cove-connector' ), array( 'status' => 404 ) );
 				}
-			} elseif ( ! get_post( $post_id ) ) {
+			} elseif ( ! get_post( $post_id ) || ! is_post_type_viewable( get_post_type( $post_id ) ) ) {
+				// Same rule /resolve applies: a type with no public page (a
+				// privacy request, a revision, a reusable block) has no SEO
+				// title to set, and an Editor passes edit_post on several of
+				// them, so a raw post_id must not write meta onto one.
 				return new WP_Error( 'ccc_no_post', __( 'No post with that id.', 'crawl-cove-connector' ), array( 'status' => 404 ) );
 			}
 		} elseif ( isset( $item['url'] ) ) {

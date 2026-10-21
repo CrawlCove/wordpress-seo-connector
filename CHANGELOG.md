@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fix: `/apply` by raw `post_id` refuses a type with no public page** (a
+  privacy request, a revision, a reusable block), with `ccc_no_post`, the
+  same rule `/resolve` applies since 0.10.6. An Editor passes `edit_post` on
+  a privacy request, so one could write SEO meta onto it. No read leak.
 - **Fix: deleting the plugin on multisite clears every site's change log.**
   WordPress runs `uninstall.php` once, on the main site, so each subsite's
   `ccc_change_log` (logins, old and new titles), `ccc_change_seq` and

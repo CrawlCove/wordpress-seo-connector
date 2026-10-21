@@ -97,6 +97,16 @@ class ServiceTest extends TestCase {
 		$this->assertSame( 'ccc_bad_change', CCC_Service::validate_change( 'not-an-object' )->get_error_code() );
 	}
 
+	public function test_apply_by_post_id_refuses_a_type_with_no_public_page() {
+		// A privacy request: an Editor passes edit_post on it, but it has no
+		// page and no SEO title, and /resolve already refuses it.
+		cc_add_post( 41, 'https://example.com/?post_type=user_request&p=41', 'jane@example.org', 'user_request' );
+		$res = CCC_Service::apply( array( array( 'post_id' => 41, 'title' => 'X' ) ), false, $this->adapter, 'bloo' );
+		$this->assertSame( 'ccc_no_post', $res[0]['error'] );
+		$this->assertSame( '', $this->adapter->get_title( 41 ) );
+		$this->assertSame( array(), CCC_Change_Log::all() );
+	}
+
 	public function test_validate_rejects_non_string_and_overlong_values() {
 		$this->assertSame( 'ccc_bad_value', CCC_Service::validate_change( array( 'post_id' => 7, 'title' => array( 'x' ) ) )->get_error_code() );
 		$long = str_repeat( 'a', CCC_Service::MAX_TITLE_LEN + 1 );

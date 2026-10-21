@@ -61,6 +61,8 @@ req POST /resolve "$EDITOR" "{\"urls\":[\"$CCC_URL/?p=$CCC_POST_PRIVATE\"]}"
 check "editor: own private post still resolves" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
 req POST /resolve "$EDITOR" "{\"urls\":[\"$CCC_URL/?p=$CCC_POST_USER_REQUEST\"]}"
 check "editor: a user_request has no public page, ccc_unresolvable" 200 "$RESP_HTTP" '.[0].error' 'ccc_unresolvable' "$RESP_BODY"
+req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$CCC_POST_USER_REQUEST,\"title\":\"Junk\"}]}"
+check "editor: /apply by raw post_id refuses a user_request too, ccc_no_post" 200 "$RESP_HTTP" '.[0].error' 'ccc_no_post' "$RESP_BODY"
 
 req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$CCC_POST_EDITOR,\"title\":\"Editor change for the log\"}]}"
 check "editor: apply to own post (seeds the log)" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"

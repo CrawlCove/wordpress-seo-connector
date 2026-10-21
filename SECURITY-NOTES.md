@@ -506,3 +506,14 @@ pins the LiteSpeed and WPFC per-post hooks and that `save_post` never fires.
 Harness: Yoast 178, Rank Math 177, SEOPress 175, AIOSEO 170, caching 16,
 multisite 6, all green. Unit suite 141, with no `wp_update_post()` call
 allowed.
+
+Same session, two smaller findings (Unreleased, next weekly release):
+
+- `/apply` with a raw `post_id` checked only `edit_post`, which an Editor
+  passes on a `user_request` (privacy request), so it wrote SEO meta onto one.
+  No read leak (the reply carries only the SEO values). It now refuses any
+  type `is_post_type_viewable()` rejects, as `/resolve` does. Pinned in
+  `security-checks.sh` (fails on the old code) and `ServiceTest`.
+- `uninstall.php` ran on the main site only, so on multisite every subsite's
+  change log (logins, old and new titles) survived deleting the plugin. It
+  now walks every site; `multisite-checks.sh` runs the real uninstall.
