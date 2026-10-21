@@ -86,7 +86,11 @@ unzip -q "$CACHE/sqlite.zip" -d "$SITE/wp-content/plugins"
 unzip -q "$CACHE/yoast.zip" -d "$SITE/wp-content/plugins"
 unzip -q "$CACHE/translatepress.zip" -d "$SITE/wp-content/plugins"
 cp "$SITE/wp-content/plugins/sqlite-database-integration/db.copy" "$SITE/wp-content/db.php"
-ln -s "$PLUGIN_ROOT" "$SITE/wp-content/plugins/crawl-cove-connector"
+# A staged copy of the shipped file set, NOT a symlink to the repo root: the
+# site lives inside the repo, so core's plugin_basename() rewrote every other
+# plugin's path through the symlink and no plugin's activation hook ever fired
+# (SEOPress never enabled its titles module, 21 Oct 2026).
+bash "$PLUGIN_ROOT/bin/build-zip.sh" --stage-to "$SITE/wp-content/plugins/crawl-cove-connector" >/dev/null
 
 cat > "$SITE/wp-content/mu-plugins/ccc-test-harness.php" <<'PHP'
 <?php

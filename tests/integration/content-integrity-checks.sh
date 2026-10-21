@@ -11,8 +11,7 @@
 #
 # Pins, per adapter: post_content and post_modified are byte-identical after
 # an apply and after a revert by the Author; the front end renders the pushed
-# title on Yoast and AIOSEO (so the SEO plugin really serves it without a
-# re-save); on Yoast the
+# title (so the SEO plugin really serves it without a re-save); on Yoast the
 # indexable row carries it (its post-meta watcher rebuilds at shutdown).
 
 set -uo pipefail
@@ -51,16 +50,11 @@ CHANGE_ID="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 same "apply: post_content unchanged (iframe, script and form kept)" "$CONTENT_BEFORE" "$(content)"
 same "apply: post_modified unchanged (no re-save)" "$MODIFIED_BEFORE" "$(modified)"
 
-# Rank Math and SEOPress print the theme's default <title> on this harness
-# whatever the meta says, with or without the old re-save (checked 21 Oct
-# 2026), so only Yoast and AIOSEO can prove the front end here.
-if [[ "$CCC_ADAPTER" == "yoast" || "$CCC_ADAPTER" == "aioseo" ]]; then
 PAGE="$(curl -s --max-time 10 "$CCC_URL/?p=$POST_ID")"
 if grep -o '<title>[^<]*</title>' <<<"$PAGE" | grep -qF "$TITLE"; then
   ok "front end: <title> serves the pushed title without a re-save"
 else
   fail "front end: <title> does not carry [$TITLE] — got [$(grep -o '<title>[^<]*</title>' <<<"$PAGE")]"
-fi
 fi
 
 if [[ "$CCC_ADAPTER" == "yoast" ]]; then

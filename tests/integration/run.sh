@@ -69,7 +69,11 @@ unzip -q "$CACHE/yoast.zip" -d "$SITE/wp-content/plugins"
 unzip -q "$CACHE/seopress.zip" -d "$SITE/wp-content/plugins"
 unzip -q "$CACHE/aioseo.zip" -d "$SITE/wp-content/plugins"
 cp "$SITE/wp-content/plugins/sqlite-database-integration/db.copy" "$SITE/wp-content/db.php"
-ln -s "$PLUGIN_ROOT" "$SITE/wp-content/plugins/crawl-cove-connector"
+# A staged copy of the shipped file set, NOT a symlink to the repo root: the
+# site lives inside the repo, so core's plugin_basename() rewrote every other
+# plugin's path through the symlink and no plugin's activation hook ever fired
+# (SEOPress never enabled its titles module, 21 Oct 2026).
+bash "$PLUGIN_ROOT/bin/build-zip.sh" --stage-to "$SITE/wp-content/plugins/crawl-cove-connector" >/dev/null
 
 # The harness serves plain HTTP on 127.0.0.1, so core's is_ssl() gate on
 # Application Passwords would block every request. Force it available WITHOUT
@@ -93,6 +97,11 @@ case "$ADAPTER" in
   aioseo)   SEO_PLUGIN="all-in-one-seo-pack" ;;
 esac
 "${WPCLI[@]}" plugin activate sqlite-database-integration crawl-cove-connector "$SEO_PLUGIN" --path="$SITE" --quiet
+# Rank Math keeps its whole front end (titles included) off until the setup
+# wizard is finished or skipped; a real site has done one of the two.
+if [[ "$ADAPTER" == "rankmath" ]]; then
+  "${WPCLI[@]}" option update rank_math_registration_skip 1 --path="$SITE" --quiet
+fi
 
 log "users: editor (can edit any post), author (own posts only), subscriber (none)"
 "${WPCLI[@]}" user create ccc_editor editor@example.com --role=editor --user_pass=editor-pass --path="$SITE" --quiet
