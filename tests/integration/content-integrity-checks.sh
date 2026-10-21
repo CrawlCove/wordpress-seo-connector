@@ -44,7 +44,8 @@ else
 fi
 
 TITLE="Integrity title $RANDOM"
-req POST /apply "$AUTHOR" "{\"changes\":[{\"post_id\":$POST_ID,\"title\":\"$TITLE\"}]}"
+DESC="Integrity description $RANDOM"
+req POST /apply "$AUTHOR" "{\"changes\":[{\"post_id\":$POST_ID,\"title\":\"$TITLE\",\"description\":\"$DESC\"}]}"
 check "author: apply title to own embed post is ok" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
 CHANGE_ID="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 same "apply: post_content unchanged (iframe, script and form kept)" "$CONTENT_BEFORE" "$(content)"
@@ -55,6 +56,11 @@ if grep -o '<title>[^<]*</title>' <<<"$PAGE" | grep -qF "$TITLE"; then
   ok "front end: <title> serves the pushed title without a re-save"
 else
   fail "front end: <title> does not carry [$TITLE] — got [$(grep -o '<title>[^<]*</title>' <<<"$PAGE")]"
+fi
+if grep -o '<meta name="description" content="[^"]*"' <<<"$PAGE" | grep -qF "$DESC"; then
+  ok "front end: the post's meta description serves the pushed description"
+else
+  fail "front end: post meta description is [$(grep -o '<meta name="description" content="[^"]*"' <<<"$PAGE")], not [$DESC]"
 fi
 
 if [[ "$CCC_ADAPTER" == "yoast" ]]; then
@@ -81,13 +87,19 @@ if [[ "$CCC_ADAPTER" != "aioseo" ]]; then
   "${WP[@]}" post create --post_title="In integrity cat" --post_status=publish --post_category="$CAT_ID" --quiet 2>/dev/null
   curl -s --max-time 10 -o /dev/null "$CCC_URL/?cat=$CAT_ID" # let the SEO plugin build its record first, as a live site has
   CAT_TITLE="Pushed Cat $RANDOM"
-  req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":-$CAT_ID,\"title\":\"$CAT_TITLE\"}]}"
+  CAT_DESC="Pushed cat description $RANDOM"
+  req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":-$CAT_ID,\"title\":\"$CAT_TITLE\",\"description\":\"$CAT_DESC\"}]}"
   check "editor: apply title to a category archive is ok" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
   CAT_PAGE="$(curl -sL --max-time 10 "$CCC_URL/?cat=$CAT_ID")"
   if grep -o '<title>[^<]*</title>' <<<"$CAT_PAGE" | grep -qF "$CAT_TITLE"; then
     ok "front end: the category archive <title> serves the pushed title"
   else
     fail "front end: category archive <title> does not carry [$CAT_TITLE] — got [$(grep -o '<title>[^<]*</title>' <<<"$CAT_PAGE")]"
+  fi
+  if grep -o '<meta name="description" content="[^"]*"' <<<"$CAT_PAGE" | grep -qF "$CAT_DESC"; then
+    ok "front end: the category archive meta description serves the pushed description"
+  else
+    fail "front end: category meta description is [$(grep -o '<meta name="description" content="[^"]*"' <<<"$CAT_PAGE")], not [$CAT_DESC]"
   fi
 fi
 
