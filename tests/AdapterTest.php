@@ -253,6 +253,22 @@ class AdapterTest extends TestCase {
 		$this->assertSame( 'New term title', $GLOBALS['cc_options']['wpseo_taxonomy_meta']['category'][5]['wpseo_title'] );
 	}
 
+	public function test_yoast_term_write_rebuilds_the_term_indexable() {
+		// Yoast serves the indexable, which its watcher rebuilds only on
+		// edited_term; a direct option write stayed invisible until then.
+		cc_add_term( 5, 'category', 'News' );
+		$a = new CCC_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
+		$a->set_title( -5, 'New term title' );
+		$this->assertSame( array( 5 ), $GLOBALS['cc_yoast_term_rebuilds'] );
+		$this->assertNotContains( 'edited_term', $GLOBALS['cc_actions'] );
+	}
+
+	public function test_rankmath_term_write_does_not_touch_yoast() {
+		cc_add_term( 5, 'category', 'News' );
+		( new CCC_Adapter( 'rankmath', 'rank_math_title', 'rank_math_description' ) )->set_title( -5, 'T' );
+		$this->assertSame( array(), $GLOBALS['cc_yoast_term_rebuilds'] );
+	}
+
 	public function test_yoast_term_write_preserves_unrelated_terms_and_taxonomies() {
 		cc_add_term( 5, 'category', 'News' );
 		cc_add_term( 6, 'post_tag', 'Breaking' );

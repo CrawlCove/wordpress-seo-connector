@@ -17,6 +17,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_purged']  = array(); // clean_post_cache calls
 	$GLOBALS['cc_resaved'] = array(); // wp_update_post calls (must stay empty)
 	$GLOBALS['cc_actions'] = array(); // do_action() calls (tag name only)
+	$GLOBALS['cc_yoast_term_rebuilds'] = array(); // Yoast term watcher build_indexable() calls
 	$GLOBALS['cc_home']    = 'https://example.com';
 	$GLOBALS['cc_aioseo']  = array(); // post_id => ['title' => ..., 'description' => ...]
 	$GLOBALS['cc_deny_manage_options'] = false;
@@ -375,6 +376,25 @@ class CC_Test_Aioseo_Post {
 	}
 }
 class_alias( 'CC_Test_Aioseo_Post', 'AIOSEO\\Plugin\\Common\\Models\\Post' );
+
+/**
+ * Stand-in for Yoast's term watcher, reached the way the adapter reaches the
+ * real one: YoastSEO()->classes->get( <class name> ). Records rebuilt term ids.
+ */
+class CC_Test_Yoast_Term_Watcher {
+	public function build_indexable( $term_id ) {
+		$GLOBALS['cc_yoast_term_rebuilds'][] = $term_id;
+	}
+}
+class_alias( 'CC_Test_Yoast_Term_Watcher', 'Yoast\\WP\\SEO\\Integrations\\Watchers\\Indexable_Term_Watcher' );
+class CC_Test_Yoast_Classes {
+	public function get( $class ) {
+		return 'Yoast\\WP\\SEO\\Integrations\\Watchers\\Indexable_Term_Watcher' === $class ? new CC_Test_Yoast_Term_Watcher() : null;
+	}
+}
+function YoastSEO() {
+	return (object) array( 'classes' => new CC_Test_Yoast_Classes() );
+}
 
 /**
  * Minimal stand-in for Yoast's \WPSEO_Options, shaped like the real

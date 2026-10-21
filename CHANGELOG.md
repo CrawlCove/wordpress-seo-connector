@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Fix: on Yoast SEO, a pushed category or tag title now shows on the
+  archive page.** Yoast serves a term's indexable, which it rebuilds only
+  when the term itself is edited, so a pushed term title or description was
+  saved but not displayed until someone edited the term by hand. The
+  connector now asks Yoast's own term watcher to rebuild that term's
+  indexable after each write (a no-op if Yoast ever moves it). Rank Math and
+  SEOPress were not affected.
 - **Fix: a per-language homepage change is only reverted where it came from.**
   After a site moved from Yoast + Polylang to Rank Math or SEOPress, Revert
   anyway on a French homepage entry wrote the French title over the default

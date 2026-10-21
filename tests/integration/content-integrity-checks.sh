@@ -72,4 +72,23 @@ if [[ "$CCC_ADAPTER" == "yoast" ]]; then
   same "yoast: indexable title cleared again after revert" "" "$INDEXABLE_TITLE"
 fi
 
+if [[ "$CCC_ADAPTER" != "aioseo" ]]; then
+  echo "-- a pushed category title is what the archive page serves (adapter=$CCC_ADAPTER) --"
+  # Yoast reads a term's indexable, rebuilt only on edited_term, so a direct
+  # wpseo_taxonomy_meta write stayed invisible until the term was edited by
+  # hand (21 Oct 2026).
+  CAT_ID="$("${WP[@]}" term create category "Integrity Cat $RANDOM" --porcelain 2>/dev/null)"
+  "${WP[@]}" post create --post_title="In integrity cat" --post_status=publish --post_category="$CAT_ID" --quiet 2>/dev/null
+  curl -s --max-time 10 -o /dev/null "$CCC_URL/?cat=$CAT_ID" # let the SEO plugin build its record first, as a live site has
+  CAT_TITLE="Pushed Cat $RANDOM"
+  req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":-$CAT_ID,\"title\":\"$CAT_TITLE\"}]}"
+  check "editor: apply title to a category archive is ok" 200 "$RESP_HTTP" '.[0].ok' 'true' "$RESP_BODY"
+  CAT_PAGE="$(curl -sL --max-time 10 "$CCC_URL/?cat=$CAT_ID")"
+  if grep -o '<title>[^<]*</title>' <<<"$CAT_PAGE" | grep -qF "$CAT_TITLE"; then
+    ok "front end: the category archive <title> serves the pushed title"
+  else
+    fail "front end: category archive <title> does not carry [$CAT_TITLE] — got [$(grep -o '<title>[^<]*</title>' <<<"$CAT_PAGE")]"
+  fi
+fi
+
 summary

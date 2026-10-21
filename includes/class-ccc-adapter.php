@@ -524,6 +524,7 @@ class CCC_Adapter {
 			$current              = is_array( $current ) ? $current : array();
 			$current[ $meta_key ] = $value;
 			\WPSEO_Taxonomy_Meta::set_values( $term_id, $taxonomy, $current );
+			self::rebuild_yoast_term_indexable( $term_id );
 			return;
 		}
 		if ( 'rankmath' === $this->id || 'seopress' === $this->id ) {
@@ -533,6 +534,33 @@ class CCC_Adapter {
 			} else {
 				update_term_meta( $term_id, $key, $value );
 			}
+		}
+	}
+
+	/**
+	 * Make Yoast serve a term value written straight to wpseo_taxonomy_meta.
+	 *
+	 * Yoast's front end reads the term's indexable, which its term watcher
+	 * rebuilds only on created_term/edited_term, so without this a pushed
+	 * category title stayed invisible until someone edited the term (found
+	 * 21 Oct 2026). Firing edited_term ourselves would also run every other
+	 * plugin's term-form save handler with an empty $_POST, so this calls
+	 * Yoast's own watcher instead, and does nothing if Yoast ever moves it.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	private static function rebuild_yoast_term_indexable( $term_id ) {
+		$watcher_class = 'Yoast\\WP\\SEO\\Integrations\\Watchers\\Indexable_Term_Watcher';
+		if ( ! function_exists( 'YoastSEO' ) || ! class_exists( $watcher_class ) ) {
+			return;
+		}
+		try {
+			$watcher = YoastSEO()->classes->get( $watcher_class );
+		} catch ( \Throwable $e ) {
+			return;
+		}
+		if ( is_object( $watcher ) && method_exists( $watcher, 'build_indexable' ) ) {
+			$watcher->build_indexable( $term_id );
 		}
 	}
 
