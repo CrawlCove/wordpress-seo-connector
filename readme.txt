@@ -4,7 +4,7 @@ Tags: seo, yoast, rank math, seopress, aioseo
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.10.7
+Stable tag: 0.10.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 == Changelog ==
 
+= 0.10.8 =
+* Pushing a title or description no longer strips embeds, scripts or forms from the post itself. This hit Authors, and site administrators on multisite. Only the SEO fields are written now, and the post's modified date stays as it was.
+
 = 0.10.7 =
 * Revert no longer overwrites a newer value: if a title or description has changed since a push (a later push or your own edit), Revert says so, shows what it reads now and offers Revert anyway. Entries a later change replaced are marked.
 * SEO template variables such as `%category%` and `%%date%%` in a pushed title or description are kept instead of being partly deleted.
@@ -70,8 +73,5 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 = 0.10.6 =
 * Security: Contributors and Authors can no longer read other users' drafts, private posts or privacy requests through the API, and see only their own changes in the change log. Administrators still see the whole log.
 
-= 0.10.5 =
-* When a security plugin (Wordfence by default) switches Application Passwords off on an HTTPS site, the Tools page and the API now say so and name the setting, instead of blaming HTTPS; new FAQ.
-
-= 0.1.0 to 0.10.4 =
-* Released on GitHub only. Highlights: adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang per-language homepage with Yoast; TranslatePress URLs; WooCommerce products and categories; cache purge for common caching plugins after a change; a 1,000-entry change log; Tools page status for Application Passwords and the desktop app connection. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).
+= 0.1.0 to 0.10.5 =
+* Released on GitHub only. Highlights: adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang per-language homepage with Yoast; TranslatePress URLs; WooCommerce products and categories; cache purge for common caching plugins after a change; a 1,000-entry change log; Tools page status for Application Passwords (including when a security plugin switches them off) and the desktop app connection. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).

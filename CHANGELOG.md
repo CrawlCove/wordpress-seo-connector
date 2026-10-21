@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.8 (2026-10-21)
 
 - **Fix: pushing a title or description no longer strips embeds from the
   post.** After every write the plugin re-saved the whole post to refresh
