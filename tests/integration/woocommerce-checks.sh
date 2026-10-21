@@ -94,6 +94,8 @@ log "wp core config + install"
 "${WPCLI[@]}" core install --path="$SITE" --url="$URL" --title="CCC WooCommerce Check" \
   --admin_user=admin --admin_password=admin --admin_email=admin@example.com --skip-email --quiet
 "${WPCLI[@]}" plugin activate sqlite-database-integration crawl-cove-connector woocommerce seo-by-rank-math --path="$SITE" --quiet
+# Rank Math's front end stays off until its wizard is finished or skipped.
+"${WPCLI[@]}" option update rank_math_registration_skip 1 --path="$SITE" --quiet
 
 log "editor + shop_manager users + application passwords"
 "${WPCLI[@]}" user create ccc_editor editor@example.com --role=editor --user_pass=editor-pass --path="$SITE" --quiet
@@ -171,6 +173,13 @@ else
   FAIL=$((FAIL+1)); echo "  FAIL product title did not land in rank_math_title (got: $RM_TITLE)"
 fi
 
+PRODUCT_PAGE="$(curl -sL --max-time 10 "$URL/?p=$PRODUCT_ID")"
+if grep -o '<title>[^<]*</title>' <<<"$PRODUCT_PAGE" | grep -qF 'Buy Now'; then
+  PASS=$((PASS+1)); echo "  ok   front end: the product page <title> serves the pushed title"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL front end: product <title> is [$(grep -o '<title>[^<]*</title>' <<<"$PRODUCT_PAGE")]"
+fi
+
 CHANGE_ID_TITLE="$(curl -s -X GET "$BASE/changes" -u "$AUTH" | jq -r "[.[] | select(.post_id==$PRODUCT_ID and .field==\"title\")][0].id")"
 req POST /revert "{\"change_id\":$CHANGE_ID_TITLE}"
 check "revert: product title reverts ok" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
@@ -194,6 +203,14 @@ if [[ "$RM_TERM_TITLE" == "Widgets — Shop" ]]; then
   PASS=$((PASS+1)); echo "  ok   product_cat term title landed in Rank Math's real term meta"
 else
   FAIL=$((FAIL+1)); echo "  FAIL product_cat term title did not land in rank_math_title term meta (got: $RM_TERM_TITLE)"
+fi
+
+echo "-- the product category front end serves what was pushed --"
+PCAT_PAGE="$(curl -sL --max-time 10 "$URL/?product_cat=$("${WPCLI[@]}" term get product_cat "$CAT_TERM_ID" --field=slug --path="$SITE")")"
+if grep -o '<title>[^<]*</title>' <<<"$PCAT_PAGE" | grep -qF 'Shop'; then
+  PASS=$((PASS+1)); echo "  ok   front end: the product category page <title> serves the pushed title"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL front end: product category <title> is [$(grep -o '<title>[^<]*</title>' <<<"$PCAT_PAGE")]"
 fi
 
 echo
