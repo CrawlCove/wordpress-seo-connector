@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fix: a per-language homepage change is only reverted where it came from.**
+  After a site moved from Yoast + Polylang to Rank Math or SEOPress, Revert
+  anyway on a French homepage entry wrote the French title over the default
+  homepage title; with Polylang deactivated it reported "reverted" while
+  writing nothing. Both now answer 409 `ccc_language_unavailable`, even with
+  `force`.
 - **Fix: `/apply` by raw `post_id` refuses a type with no public page** (a
   privacy request, a revision, a reusable block), with `ccc_no_post`, the
   same rule `/resolve` applies since 0.10.6. An Editor passes `edit_post` on

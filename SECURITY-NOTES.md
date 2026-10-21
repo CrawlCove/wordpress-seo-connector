@@ -517,3 +517,11 @@ Same session, two smaller findings (Unreleased, next weekly release):
 - `uninstall.php` ran on the main site only, so on multisite every subsite's
   change log (logins, old and new titles) survived deleting the plugin. It
   now walks every site; `multisite-checks.sh` runs the real uninstall.
+- A per-language (Yoast + Polylang) homepage entry reverted after the site
+  switched to Rank Math or SEOPress went through their language-blind writer:
+  a forced revert put the French title over the default homepage title
+  (reproduced: Rank Math's `%sitename% %page% %sep% %sitedesc%` became
+  "Nouveau Titre"). With Polylang off, the Yoast writer returned silently and
+  the entry was marked reverted. Revert now refuses both with
+  `ccc_language_unavailable`, force or not; pinned in
+  `polylang-yoast-home-checks.sh` (fails on the old code) and `ServiceTest`.

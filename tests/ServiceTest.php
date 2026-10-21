@@ -490,6 +490,32 @@ class ServiceTest extends TestCase {
 		$this->assertSame( 'Old French Title', $this->adapter->get_title( 0, 'fr' ) );
 	}
 
+	public function test_language_homepage_revert_is_refused_once_polylang_or_yoast_is_gone() {
+		cc_enable_polylang( array( 'en', 'fr' ), 'en' );
+		$this->adapter->set_title( 0, 'English Home' );
+		$this->adapter->set_title( 0, 'Old French Title', 'fr' );
+		$res = CCC_Service::apply(
+			array( array( 'post_id' => 0, 'lang' => 'fr', 'title' => 'New French Title' ) ),
+			false, $this->adapter, 'bloo'
+		);
+		$id = $res[0]['applied']['title']['change_id'];
+
+		// Site switched to Rank Math: its homepage writer ignores lang, so a
+		// revert would put the French value over the default homepage title.
+		$rankmath = new CCC_Adapter( 'rankmath', 'rank_math_title', 'rank_math_description' );
+		$err      = CCC_Change_Log::revert( $id, $rankmath, true );
+		$this->assertSame( 'ccc_language_unavailable', $err->get_error_code() );
+		$this->assertSame( '', $rankmath->get_title( 0 ) );
+
+		// Polylang deactivated: Yoast's language writer would do nothing, so
+		// "reverted" would be a lie. Refused, entry stays live.
+		cc_enable_polylang( array(), '' );
+		$err = CCC_Change_Log::revert( $id, $this->adapter, true );
+		$this->assertSame( 'ccc_language_unavailable', $err->get_error_code() );
+		$this->assertFalse( CCC_Change_Log::find( $id )['reverted'] );
+		$this->assertSame( 'English Home', $this->adapter->get_title( 0 ) );
+	}
+
 	public function test_describe_language_homepage_target() {
 		cc_enable_polylang( array( 'en', 'fr' ), 'en' );
 		$this->adapter->set_title( 0, 'Titre', 'fr' );

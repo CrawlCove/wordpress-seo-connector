@@ -237,6 +237,9 @@ FR_CHANGE_ID="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 req POST /revert "{\"change_id\":$FR_CHANGE_ID}"
 check "revert: cleans up the fuzzed French title" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
 
+req POST /apply "{\"changes\":[{\"post_id\":0,\"lang\":\"fr\",\"title\":\"Avant bascule\"}]}"
+LIVE_FR_ID="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
+
 echo "-- an adapter with no Polylang integration says so explicitly --"
 "${WPCLI[@]}" plugin deactivate wordpress-seo --path="$SITE" --quiet
 unzip -q "$CACHE/rankmath.zip" -d "$SITE/wp-content/plugins" 2>/dev/null || true
@@ -244,6 +247,12 @@ if [[ -f "$CACHE/rankmath.zip" ]]; then
   "${WPCLI[@]}" plugin activate seo-by-rank-math --path="$SITE" --quiet
   req POST /apply "{\"changes\":[{\"post_id\":0,\"lang\":\"fr\",\"title\":\"X\"}]}"
   check "apply: Rank Math has no per-language homepage storage — explicit ccc_language_unsupported, not a silent shared-value write" 200 "$RESP_HTTP" '.[0].error' 'ccc_language_unsupported' "$RESP_BODY"
+  req POST /resolve "{\"urls\":[\"$URL/\"]}"
+  RM_HOME_BEFORE="$(echo "$RESP_BODY" | jq -r '.[0].current.title')"
+  req POST /revert "{\"change_id\":$LIVE_FR_ID,\"force\":true}"
+  check "revert (forced) of a Yoast French homepage entry under Rank Math is refused, ccc_language_unavailable" 409 "$RESP_HTTP" '.code' 'ccc_language_unavailable' "$RESP_BODY"
+  req POST /resolve "{\"urls\":[\"$URL/\"]}"
+  check "...and Rank Math's default homepage title was not overwritten with the French value" 200 "$RESP_HTTP" '.[0].current.title' "$RM_HOME_BEFORE" "$RESP_BODY"
 else
   echo "  skip Rank Math cross-adapter check (.cache/rankmath.zip not present)"
 fi

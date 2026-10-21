@@ -194,6 +194,14 @@ class CCC_Change_Log {
 		// and must revert exactly as they always did (the plain/default-
 		// language target), not error or misbehave.
 		$lang = isset( $entry['lang'] ) ? $entry['lang'] : '';
+		// A per-language homepage entry can only go back where it came from.
+		// With Polylang gone the Yoast writer silently does nothing, and Rank
+		// Math or SEOPress would write the translation over the default
+		// language's title. Refused even with force: force overrides a value
+		// that drifted, not a target that no longer exists.
+		if ( '' !== $lang && ! ( $adapter->supports_language_home() && function_exists( 'pll_languages_list' ) && in_array( $lang, (array) pll_languages_list(), true ) ) ) {
+			return new WP_Error( 'ccc_language_unavailable', __( 'That change was made for a language this site no longer serves through a supported SEO plugin, so it cannot be reverted from here.', 'crawl-cove-connector' ), array( 'status' => 409 ) );
+		}
 		if ( ! $force ) {
 			$current  = self::current_value( $entry, $adapter );
 			$expected = isset( $entry['after'] ) ? (string) $entry['after'] : (string) $entry['to'];

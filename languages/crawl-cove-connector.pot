@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Crawl Cove Connector 0.10.6\n"
+"Project-Id-Version: Crawl Cove Connector 0.10.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/crawl-cove-connector\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-20T13:07:51+00:00\n"
+"POT-Creation-Date: 2026-10-21T13:58:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -234,23 +234,27 @@ msgstr ""
 msgid "Application Passwords are switched off on this WordPress site, so it cannot accept the desktop app login. WordPress only enables them over HTTPS or when WP_ENVIRONMENT_TYPE is local. Open Tools, then Crawl Cove, on the site for the fix."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:164
+#: includes/class-ccc-change-log.php:174
 msgid "No change with that id."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:167
+#: includes/class-ccc-change-log.php:177
 msgid "That change has already been reverted."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:175
+#: includes/class-ccc-change-log.php:185
 msgid "The term this change belongs to no longer exists."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:178
+#: includes/class-ccc-change-log.php:188
 msgid "The post this change belongs to no longer exists."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:192
+#: includes/class-ccc-change-log.php:203
+msgid "That change was made for a language this site no longer serves through a supported SEO plugin, so it cannot be reverted from here."
+msgstr ""
+
+#: includes/class-ccc-change-log.php:211
 msgid "The value has changed since this change was made, so reverting it would overwrite the newer value. Nothing was written."
 msgstr ""
 
@@ -263,7 +267,7 @@ msgid "At most 100 urls per request."
 msgstr ""
 
 #: includes/class-ccc-rest.php:237
-#: includes/class-ccc-service.php:584
+#: includes/class-ccc-service.php:588
 msgid "This user may not edit that target."
 msgstr ""
 
@@ -308,74 +312,74 @@ msgstr ""
 msgid "No term with that id."
 msgstr ""
 
-#: includes/class-ccc-service.php:406
+#: includes/class-ccc-service.php:410
 msgid "No post with that id."
 msgstr ""
 
-#: includes/class-ccc-service.php:414
+#: includes/class-ccc-service.php:418
 msgid "A change needs a url or a post_id."
 msgstr ""
 
-#: includes/class-ccc-service.php:419
+#: includes/class-ccc-service.php:423
 msgid "lang must be a string."
 msgstr ""
 
-#: includes/class-ccc-service.php:426
+#: includes/class-ccc-service.php:430
 msgid "lang is only meaningful for the homepage (post_id 0)."
 msgstr ""
 
-#: includes/class-ccc-service.php:434
+#: includes/class-ccc-service.php:438
 msgid "This site has no supported multilingual plugin active."
 msgstr ""
 
-#: includes/class-ccc-service.php:437
+#: includes/class-ccc-service.php:441
 msgid "No active language with that code."
 msgstr ""
 
 #. translators: %s: field name, either "title" or "description"
-#: includes/class-ccc-service.php:460
+#: includes/class-ccc-service.php:464
 #, php-format
 msgid "%s must be a string."
 msgstr ""
 
 #. translators: 1: field name, either "title" or "description"; 2: max length allowed
-#: includes/class-ccc-service.php:467
+#: includes/class-ccc-service.php:471
 #, php-format
 msgid "%1$s is longer than %2$d characters."
 msgstr ""
 
-#: includes/class-ccc-service.php:475
+#: includes/class-ccc-service.php:479
 msgid "A change needs a title and/or a description."
 msgstr ""
 
-#: includes/class-ccc-service.php:521
+#: includes/class-ccc-service.php:525
 msgid "changes must be a non-empty array."
 msgstr ""
 
 #. translators: %d: maximum number of changes allowed per request
-#: includes/class-ccc-service.php:527
+#: includes/class-ccc-service.php:531
 #, php-format
 msgid "At most %d changes per request."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:555
+#: includes/class-ccc-service.php:559
 #, php-format
 msgid "%s does not support homepage title/description changes yet."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:565
+#: includes/class-ccc-service.php:569
 #, php-format
 msgid "%s does not support per-language homepage title/description changes yet."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:575
+#: includes/class-ccc-service.php:579
 #, php-format
 msgid "%s does not support taxonomy term title/description changes yet."
 msgstr ""
 
-#: includes/class-ccc-service.php:602
+#: includes/class-ccc-service.php:606
 msgid "This SEO plugin's homepage title has no automatic fallback, so clearing it would leave a blank browser-tab title. Set a new title instead, or clear it from the SEO plugin's own settings directly."
 msgstr ""
