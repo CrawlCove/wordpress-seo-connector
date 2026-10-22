@@ -23,3 +23,5 @@ tests/integration/.server-woo.log
 tests/integration/.server-ms.log
 tests/integration/.server-cache.log
 build/
+tests/integration/.site-replace/
+tests/integration/.server-replace.log

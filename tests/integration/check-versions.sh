@@ -153,6 +153,7 @@ check "Rank Math" "seo-by-rank-math"        "rankmath.zip"  "seo-by-rank-math/ra
 check "Yoast SEO"  "wordpress-seo"          "yoast.zip"     "wordpress-seo/wp-seo.php"
 check "SEOPress"   "wp-seopress"            "seopress.zip"  "wp-seopress/seopress.php"
 check "AIOSEO"     "all-in-one-seo-pack"    "aioseo.zip"    "all-in-one-seo-pack/all_in_one_seo_pack.php"
+check "Elementor"  "elementor"              "elementor.zip" "elementor/elementor.php"
 
 if [[ "$STALE" -eq 1 ]]; then
   log "one or more caches are stale. To refresh, e.g.:"
