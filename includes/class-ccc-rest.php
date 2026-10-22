@@ -19,7 +19,7 @@ class CCC_Rest {
 	const NS = 'crawlcove/v1';
 
 	/**
-	 * Register all six REST routes.
+	 * Register all seven REST routes.
 	 */
 	public static function register_routes() {
 		register_rest_route(
@@ -81,6 +81,26 @@ class CCC_Rest {
 						'type'     => 'array',
 					),
 					'dry_run' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
+			'/site-settings',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'site_settings' ),
+				'permission_callback' => array( __CLASS__, 'can_use' ),
+				'args'                => array(
+					'settings' => array(
+						'required' => true,
+						'type'     => 'object',
+					),
+					'dry_run'  => array(
 						'type'    => 'boolean',
 						'default' => false,
 					),
@@ -159,6 +179,7 @@ class CCC_Rest {
 				'seo_version'    => $adapter ? $adapter->plugin_version : '',
 				'can_apply'      => (bool) $adapter,
 				'capabilities'   => self::capabilities( $adapter ),
+				'site_settings'  => CCC_Site_Settings::get(),
 			)
 		);
 	}
@@ -166,7 +187,7 @@ class CCC_Rest {
 	/**
 	 * The fix kinds this install can apply, so the desktop app offers only
 	 * those. title and description need a supported SEO plugin; replace_urls
-	 * works on any site.
+	 * and site_settings work on any site.
 	 *
 	 * @param CCC_Adapter|null $adapter Detected SEO adapter.
 	 * @return string[]
@@ -174,6 +195,7 @@ class CCC_Rest {
 	public static function capabilities( $adapter ) {
 		$caps   = $adapter ? array( 'title', 'description' ) : array();
 		$caps[] = 'replace_urls';
+		$caps[] = 'site_settings';
 		return $caps;
 	}
 
@@ -258,6 +280,23 @@ class CCC_Rest {
 			$user ? $user->user_login : 'unknown'
 		);
 		return is_wp_error( $results ) ? $results : rest_ensure_response( $results );
+	}
+
+	/**
+	 * POST /site-settings: switch the hardening settings on or off.
+	 * Administrators only.
+	 *
+	 * @param WP_REST_Request $request Request with a 'settings' object and optional 'dry_run' bool.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function site_settings( $request ) {
+		$user   = wp_get_current_user();
+		$result = CCC_Site_Settings::run(
+			$request->get_param( 'settings' ),
+			(bool) $request->get_param( 'dry_run' ),
+			$user ? $user->user_login : 'unknown'
+		);
+		return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
 	}
 
 	/**

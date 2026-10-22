@@ -29,6 +29,7 @@ require_once CCC_PLUGIN_DIR . 'includes/class-ccc-connection.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-term-resolver.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-service.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-url-replacer.php';
+require_once CCC_PLUGIN_DIR . 'includes/class-ccc-site-settings.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-rest.php';
 
 if ( is_admin() ) {
@@ -37,6 +38,7 @@ if ( is_admin() ) {
 }
 
 add_action( 'rest_api_init', array( 'CCC_Rest', 'register_routes' ) );
+add_action( 'plugins_loaded', array( 'CCC_Site_Settings', 'enforce' ) );
 
 // No load_plugin_textdomain() call: since WP 4.6, translations for a
 // wordpress.org-hosted plugin whose Text Domain matches its slug are loaded

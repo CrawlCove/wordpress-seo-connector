@@ -170,6 +170,9 @@ class CCC_Change_Log {
 		if ( isset( $entry['kind'] ) && 'replace_urls' === $entry['kind'] ) {
 			return CCC_Url_Replacer::can_edit_entry( $entry );
 		}
+		if ( isset( $entry['kind'] ) && 'site_setting' === $entry['kind'] ) {
+			return current_user_can( 'manage_options' );
+		}
 		return isset( $entry['post_id'] ) && CCC_Service::can_edit_target( (int) $entry['post_id'] );
 	}
 
@@ -209,8 +212,8 @@ class CCC_Change_Log {
 	 * mismatch nothing is written and the error carries the current value;
 	 * $force reverts anyway.
 	 *
-	 * A URL replace (kind replace_urls) needs no SEO plugin and goes through
-	 * CCC_Url_Replacer::revert() instead.
+	 * A URL replace (kind replace_urls) or a site setting (kind site_setting)
+	 * needs no SEO plugin and goes through its own class's revert() instead.
 	 *
 	 * @param int              $change_id Change id.
 	 * @param CCC_Adapter|null $adapter   Active SEO adapter to write the reverted value through.
@@ -225,8 +228,8 @@ class CCC_Change_Log {
 		if ( ! empty( $entry['reverted'] ) ) {
 			return new WP_Error( 'ccc_already_reverted', __( 'That change has already been reverted.', 'crawl-cove-connector' ), array( 'status' => 409 ) );
 		}
-		if ( isset( $entry['kind'] ) && 'replace_urls' === $entry['kind'] ) {
-			$done = CCC_Url_Replacer::revert( $entry, (bool) $force );
+		if ( isset( $entry['kind'] ) ) {
+			$done = 'site_setting' === $entry['kind'] ? CCC_Site_Settings::revert( $entry, (bool) $force ) : CCC_Url_Replacer::revert( $entry, (bool) $force );
 			if ( true === $done ) {
 				self::mark_reverted( $change_id );
 			}

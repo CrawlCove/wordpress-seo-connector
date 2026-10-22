@@ -555,3 +555,17 @@ Threat model and what pins each answer:
   the check exists.
 - **Cost.** At most 50 items per request and 200 places per site-wide item,
   with a pre-filter cap of 1,000 candidates before any row is read.
+
+## Addendum, 22 Oct 2026 (/site-settings)
+
+- **Who.** `manage_options` only, checked inside the route on top of the
+  shared `edit_posts` gate; the log entries are visible to administrators
+  only. Pinned: Editor and Subscriber refused, Editor cannot revert.
+- **What it can write.** One option of four booleans, and, for
+  `uploads_no_index`, a fixed one-line block in `uploads/.htaccess` through
+  core's `insert_with_markers()`, which keeps every other line (pinned with a
+  pre-existing line). No request value reaches a file or a header.
+- **Failure modes stated, not hidden.** Off Apache/LiteSpeed the .htaccess
+  switch is refused rather than reported as done; with Jetpack active
+  XML-RPC is left on. HSTS and CSP are never sent, since a wrong value can
+  lock visitors out or break the site.

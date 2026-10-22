@@ -20,6 +20,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_actions'] = array(); // do_action() calls (tag name only)
 	$GLOBALS['cc_yoast_term_rebuilds'] = array(); // Yoast term watcher build_indexable() calls
 	$GLOBALS['cc_home']    = 'https://example.com';
+	$GLOBALS['is_apache']  = false;
 	$GLOBALS['cc_aioseo']  = array(); // post_id => ['title' => ..., 'description' => ...]
 	$GLOBALS['cc_deny_manage_options'] = false;
 	$GLOBALS['cc_logged_in']     = true;  // is_user_logged_in() stub
@@ -526,3 +527,4 @@ require __DIR__ . '/../includes/class-ccc-change-log.php';
 require __DIR__ . '/../includes/class-ccc-connection.php';
 require __DIR__ . '/../includes/class-ccc-service.php';
 require __DIR__ . '/../includes/class-ccc-url-replacer.php';
+require __DIR__ . '/../includes/class-ccc-site-settings.php';

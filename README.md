@@ -35,6 +35,7 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 | `/resolve` | POST | Map crawled URLs to posts, return current title/description |
 | `/apply` | POST | Apply a batch of reviewed fixes (`dry_run` supported) |
 | `/replace-urls` | POST | Repoint, unlink or un-nofollow links to one URL in a page or across the site (`dry_run` supported; needs no SEO plugin) |
+| `/site-settings` | POST | Switch site hardening settings on or off: XML-RPC, generator tag, security headers, uploads listing (administrators only) |
 | `/changes` | GET | The change log (entries this user may edit; all of it for an administrator) |
 | `/revert` | POST | Restore a change's previous value (refused if the value has changed since, unless `force`) |
 
@@ -289,11 +290,12 @@ returned for a TranslatePress site.
 ### Capabilities (`/status`)
 
 `/status` carries `capabilities`, the fix kinds this install can apply:
-`title` and `description` (only while a supported SEO plugin is active) and
-`replace_urls` (always). A connector older than 0.11 sends no list at all,
+`title` and `description` (only while a supported SEO plugin is active),
+`replace_urls` and `site_settings` (always). `/status` also carries
+`site_settings`, the current value of each switch. A connector older than 0.11 sends no list at all,
 which means title and description only. Gate each fix kind on its name and
 ignore names you do not know; later releases add `canonical`, `robots`,
-`social`, `image_alt` and `site_settings` as they ship.
+`social` and `image_alt` as they ship.
 
 ### Replacing links (`/replace-urls`)
 
@@ -366,6 +368,38 @@ edited posts). With `force` the edited locations get the new URL rewritten
 back to the old one and the rest are restored exactly. An unlink or nofollow
 strip cannot be re-derived from edited text, so a forced revert of one
 answers 409 `ccc_content_changed`; show its message.
+
+### Site settings (`/site-settings`)
+
+Administrators only (`manage_options`; anyone else gets 403
+`ccc_forbidden`). Send only the switches to change, `true` for on and
+`false` to undo:
+
+```json
+{"dry_run": false, "settings": {"disable_xmlrpc": true, "hide_generator": true}}
+```
+
+| Setting | While on |
+|---|---|
+| `disable_xmlrpc` | `xmlrpc.php` answers 403 before WordPress serves it, XML-RPC methods are off, the `X-Pingback` header and RSD link are gone. Refused (`ccc_xmlrpc_in_use`) while Jetpack is active, since Jetpack needs it. |
+| `hide_generator` | No WordPress version in the generator meta tag or feeds. |
+| `security_headers` | Front-end responses carry `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: strict-origin-when-cross-origin`, each only if nothing set it already. Never HSTS or CSP: both belong in the server config. |
+| `uploads_no_index` | A marked `Options -Indexes` block in `wp-content/uploads/.htaccess` (other lines kept). Apache and LiteSpeed only; anywhere else it is refused with `ccc_server_unsupported`, because the file would do nothing. |
+
+Reply:
+
+```json
+{"dry_run": false, "settings": {
+  "disable_xmlrpc": {"from": false, "to": true, "changed": true, "change_id": 52},
+  "uploads_no_index": {"error": "ccc_server_unsupported", "message": "..."}}}
+```
+
+A setting missing from the reply was not sent. `change_id` is present only
+after a real change; each setting is its own log entry (`kind:
+"site_setting"`, `field` the setting name, `from`/`to` `"on"`/`"off"`,
+`post_id` 0), visible to administrators only. `/revert` puts the previous
+value back, and answers 409 `ccc_value_changed` with `current` if the
+switch was changed again since (`force` overrides).
 
 ### The change log
 

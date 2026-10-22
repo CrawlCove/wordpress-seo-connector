@@ -124,7 +124,7 @@ class CCC_Admin {
 
 			<?php if ( 'reverted' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Change reverted.', 'crawl-cove-connector' ); ?></p></div>
-			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && empty( $failed['reverted'] ) ) : ?>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'replace_urls' === $failed['kind'] && empty( $failed['reverted'] ) ) : ?>
 				<div class="notice notice-warning">
 					<p><?php esc_html_e( 'Not reverted: the content holding these links has been edited since that change. Reverting anyway changes the new URL back to the old one wherever it now appears.', 'crawl-cove-connector' ); ?></p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
@@ -136,7 +136,7 @@ class CCC_Admin {
 						<button type="submit" class="button button-small"><?php esc_html_e( 'Revert anyway', 'crawl-cove-connector' ); ?></button>
 					</form>
 				</div>
-			<?php elseif ( 'changed' === $notice && $failed && $adapter && empty( $failed['reverted'] ) ) : ?>
+			<?php elseif ( 'changed' === $notice && $failed && $adapter && ! isset( $failed['kind'] ) && empty( $failed['reverted'] ) ) : ?>
 				<?php $now = CCC_Change_Log::current_value( $failed, $adapter ); ?>
 				<div class="notice notice-warning">
 					<p>
@@ -316,7 +316,9 @@ class CCC_Admin {
 						<tr>
 							<td><?php echo esc_html( wp_date( 'Y-m-d H:i', (int) $e['time'] ) ); ?></td>
 							<td>
-								<?php if ( isset( $e['kind'] ) ) : ?>
+								<?php if ( isset( $e['kind'] ) && 'site_setting' === $e['kind'] ) : ?>
+									<?php esc_html_e( 'Site setting', 'crawl-cove-connector' ); ?>
+								<?php elseif ( isset( $e['kind'] ) ) : ?>
 									<?php
 									$ccc_places = isset( $e['targets'] ) && is_array( $e['targets'] ) ? count( $e['targets'] ) : 0;
 									/* translators: %d: number of posts, Elementor layouts and menu items the change edited */

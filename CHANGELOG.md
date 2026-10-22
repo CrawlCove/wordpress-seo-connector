@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **New: `POST /site-settings`** (app ticket #266). Administrators can switch
+  off XML-RPC, hide the WordPress version in the generator tag, send three
+  hardening headers (nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy;
+  never HSTS or CSP) and stop Apache/LiteSpeed listing upload folders. Each
+  switch is logged and revertable; refused honestly where it cannot work
+  (Jetpack needs XML-RPC; .htaccess does nothing off Apache).
 - **New: `POST /replace-urls`** (ticket #262, first slice of 0.11). Repoints
   links from one URL to another (a redirect's final URL), unlinks them, or
   strips `rel="nofollow"`, in one page or across the site: post content,
