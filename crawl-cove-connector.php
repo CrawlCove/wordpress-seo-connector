@@ -30,6 +30,7 @@ require_once CCC_PLUGIN_DIR . 'includes/class-ccc-term-resolver.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-service.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-url-replacer.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-site-settings.php';
+require_once CCC_PLUGIN_DIR . 'includes/class-ccc-image-alt.php';
 require_once CCC_PLUGIN_DIR . 'includes/class-ccc-rest.php';
 
 if ( is_admin() ) {

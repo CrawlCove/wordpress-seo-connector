@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **New: `POST /image-alt`** (app ticket #267). Sets an image's alt text on
+  the media library image and on its `<img>` tags in the page that shows it,
+  from a resized copy's URL too; an empty alt is written as `alt=""`. One
+  logged change, one exact revert. Clears Elementor's rendered-widget cache
+  so image widgets show the new alt at once (found on the harness: Elementor
+  kept serving the old alt).
 - **New: `POST /site-settings`** (app ticket #266). Administrators can switch
   off XML-RPC, hide the WordPress version in the generator tag, send three
   hardening headers (nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy;

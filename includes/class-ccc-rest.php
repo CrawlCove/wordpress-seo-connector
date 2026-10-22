@@ -19,7 +19,7 @@ class CCC_Rest {
 	const NS = 'crawlcove/v1';
 
 	/**
-	 * Register all seven REST routes.
+	 * Register all eight REST routes.
 	 */
 	public static function register_routes() {
 		register_rest_route(
@@ -74,6 +74,26 @@ class CCC_Rest {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'replace_urls' ),
+				'permission_callback' => array( __CLASS__, 'can_use' ),
+				'args'                => array(
+					'changes' => array(
+						'required' => true,
+						'type'     => 'array',
+					),
+					'dry_run' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
+			'/image-alt',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'image_alt' ),
 				'permission_callback' => array( __CLASS__, 'can_use' ),
 				'args'                => array(
 					'changes' => array(
@@ -186,8 +206,8 @@ class CCC_Rest {
 
 	/**
 	 * The fix kinds this install can apply, so the desktop app offers only
-	 * those. title and description need a supported SEO plugin; replace_urls
-	 * and site_settings work on any site.
+	 * those. title and description need a supported SEO plugin; replace_urls,
+	 * site_settings and image_alt work on any site.
 	 *
 	 * @param CCC_Adapter|null $adapter Detected SEO adapter.
 	 * @return string[]
@@ -196,6 +216,7 @@ class CCC_Rest {
 		$caps   = $adapter ? array( 'title', 'description' ) : array();
 		$caps[] = 'replace_urls';
 		$caps[] = 'site_settings';
+		$caps[] = 'image_alt';
 		return $caps;
 	}
 
@@ -275,6 +296,23 @@ class CCC_Rest {
 	public static function replace_urls( $request ) {
 		$user    = wp_get_current_user();
 		$results = CCC_Url_Replacer::run(
+			$request->get_param( 'changes' ),
+			(bool) $request->get_param( 'dry_run' ),
+			$user ? $user->user_login : 'unknown'
+		);
+		return is_wp_error( $results ) ? $results : rest_ensure_response( $results );
+	}
+
+	/**
+	 * POST /image-alt: set alt text on the media library image and on its
+	 * <img> tags in the page that shows it. Needs no SEO plugin.
+	 *
+	 * @param WP_REST_Request $request Request with 'changes' array and optional 'dry_run' bool.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function image_alt( $request ) {
+		$user    = wp_get_current_user();
+		$results = CCC_Image_Alt::run(
 			$request->get_param( 'changes' ),
 			(bool) $request->get_param( 'dry_run' ),
 			$user ? $user->user_login : 'unknown'

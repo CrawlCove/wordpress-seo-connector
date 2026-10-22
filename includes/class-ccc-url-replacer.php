@@ -441,7 +441,7 @@ class CCC_Url_Replacer {
 	 * @param int    $skip    Matches left alone.
 	 * @return array { text, count, skipped, splices }
 	 */
-	private static function splice( $text, array $edits, $skip ) {
+	public static function splice( $text, array $edits, $skip ) {
 		usort(
 			$edits,
 			function ( $a, $b ) {
@@ -793,7 +793,7 @@ class CCC_Url_Replacer {
 	 * @param string $where   content|navigation|elementor|menu.
 	 * @param string $text    New value.
 	 */
-	private static function write( $post_id, $where, $text ) {
+	public static function write( $post_id, $where, $text ) {
 		global $wpdb;
 		if ( 'content' === $where || 'navigation' === $where ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery

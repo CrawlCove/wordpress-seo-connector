@@ -569,3 +569,14 @@ Threat model and what pins each answer:
   switch is refused rather than reported as done; with Jetpack active
   XML-RPC is left on. HSTS and CSP are never sent, since a wrong value can
   lock visitors out or break the site.
+
+## Addendum, 22 Oct 2026 (/image-alt)
+
+- `edit_post` on the page for the inline patch and on the attachment for its
+  alt, checked separately; an Author gets `ccc_forbidden` on an editor's page
+  (pinned). The alt goes through `sanitize_text_field()` and is written into
+  HTML only through `esc_attr()` (unit test with quotes); only the `alt`
+  attribute of `<img>` tags whose `src` matches exactly is touched.
+- The page is written with the same no-kses row write and splice revert as
+  /replace-urls. Dropping Elementor's `_elementor_element_cache` meta is a
+  cache, rebuilt on the next view; no CSS files are deleted.

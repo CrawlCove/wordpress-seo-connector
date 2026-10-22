@@ -318,6 +318,8 @@ class CCC_Admin {
 							<td>
 								<?php if ( isset( $e['kind'] ) && 'site_setting' === $e['kind'] ) : ?>
 									<?php esc_html_e( 'Site setting', 'crawl-cove-connector' ); ?>
+								<?php elseif ( isset( $e['kind'] ) && 'image_alt' === $e['kind'] ) : ?>
+									<?php echo esc_html( isset( $e['src'] ) ? wp_basename( $e['src'] ) : '' ); ?>
 								<?php elseif ( isset( $e['kind'] ) ) : ?>
 									<?php
 									$ccc_places = isset( $e['targets'] ) && is_array( $e['targets'] ) ? count( $e['targets'] ) : 0;

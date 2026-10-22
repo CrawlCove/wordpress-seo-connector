@@ -35,6 +35,7 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 | `/resolve` | POST | Map crawled URLs to posts, return current title/description |
 | `/apply` | POST | Apply a batch of reviewed fixes (`dry_run` supported) |
 | `/replace-urls` | POST | Repoint, unlink or un-nofollow links to one URL in a page or across the site (`dry_run` supported; needs no SEO plugin) |
+| `/image-alt` | POST | Set an image's alt text on the media library image and in the page that shows it (`dry_run` supported; needs no SEO plugin) |
 | `/site-settings` | POST | Switch site hardening settings on or off: XML-RPC, generator tag, security headers, uploads listing (administrators only) |
 | `/changes` | GET | The change log (entries this user may edit; all of it for an administrator) |
 | `/revert` | POST | Restore a change's previous value (refused if the value has changed since, unless `force`) |
@@ -291,11 +292,11 @@ returned for a TranslatePress site.
 
 `/status` carries `capabilities`, the fix kinds this install can apply:
 `title` and `description` (only while a supported SEO plugin is active),
-`replace_urls` and `site_settings` (always). `/status` also carries
+`replace_urls`, `site_settings` and `image_alt` (always). `/status` also carries
 `site_settings`, the current value of each switch. A connector older than 0.11 sends no list at all,
 which means title and description only. Gate each fix kind on its name and
-ignore names you do not know; later releases add `canonical`, `robots`,
-`social` and `image_alt` as they ship.
+ignore names you do not know; later releases add `canonical`, `robots`
+and `social` as they ship.
 
 ### Replacing links (`/replace-urls`)
 
@@ -368,6 +369,50 @@ edited posts). With `force` the edited locations get the new URL rewritten
 back to the old one and the rest are restored exactly. An unlink or nofollow
 strip cannot be re-derived from edited text, so a forced revert of one
 answers 409 `ccc_content_changed`; show its message.
+
+### Image alt text (`/image-alt`)
+
+```json
+{"dry_run": false, "changes": [
+  {"url": "https://example.com/about/", "src": "https://example.com/wp-content/uploads/2026/10/door-300x225.jpg",
+   "alt": "A red front door"}]}
+```
+
+`url` is the page that shows the image, `src` the image URL from the crawl
+(a resized copy such as `-300x225` or core's `-scaled` copy finds its
+original), `alt` at most 250 characters, tags stripped. An empty `alt` marks
+the image decorative and is written as `alt=""`, never dropped. One change
+sets both places WordPress keeps alt text:
+
+- the media library image's alt (`_wp_attachment_image_alt`), which page
+  builders and new insertions read, if `src` is a media library image and the
+  user may `edit_post` it;
+- the `alt` of every `<img>` with that `src` in the page's content (needs
+  `edit_post` on the page; Gutenberg reads image alt from that attribute, so
+  the block stays valid).
+
+Reply per item:
+
+```json
+[{"index": 0, "ok": true, "dry_run": false, "post_id": 12,
+  "attachment": {"id": 40, "from": "", "to": "A red front door", "changed": true},
+  "inline": 1, "change_id": 61}]
+```
+
+`attachment` is `null` when `src` is not a media library image, or
+`{"error": "ccc_forbidden", "message"}` when the user may not edit it (the
+page is still patched). `inline` is the number of `<img>` tags changed;
+`post_id` is 0 when `url` is a homepage or archive (attachment only). An
+image found in neither place answers `ok: false`, `ccc_image_not_found`.
+`change_id` appears only after a real write; one entry (`kind:
+"image_alt"`) covers both places, and `/revert` restores both: the
+attachment alt to `from` and the page to its exact previous bytes. If the
+attachment alt was edited since, 409 `ccc_value_changed` with `current`
+(`force` overrides); if the page content was edited since, 409
+`ccc_value_changed` with `post_ids`, and a forced revert answers
+`ccc_content_changed`. When Elementor is active, an attachment alt change
+drops Elementor's rendered-widget cache so its image widgets serve the new
+alt straight away.
 
 ### Site settings (`/site-settings`)
 

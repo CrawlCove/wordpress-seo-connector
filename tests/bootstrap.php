@@ -21,6 +21,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_yoast_term_rebuilds'] = array(); // Yoast term watcher build_indexable() calls
 	$GLOBALS['cc_home']    = 'https://example.com';
 	$GLOBALS['is_apache']  = false;
+	$GLOBALS['cc_attachments'] = array(); // attachment_url_to_postid() stub: url => id
 	$GLOBALS['cc_aioseo']  = array(); // post_id => ['title' => ..., 'description' => ...]
 	$GLOBALS['cc_deny_manage_options'] = false;
 	$GLOBALS['cc_logged_in']     = true;  // is_user_logged_in() stub
@@ -125,6 +126,11 @@ function metadata_exists( $type, $post_id, $key ) {
 	return isset( $GLOBALS['cc_meta'][ $post_id ] ) && array_key_exists( $key, $GLOBALS['cc_meta'][ $post_id ] );
 }
 function wp_slash( $value ) { return addslashes( $value ); }
+function esc_attr( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES ); }
+/** Stub: url => attachment id, from $GLOBALS['cc_attachments']. */
+function attachment_url_to_postid( $url ) {
+	return isset( $GLOBALS['cc_attachments'][ $url ] ) ? $GLOBALS['cc_attachments'][ $url ] : 0;
+}
 function esc_url_raw( $url ) { return preg_replace( '|[^a-z0-9-~+_.?#=!&;,/:%@$\|*\'()\[\]\x80-\xff]|i', '', $url ); }
 function wp_json_encode( $data, $flags = 0 ) { return json_encode( $data, $flags ); }
 function wp_list_pluck( $list, $field ) { return array_map( function ( $row ) use ( $field ) { return $row[ $field ]; }, $list ); }
@@ -528,3 +534,4 @@ require __DIR__ . '/../includes/class-ccc-connection.php';
 require __DIR__ . '/../includes/class-ccc-service.php';
 require __DIR__ . '/../includes/class-ccc-url-replacer.php';
 require __DIR__ . '/../includes/class-ccc-site-settings.php';
+require __DIR__ . '/../includes/class-ccc-image-alt.php';
