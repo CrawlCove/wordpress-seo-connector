@@ -16,6 +16,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_deny_read'] = array(); // post_ids current user may NOT read (read_post)
 	$GLOBALS['cc_purged']  = array(); // clean_post_cache calls
 	$GLOBALS['cc_resaved'] = array(); // wp_update_post calls (must stay empty)
+	$GLOBALS['cc_db_writes'] = array(); // post ids whose post_content $wpdb->update() wrote
 	$GLOBALS['cc_actions'] = array(); // do_action() calls (tag name only)
 	$GLOBALS['cc_yoast_term_rebuilds'] = array(); // Yoast term watcher build_indexable() calls
 	$GLOBALS['cc_home']    = 'https://example.com';
@@ -113,8 +114,29 @@ function update_option( $name, $value, $autoload = null ) {
 }
 
 function get_post( $post_id ) {
-	return isset( $GLOBALS['cc_posts'][ $post_id ] ) ? (object) array( 'ID' => $post_id ) : null;
+	if ( ! isset( $GLOBALS['cc_posts'][ $post_id ] ) ) {
+		return null;
+	}
+	$content = isset( $GLOBALS['cc_posts'][ $post_id ]['content'] ) ? $GLOBALS['cc_posts'][ $post_id ]['content'] : '';
+	return (object) array( 'ID' => $post_id, 'post_content' => $content );
 }
+function metadata_exists( $type, $post_id, $key ) {
+	return isset( $GLOBALS['cc_meta'][ $post_id ] ) && array_key_exists( $key, $GLOBALS['cc_meta'][ $post_id ] );
+}
+function wp_slash( $value ) { return addslashes( $value ); }
+function esc_url_raw( $url ) { return preg_replace( '|[^a-z0-9-~+_.?#=!&;,/:%@$\|*\'()\[\]\x80-\xff]|i', '', $url ); }
+function wp_json_encode( $data, $flags = 0 ) { return json_encode( $data, $flags ); }
+function wp_list_pluck( $list, $field ) { return array_map( function ( $row ) use ( $field ) { return $row[ $field ]; }, $list ); }
+/** Stub $wpdb: only the post_content write CCC_Url_Replacer makes. */
+class CC_Test_Wpdb {
+	public $posts = 'wp_posts';
+	public function update( $table, $data, $where ) {
+		$GLOBALS['cc_posts'][ $where['ID'] ]['content'] = $data['post_content'];
+		$GLOBALS['cc_db_writes'][] = $where['ID'];
+		return 1;
+	}
+}
+$GLOBALS['wpdb'] = new CC_Test_Wpdb();
 function get_post_type( $post_id ) {
 	return isset( $GLOBALS['cc_posts'][ $post_id ]['type'] ) ? $GLOBALS['cc_posts'][ $post_id ]['type'] : 'post';
 }
@@ -503,3 +525,4 @@ require __DIR__ . '/../includes/class-ccc-adapter.php';
 require __DIR__ . '/../includes/class-ccc-change-log.php';
 require __DIR__ . '/../includes/class-ccc-connection.php';
 require __DIR__ . '/../includes/class-ccc-service.php';
+require __DIR__ . '/../includes/class-ccc-url-replacer.php';

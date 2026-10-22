@@ -56,7 +56,7 @@ class CCC_Change_Log {
 		}
 		$out = array();
 		foreach ( $log as $entry ) {
-			if ( isset( $entry['post_id'] ) && CCC_Service::can_edit_target( (int) $entry['post_id'] ) ) {
+			if ( self::can_edit_entry( $entry ) ) {
 				$out[] = $entry;
 			}
 		}
@@ -128,6 +128,52 @@ class CCC_Change_Log {
 	}
 
 	/**
+	 * Record a change of another kind (e.g. replace_urls), whose fields the
+	 * caller supplies; id, source, time and reverted are added here.
+	 *
+	 * @param array  $fields Entry fields, including kind, post_id, field, from and to.
+	 * @param string $source Who applied it (REST user login).
+	 * @return array The stored entry, including its id.
+	 */
+	public static function record_entry( array $fields, $source ) {
+		$id = (int) get_option( self::SEQ_OPTION, 0 ) + 1;
+		update_option( self::SEQ_OPTION, $id, false );
+
+		$entry = array_merge(
+			$fields,
+			array(
+				'id'       => $id,
+				'source'   => $source,
+				'time'     => time(),
+				'reverted' => false,
+			)
+		);
+
+		$log = self::all();
+		array_unshift( $log, $entry );
+		if ( count( $log ) > self::MAX_ENTRIES ) {
+			$log = self::evict( $log );
+		}
+		update_option( self::OPTION, $log, false );
+
+		return $entry;
+	}
+
+	/**
+	 * Whether the current user may see and revert an entry: edit rights on
+	 * its target, or on every location a URL replace touched.
+	 *
+	 * @param array $entry Log entry.
+	 * @return bool
+	 */
+	public static function can_edit_entry( array $entry ) {
+		if ( isset( $entry['kind'] ) && 'replace_urls' === $entry['kind'] ) {
+			return CCC_Url_Replacer::can_edit_entry( $entry );
+		}
+		return isset( $entry['post_id'] ) && CCC_Service::can_edit_target( (int) $entry['post_id'] );
+	}
+
+	/**
 	 * Bring an over-cap log back to MAX_ENTRIES.
 	 *
 	 * Already-reverted entries go first (oldest first): their "before" value
@@ -163,18 +209,31 @@ class CCC_Change_Log {
 	 * mismatch nothing is written and the error carries the current value;
 	 * $force reverts anyway.
 	 *
-	 * @param int         $change_id Change id.
-	 * @param CCC_Adapter $adapter   Active SEO adapter to write the reverted value through.
-	 * @param bool        $force     Revert even if the value changed since.
+	 * A URL replace (kind replace_urls) needs no SEO plugin and goes through
+	 * CCC_Url_Replacer::revert() instead.
+	 *
+	 * @param int              $change_id Change id.
+	 * @param CCC_Adapter|null $adapter   Active SEO adapter to write the reverted value through.
+	 * @param bool             $force     Revert even if the value changed since.
 	 * @return true|WP_Error
 	 */
-	public static function revert( $change_id, CCC_Adapter $adapter, $force = false ) {
+	public static function revert( $change_id, $adapter, $force = false ) {
 		$entry = self::find( $change_id );
 		if ( ! $entry ) {
 			return new WP_Error( 'ccc_not_found', __( 'No change with that id.', 'crawl-cove-connector' ), array( 'status' => 404 ) );
 		}
 		if ( ! empty( $entry['reverted'] ) ) {
 			return new WP_Error( 'ccc_already_reverted', __( 'That change has already been reverted.', 'crawl-cove-connector' ), array( 'status' => 409 ) );
+		}
+		if ( isset( $entry['kind'] ) && 'replace_urls' === $entry['kind'] ) {
+			$done = CCC_Url_Replacer::revert( $entry, (bool) $force );
+			if ( true === $done ) {
+				self::mark_reverted( $change_id );
+			}
+			return $done;
+		}
+		if ( ! $adapter instanceof CCC_Adapter ) {
+			return new WP_Error( 'ccc_no_seo_plugin', __( 'No supported SEO plugin is active (Yoast SEO, Rank Math, SEOPress or AIOSEO), so there is nothing to write to.', 'crawl-cove-connector' ), array( 'status' => 409 ) );
 		}
 		// The homepage (post_id 0) always "exists" — it has no post to check.
 		$target_id = (int) $entry['post_id'];
@@ -226,7 +285,17 @@ class CCC_Change_Log {
 		// this a revert silently leaves stale cached HTML exactly like an
 		// un-invalidated apply would. See CCC_Service::invalidate_caches_for().
 		CCC_Service::invalidate_caches_for( (int) $entry['post_id'] );
+		self::mark_reverted( $change_id );
 
+		return true;
+	}
+
+	/**
+	 * Flag one entry as reverted.
+	 *
+	 * @param int $change_id Change id.
+	 */
+	private static function mark_reverted( $change_id ) {
 		$log = self::all();
 		foreach ( $log as $i => $e ) {
 			if ( (int) $e['id'] === (int) $change_id ) {
@@ -234,8 +303,6 @@ class CCC_Change_Log {
 			}
 		}
 		update_option( self::OPTION, $log, false );
-
-		return true;
 	}
 
 	/**
@@ -265,7 +332,9 @@ class CCC_Change_Log {
 		$newer = array();
 		$out   = array();
 		foreach ( $log as $entry ) {
-			if ( ! empty( $entry['reverted'] ) ) {
+			// A URL replace has no single field to supersede; its own revert
+			// checks every location it touched.
+			if ( ! empty( $entry['reverted'] ) || isset( $entry['kind'] ) ) {
 				continue;
 			}
 			$key = (int) $entry['post_id'] . '|' . $entry['field'] . '|' . ( isset( $entry['lang'] ) ? $entry['lang'] : '' );

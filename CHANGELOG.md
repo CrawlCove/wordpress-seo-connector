@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **New: `POST /replace-urls`** (ticket #262, first slice of 0.11). Repoints
+  links from one URL to another (a redirect's final URL), unlinks them, or
+  strips `rel="nofollow"`, in one page or across the site: post content,
+  Elementor data, classic menu links and block theme navigation menus. Exact
+  URL matches in URL contexts only, dry-run first, per-post `edit_post` and
+  `edit_theme_options` for menus, written without a re-save (no kses, no new
+  modified date), one change-log entry per change, and a revert that restores
+  the original bytes or refuses when the content was edited since. Needs no
+  SEO plugin. `/status` now lists `capabilities`.
 - **Docs: the readme FAQ "Can it change my content?" no longer says pushed
   posts are re-saved.** Since 0.10.8 only the SEO fields are written and the
   post's cache is purged; the body and modified date are untouched.

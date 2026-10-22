@@ -19,7 +19,7 @@ class CCC_Rest {
 	const NS = 'crawlcove/v1';
 
 	/**
-	 * Register all five REST routes.
+	 * Register all six REST routes.
 	 */
 	public static function register_routes() {
 		register_rest_route(
@@ -54,6 +54,26 @@ class CCC_Rest {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'apply' ),
+				'permission_callback' => array( __CLASS__, 'can_use' ),
+				'args'                => array(
+					'changes' => array(
+						'required' => true,
+						'type'     => 'array',
+					),
+					'dry_run' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
+			'/replace-urls',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'replace_urls' ),
 				'permission_callback' => array( __CLASS__, 'can_use' ),
 				'args'                => array(
 					'changes' => array(
@@ -138,8 +158,23 @@ class CCC_Rest {
 				'seo_plugin'     => $adapter ? $adapter->id : 'none',
 				'seo_version'    => $adapter ? $adapter->plugin_version : '',
 				'can_apply'      => (bool) $adapter,
+				'capabilities'   => self::capabilities( $adapter ),
 			)
 		);
+	}
+
+	/**
+	 * The fix kinds this install can apply, so the desktop app offers only
+	 * those. title and description need a supported SEO plugin; replace_urls
+	 * works on any site.
+	 *
+	 * @param CCC_Adapter|null $adapter Detected SEO adapter.
+	 * @return string[]
+	 */
+	public static function capabilities( $adapter ) {
+		$caps   = $adapter ? array( 'title', 'description' ) : array();
+		$caps[] = 'replace_urls';
+		return $caps;
 	}
 
 	/**
@@ -209,6 +244,23 @@ class CCC_Rest {
 	}
 
 	/**
+	 * POST /replace-urls: repoint, unlink or un-nofollow links to one URL in a
+	 * page or across the site. Needs no SEO plugin.
+	 *
+	 * @param WP_REST_Request $request Request with 'changes' array and optional 'dry_run' bool.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function replace_urls( $request ) {
+		$user    = wp_get_current_user();
+		$results = CCC_Url_Replacer::run(
+			$request->get_param( 'changes' ),
+			(bool) $request->get_param( 'dry_run' ),
+			$user ? $user->user_login : 'unknown'
+		);
+		return is_wp_error( $results ) ? $results : rest_ensure_response( $results );
+	}
+
+	/**
 	 * GET /changes — the change log entries this user may see, newest first.
 	 *
 	 * @return WP_REST_Response
@@ -226,14 +278,14 @@ class CCC_Rest {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function revert( $request ) {
-		$adapter = self::require_adapter();
+		$change_id = (int) $request->get_param( 'change_id' );
+		$entry     = CCC_Change_Log::find( $change_id );
+		// A URL replace needs no SEO plugin, so only other kinds require one.
+		$adapter = ( $entry && isset( $entry['kind'] ) ) ? null : self::require_adapter();
 		if ( is_wp_error( $adapter ) ) {
 			return $adapter;
 		}
-
-		$change_id = (int) $request->get_param( 'change_id' );
-		$entry     = CCC_Change_Log::find( $change_id );
-		if ( $entry && ! CCC_Service::can_edit_target( $entry['post_id'] ) ) {
+		if ( $entry && ! CCC_Change_Log::can_edit_entry( $entry ) ) {
 			return new WP_Error( 'ccc_forbidden', __( 'This user may not edit that target.', 'crawl-cove-connector' ), array( 'status' => 403 ) );
 		}
 

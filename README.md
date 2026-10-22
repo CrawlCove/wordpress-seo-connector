@@ -34,6 +34,7 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 | `/status` | GET | Plugin + detected SEO plugin info |
 | `/resolve` | POST | Map crawled URLs to posts, return current title/description |
 | `/apply` | POST | Apply a batch of reviewed fixes (`dry_run` supported) |
+| `/replace-urls` | POST | Repoint, unlink or un-nofollow links to one URL in a page or across the site (`dry_run` supported; needs no SEO plugin) |
 | `/changes` | GET | The change log (entries this user may edit; all of it for an administrator) |
 | `/revert` | POST | Restore a change's previous value (refused if the value has changed since, unless `force`) |
 
@@ -285,6 +286,87 @@ returned for a TranslatePress site.
   already existed for the old string until a human re-translates it in
   TranslatePress's own editor.
 
+### Capabilities (`/status`)
+
+`/status` carries `capabilities`, the fix kinds this install can apply:
+`title` and `description` (only while a supported SEO plugin is active) and
+`replace_urls` (always). A connector older than 0.11 sends no list at all,
+which means title and description only. Gate each fix kind on its name and
+ignore names you do not know; later releases add `canonical`, `robots`,
+`social`, `image_alt` and `site_settings` as they ship.
+
+### Replacing links (`/replace-urls`)
+
+For a link to a redirect (point it at the final URL), a broken link (point it
+elsewhere, or unlink it) or a nofollowed internal link. Request:
+
+```json
+{"dry_run": true, "changes": [
+  {"url": "https://example.com/about/", "from": "https://example.com/old/",
+   "to": "https://example.com/new/", "scope": "page"},
+  {"from": "https://example.com/gone/", "unlink": true, "scope": "site"},
+  {"url": "https://example.com/blog/", "from": "https://example.com/team/",
+   "to": "https://example.com/team/", "rel_strip": "nofollow", "scope": "page"}
+]}
+```
+
+- `from` and `to` are absolute http(s) URLs. `to` may not contain quotes,
+  angle brackets, backslashes or spaces (`ccc_bad_url`). `from` also matches
+  its root-relative form (`/old/`) when it is on this site. Only exact
+  matches are changed, and only where a URL belongs: `href`, `src`, `srcset`
+  and `poster` values, CSS `url()`, whole JSON string values in Gutenberg
+  block comments and Elementor data, and a menu item's URL. `/old/` never
+  touches `/old/two/`, and the URL written as plain text is left alone.
+- `scope: "page"` (the default) needs `url` (or `post_id`) of the page that
+  holds the link and `edit_post` on it; it edits that post's content and its
+  Elementor data. A homepage or archive URL answers `ccc_no_content_target`.
+- `scope: "site"` searches every public post type (drafts, pending,
+  scheduled and private posts included), Elementor data, classic menu custom
+  links and block theme `wp_navigation` menus, but only where this user may
+  edit: `edit_post` per post, `edit_theme_options` for menus. More than 200
+  places answers `ccc_too_many_targets`.
+- `unlink: true` removes the `<a>` tags and keeps their text. Gutenberg
+  buttons are left alone (a button without a link is an invalid block) and
+  counted in `skipped`. Menus are not unlinked.
+- `rel_strip: "nofollow"` removes `nofollow` from the matching anchors' `rel`
+  (dropping `rel` if it ends up empty). With `to` equal to `from`, that is
+  all it does.
+- `from` equal to `to` without `rel_strip` answers `ccc_nothing_to_do`.
+
+Reply, one item per change, in order:
+
+```json
+[{"index": 0, "ok": true, "dry_run": false, "scope": "page", "post_id": 12,
+  "from": "https://example.com/old/", "to": "https://example.com/new/",
+  "unlink": false, "changed": true, "count": 3, "skipped": 0,
+  "locations": [{"where": "content", "count": 2}, {"where": "elementor", "count": 1}],
+  "posts": [{"post_id": 12, "locations": [{"where": "content", "count": 2},
+                                          {"where": "elementor", "count": 1}]}],
+  "change_id": 41}]
+```
+
+`where` is `content`, `elementor`, `menu` (a classic menu item; its
+`post_id` is the menu item's) or `navigation` (a block theme menu). `count`
+is how many URLs changed; `count: 0` with `changed: false` is a valid answer
+(the link was not found) and logs nothing. `post_id` is present for page
+scope only. A refused item is `{"index", "ok": false, "error", "message"}`.
+`change_id` is present only after a real write: a site-wide change is ONE log
+entry, so one `/revert` undoes all of it.
+
+Content is written straight to the row, never re-saved through
+`wp_update_post()`, so kses never touches an admin's embeds and the modified
+date is unchanged. Changed posts get the per-post cache purge; a menu change
+gets the full purge (menus are on every page). Elementor's element and CSS
+caches for the post are dropped so it re-renders.
+
+Revert puts back the exact original bytes as long as every location still
+holds exactly what the change left there. If any was edited since, nothing is
+written and it answers 409 `ccc_value_changed` with `data.post_ids` (the
+edited posts). With `force` the edited locations get the new URL rewritten
+back to the old one and the rest are restored exactly. An unlink or nofollow
+strip cannot be re-derived from edited text, so a forced revert of one
+answers 409 `ccc_content_changed`; show its message.
+
 ### The change log
 
 Every write `/apply` makes is recorded with its previous value, one entry per
@@ -293,7 +375,12 @@ field (a title and a description on the same post are two entries), and
 `lang`, `field`, `from`, `to`, `source`, `time` and `reverted`, plus `after`
 when the SEO plugin read the value back differently from `to` right after
 the write (a cleared value showing its fallback); clients should ignore keys
-they do not know. The log is a single non-autoloaded
+they do not know. A `/replace-urls` entry also has `kind: "replace_urls"`,
+`field: "links"`, `scope`, `unlink`, `rel_strip` and `targets` (each
+`post_id`, `where`, `count`, plus revert data); its `to` is empty for an
+unlink, and its `post_id` is the page for page scope and 0 for site scope.
+Entries without `kind` are title or description changes. A user sees a
+replace entry only if they may edit every place it touched. The log is a single non-autoloaded
 option capped at **1,000 entries**. When a new entry would take it past the
 cap, already-reverted entries are dropped first (oldest first) and only then
 the oldest live ones, so the entries that can still undo something survive

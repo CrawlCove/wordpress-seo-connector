@@ -525,3 +525,33 @@ Same session, two smaller findings (Unreleased, next weekly release):
   the entry was marked reverted. Revert now refuses both with
   `ccc_language_unavailable`, force or not; pinned in
   `polylang-yoast-home-checks.sh` (fails on the old code) and `ServiceTest`.
+
+## Addendum, 22 Oct 2026 (/replace-urls: the first route that writes post content)
+
+Threat model and what pins each answer:
+
+- **Writing the body without kses.** The route writes `post_content` straight
+  to the row, because `wp_update_post()` would strip an admin's embeds when
+  an Author pushes (the 0.10.8 lesson). That is only safe because the bytes
+  it can introduce are fixed: `to` must be an absolute http(s) URL equal to
+  its own `esc_url_raw()` and free of quotes, angle brackets, backslashes,
+  backticks and whitespace, so it cannot close an attribute, a tag, a JSON
+  string or a block comment (`--` is escaped in block comments as WordPress
+  does). In CSS `url()` a URL with `(`, `)`, `;` or `,` is skipped, not
+  written, since it could end the value and inject CSS; same for a comma in
+  `srcset`. Unlink only deletes `<a>` and `</a>` tags. Unit tests pin each
+  refusal; replace-urls-checks.sh pins the Author's iframe surviving.
+- **Reach.** Page scope needs `edit_post` on the page. Site scope filters
+  every candidate by `edit_post` (menus: `edit_theme_options`), so an Author
+  reaches only their own posts and the reply names no other post (pinned).
+  A replace entry is listed by `/changes` and revertable only for a user who
+  may edit every place it touched (pinned: Author cannot see an admin's
+  site-wide change, Editor without menu rights cannot revert it).
+- **Exactness.** Only whole URL values in URL contexts change; `/old/` never
+  touches `/old/two/` or plain text (pinned on the front end). Revert
+  restores the exact bytes from stored splices only when each location's
+  hash still matches; otherwise 409, never a guess. A mutation that dropped
+  the hash check corrupted the post on revert in the harness, which is why
+  the check exists.
+- **Cost.** At most 50 items per request and 200 places per site-wide item,
+  with a pre-filter cap of 1,000 candidates before any row is read.

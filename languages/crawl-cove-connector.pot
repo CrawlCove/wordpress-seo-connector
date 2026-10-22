@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-21T13:58:27+00:00\n"
+"POT-Creation-Date: 2026-10-22T13:16:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -17,7 +17,7 @@ msgstr ""
 #. Plugin Name of the plugin
 #: crawl-cove-connector.php
 #: admin/class-ccc-admin.php:47
-#: admin/class-ccc-admin.php:122
+#: admin/class-ccc-admin.php:123
 msgid "Crawl Cove Connector"
 msgstr ""
 
@@ -46,183 +46,203 @@ msgstr ""
 msgid "Not allowed."
 msgstr ""
 
-#: admin/class-ccc-admin.php:125
+#: admin/class-ccc-admin.php:126
 msgid "Change reverted."
 msgstr ""
 
+#: admin/class-ccc-admin.php:129
+msgid "Not reverted: the content holding these links has been edited since that change. Reverting anyway changes the new URL back to the old one wherever it now appears."
+msgstr ""
+
+#: admin/class-ccc-admin.php:136
+msgid "Revert anyway"
+msgstr ""
+
 #. translators: %s: the title currently stored in the SEO plugin
-#: admin/class-ccc-admin.php:133
+#: admin/class-ccc-admin.php:146
 #, php-format
 msgid "Not reverted: this title has changed since that push and now reads \"%s\". Reverting would overwrite it."
 msgstr ""
 
 #. translators: %s: the description currently stored in the SEO plugin
-#: admin/class-ccc-admin.php:136
+#: admin/class-ccc-admin.php:149
 #, php-format
 msgid "Not reverted: this description has changed since that push and now reads \"%s\". Reverting would overwrite it."
 msgstr ""
 
 #. translators: %s: the value the revert would restore
-#: admin/class-ccc-admin.php:150
+#: admin/class-ccc-admin.php:163
 #, php-format
 msgid "Revert anyway to \"%s\""
 msgstr ""
 
-#: admin/class-ccc-admin.php:156
+#: admin/class-ccc-admin.php:169
 msgid "Could not revert that change."
 msgstr ""
 
-#: admin/class-ccc-admin.php:159
+#: admin/class-ccc-admin.php:172
 msgid "Status"
 msgstr ""
 
-#: admin/class-ccc-admin.php:163
+#: admin/class-ccc-admin.php:176
 msgid "SEO plugin detected"
 msgstr ""
 
-#: admin/class-ccc-admin.php:169
+#: admin/class-ccc-admin.php:182
 msgid "None"
 msgstr ""
 
-#: admin/class-ccc-admin.php:170
+#: admin/class-ccc-admin.php:183
 msgid "(install Yoast SEO, Rank Math, SEOPress or AIOSEO; fixes cannot be applied without one)"
 msgstr ""
 
-#: admin/class-ccc-admin.php:175
+#: admin/class-ccc-admin.php:188
 msgid "Application Passwords"
 msgstr ""
 
-#: admin/class-ccc-admin.php:178
+#: admin/class-ccc-admin.php:191
 msgid "On"
 msgstr ""
 
-#: admin/class-ccc-admin.php:180
+#: admin/class-ccc-admin.php:193
 msgid "Off"
 msgstr ""
 
-#: admin/class-ccc-admin.php:182
+#: admin/class-ccc-admin.php:195
 msgid "The desktop app cannot log in until they are on. WordPress itself allows them on this site, so a plugin or theme has switched them off."
 msgstr ""
 
-#: admin/class-ccc-admin.php:184
+#: admin/class-ccc-admin.php:197
 msgid "Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. On another security plugin, look for a setting with a similar name."
 msgstr ""
 
-#: admin/class-ccc-admin.php:186
+#: admin/class-ccc-admin.php:199
 msgid "The desktop app cannot log in until they are on. WordPress only enables Application Passwords when the site is served over HTTPS (is_ssl()) or WP_ENVIRONMENT_TYPE is local."
 msgstr ""
 
-#: admin/class-ccc-admin.php:188
+#: admin/class-ccc-admin.php:201
 msgid "If a proxy or load balancer terminates HTTPS in front of WordPress, tell it so in wp-config.php:"
 msgstr ""
 
-#: admin/class-ccc-admin.php:191
+#: admin/class-ccc-admin.php:204
 msgid "Last resort for a trusted local or staging site:"
 msgstr ""
 
-#: admin/class-ccc-admin.php:198
+#: admin/class-ccc-admin.php:211
 msgid "REST endpoint"
 msgstr ""
 
-#: admin/class-ccc-admin.php:202
+#: admin/class-ccc-admin.php:215
 msgid "Desktop app"
 msgstr ""
 
 #. translators: 1: date and time, 2: WordPress username
-#: admin/class-ccc-admin.php:208
+#: admin/class-ccc-admin.php:221
 #, php-format
 msgid "Last connected %1$s by %2$s"
 msgstr ""
 
-#: admin/class-ccc-admin.php:214
+#: admin/class-ccc-admin.php:227
 msgid "Not connected yet."
 msgstr ""
 
-#: admin/class-ccc-admin.php:215
+#: admin/class-ccc-admin.php:228
 msgid "Nothing has called the REST API. Follow the steps below."
 msgstr ""
 
-#: admin/class-ccc-admin.php:222
+#: admin/class-ccc-admin.php:235
 msgid "Connect the Crawl Cove desktop app"
 msgstr ""
 
 #. translators: %s: link to the Crawl Cove download page
-#: admin/class-ccc-admin.php:228
+#: admin/class-ccc-admin.php:241
 #, php-format
 msgid "Install the <a href=\"%s\">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the title and description problems; this plugin only applies the fixes you approve there. New accounts start on a free trial."
 msgstr ""
 
 #. translators: %s: link to the current user's profile page
-#: admin/class-ccc-admin.php:237
+#: admin/class-ccc-admin.php:250
 #, php-format
 msgid "Create an <a href=\"%s\">Application Password</a> for your user (Users → Profile → Application Passwords). Name it \"Crawl Cove\"."
 msgstr ""
 
-#: admin/class-ccc-admin.php:242
+#: admin/class-ccc-admin.php:255
 msgid "In Crawl Cove, open the site profile → WordPress → paste the site URL, your username and the application password."
 msgstr ""
 
-#: admin/class-ccc-admin.php:243
+#: admin/class-ccc-admin.php:256
 msgid "Crawl, review the suggested title/description fixes, and push the approved ones. Every push lands in the log below and can be reverted."
 msgstr ""
 
-#: admin/class-ccc-admin.php:246
+#: admin/class-ccc-admin.php:259
 msgid "Change log"
 msgstr ""
 
 #. translators: %s: number of entries the change log keeps
-#: admin/class-ccc-admin.php:252
+#: admin/class-ccc-admin.php:265
 #, php-format
 msgid "The log keeps the most recent %s changes. It is full, so each new push drops the oldest entries (already-reverted ones first); dropped entries can no longer be reverted from here."
 msgstr ""
 
-#: admin/class-ccc-admin.php:259
+#: admin/class-ccc-admin.php:272
 msgid "No changes pushed yet."
 msgstr ""
 
 #. translators: 1: first row number shown, 2: last row number shown, 3: total number of logged changes
-#: admin/class-ccc-admin.php:266
+#: admin/class-ccc-admin.php:279
 #, php-format
 msgid "Showing changes %1$s to %2$s of %3$s."
 msgstr ""
 
-#: admin/class-ccc-admin.php:292
+#: admin/class-ccc-admin.php:305
 msgid "When"
 msgstr ""
 
-#: admin/class-ccc-admin.php:293
+#: admin/class-ccc-admin.php:306
 msgid "Post"
 msgstr ""
 
-#: admin/class-ccc-admin.php:294
+#: admin/class-ccc-admin.php:307
 msgid "Field"
 msgstr ""
 
-#: admin/class-ccc-admin.php:295
+#: admin/class-ccc-admin.php:308
 msgid "Before"
 msgstr ""
 
-#: admin/class-ccc-admin.php:296
+#: admin/class-ccc-admin.php:309
 msgid "After"
 msgstr ""
 
-#: admin/class-ccc-admin.php:297
+#: admin/class-ccc-admin.php:310
 msgid "By"
 msgstr ""
 
-#: admin/class-ccc-admin.php:307
+#. translators: %d: number of posts, Elementor layouts and menu items the change edited
+#: admin/class-ccc-admin.php:323
+#, php-format
+msgid "Links in %d place"
+msgid_plural "Links in %d places"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-ccc-admin.php:326
 msgid "Homepage"
 msgstr ""
 
-#: admin/class-ccc-admin.php:335
+#: admin/class-ccc-admin.php:350
+msgid "(link removed)"
+msgstr ""
+
+#: admin/class-ccc-admin.php:354
 msgid "replaced by a later change"
 msgstr ""
 
-#: admin/class-ccc-admin.php:342
+#: admin/class-ccc-admin.php:361
 msgid "Revert"
 msgstr ""
 
-#: admin/class-ccc-admin.php:345
+#: admin/class-ccc-admin.php:364
 msgid "reverted"
 msgstr ""
 
@@ -234,45 +254,47 @@ msgstr ""
 msgid "Application Passwords are switched off on this WordPress site, so it cannot accept the desktop app login. WordPress only enables them over HTTPS or when WP_ENVIRONMENT_TYPE is local. Open Tools, then Crawl Cove, on the site for the fix."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:174
+#: includes/class-ccc-change-log.php:223
 msgid "No change with that id."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:177
+#: includes/class-ccc-change-log.php:226
 msgid "That change has already been reverted."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:185
+#: includes/class-ccc-change-log.php:236
+#: includes/class-ccc-rest.php:311
+msgid "No supported SEO plugin is active (Yoast SEO, Rank Math, SEOPress or AIOSEO), so there is nothing to write to."
+msgstr ""
+
+#: includes/class-ccc-change-log.php:244
 msgid "The term this change belongs to no longer exists."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:188
+#: includes/class-ccc-change-log.php:247
 msgid "The post this change belongs to no longer exists."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:203
+#: includes/class-ccc-change-log.php:262
 msgid "That change was made for a language this site no longer serves through a supported SEO plugin, so it cannot be reverted from here."
 msgstr ""
 
-#: includes/class-ccc-change-log.php:211
+#: includes/class-ccc-change-log.php:270
 msgid "The value has changed since this change was made, so reverting it would overwrite the newer value. Nothing was written."
 msgstr ""
 
-#: includes/class-ccc-rest.php:159
+#: includes/class-ccc-rest.php:194
 msgid "urls must be a non-empty array."
 msgstr ""
 
-#: includes/class-ccc-rest.php:162
+#: includes/class-ccc-rest.php:197
 msgid "At most 100 urls per request."
 msgstr ""
 
-#: includes/class-ccc-rest.php:237
+#: includes/class-ccc-rest.php:289
 #: includes/class-ccc-service.php:588
+#: includes/class-ccc-url-replacer.php:111
 msgid "This user may not edit that target."
-msgstr ""
-
-#: includes/class-ccc-rest.php:259
-msgid "No supported SEO plugin is active (Yoast SEO, Rank Math, SEOPress or AIOSEO), so there is nothing to write to."
 msgstr ""
 
 #: includes/class-ccc-service.php:48
@@ -300,6 +322,7 @@ msgid "Homepage (latest posts)"
 msgstr ""
 
 #: includes/class-ccc-service.php:373
+#: includes/class-ccc-url-replacer.php:56
 msgid "Each change must be an object."
 msgstr ""
 
@@ -313,6 +336,7 @@ msgid "No term with that id."
 msgstr ""
 
 #: includes/class-ccc-service.php:410
+#: includes/class-ccc-url-replacer.php:97
 msgid "No post with that id."
 msgstr ""
 
@@ -353,11 +377,13 @@ msgid "A change needs a title and/or a description."
 msgstr ""
 
 #: includes/class-ccc-service.php:525
+#: includes/class-ccc-url-replacer.php:491
 msgid "changes must be a non-empty array."
 msgstr ""
 
 #. translators: %d: maximum number of changes allowed per request
 #: includes/class-ccc-service.php:531
+#: includes/class-ccc-url-replacer.php:495
 #, php-format
 msgid "At most %d changes per request."
 msgstr ""
@@ -382,4 +408,47 @@ msgstr ""
 
 #: includes/class-ccc-service.php:606
 msgid "This SEO plugin's homepage title has no automatic fallback, so clearing it would leave a blank browser-tab title. Set a new title instead, or clear it from the SEO plugin's own settings directly."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:61
+msgid "from must be an absolute http or https URL."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:72
+msgid "to must be an absolute http or https URL (or send unlink: true)."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:79
+msgid "rel_strip can only be \"nofollow\"."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:84
+msgid "from and to are the same URL, so there is nothing to change."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:89
+msgid "scope must be \"page\" or \"site\"."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:105
+msgid "That URL is a homepage or archive listing, which has no content of its own to edit. Use scope \"site\" to change the link everywhere."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:108
+msgid "A page-scope change needs the url (or post_id) of the page that holds the link."
+msgstr ""
+
+#. translators: 1: number of places the link was found, 2: the limit
+#: includes/class-ccc-url-replacer.php:547
+#: includes/class-ccc-url-replacer.php:735
+#, php-format
+msgid "The link is in %1$d places, more than the %2$d one change may edit. Fix it page by page instead."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:872
+msgid "The content has been edited since this change, and a removed link or nofollow cannot be put back safely. Nothing was written."
+msgstr ""
+
+#: includes/class-ccc-url-replacer.php:890
+msgid "The content has changed since this change was made, so reverting it would overwrite the newer edits. Nothing was written."
 msgstr ""

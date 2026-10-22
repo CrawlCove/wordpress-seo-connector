@@ -66,7 +66,8 @@ class CCC_Admin {
 
 		$adapter = CCC_Adapter::detect();
 		$notice  = 'error';
-		$done    = $adapter ? CCC_Change_Log::revert( $change_id, $adapter, $force ) : null;
+		$entry   = CCC_Change_Log::find( $change_id );
+		$done    = ( $adapter || ( $entry && isset( $entry['kind'] ) ) ) ? CCC_Change_Log::revert( $change_id, $adapter, $force ) : null;
 		if ( true === $done ) {
 			$notice = 'reverted';
 		} elseif ( is_wp_error( $done ) && 'ccc_value_changed' === $done->get_error_code() ) {
@@ -110,7 +111,7 @@ class CCC_Admin {
 		// One query for every post on this page instead of one per row.
 		$post_ids = array();
 		foreach ( $rows as $row ) {
-			if ( (int) $row['post_id'] > 0 ) {
+			if ( (int) $row['post_id'] > 0 && ! isset( $row['kind'] ) ) {
 				$post_ids[] = (int) $row['post_id'];
 			}
 		}
@@ -123,6 +124,18 @@ class CCC_Admin {
 
 			<?php if ( 'reverted' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Change reverted.', 'crawl-cove-connector' ); ?></p></div>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && empty( $failed['reverted'] ) ) : ?>
+				<div class="notice notice-warning">
+					<p><?php esc_html_e( 'Not reverted: the content holding these links has been edited since that change. Reverting anyway changes the new URL back to the old one wherever it now appears.', 'crawl-cove-connector' ); ?></p>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
+						<input type="hidden" name="action" value="ccc_revert" />
+						<input type="hidden" name="change_id" value="<?php echo (int) $failed['id']; ?>" />
+						<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
+						<input type="hidden" name="force" value="1" />
+						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
+						<button type="submit" class="button button-small"><?php esc_html_e( 'Revert anyway', 'crawl-cove-connector' ); ?></button>
+					</form>
+				</div>
 			<?php elseif ( 'changed' === $notice && $failed && $adapter && empty( $failed['reverted'] ) ) : ?>
 				<?php $now = CCC_Change_Log::current_value( $failed, $adapter ); ?>
 				<div class="notice notice-warning">
@@ -303,7 +316,13 @@ class CCC_Admin {
 						<tr>
 							<td><?php echo esc_html( wp_date( 'Y-m-d H:i', (int) $e['time'] ) ); ?></td>
 							<td>
-								<?php if ( CCC_Service::HOME_ID === (int) $e['post_id'] ) : ?>
+								<?php if ( isset( $e['kind'] ) ) : ?>
+									<?php
+									$ccc_places = isset( $e['targets'] ) && is_array( $e['targets'] ) ? count( $e['targets'] ) : 0;
+									/* translators: %d: number of posts, Elementor layouts and menu items the change edited */
+									echo esc_html( sprintf( _n( 'Links in %d place', 'Links in %d places', $ccc_places, 'crawl-cove-connector' ), $ccc_places ) );
+									?>
+								<?php elseif ( CCC_Service::HOME_ID === (int) $e['post_id'] ) : ?>
 									<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Homepage', 'crawl-cove-connector' ); ?></a>
 								<?php elseif ( (int) $e['post_id'] < 0 ) : ?>
 									<?php
@@ -328,7 +347,7 @@ class CCC_Admin {
 							</td>
 							<td><?php echo esc_html( $e['field'] ); ?></td>
 							<td><?php echo esc_html( '' === $e['from'] ? '—' : $e['from'] ); ?></td>
-							<td><?php echo esc_html( '' === $e['to'] ? '—' : $e['to'] ); ?></td>
+							<td><?php echo esc_html( ! empty( $e['unlink'] ) ? __( '(link removed)', 'crawl-cove-connector' ) : ( '' === $e['to'] ? '—' : $e['to'] ) ); ?></td>
 							<td><?php echo esc_html( $e['source'] ); ?></td>
 							<td>
 								<?php if ( isset( $superseded[ (int) $e['id'] ] ) ) : ?>
