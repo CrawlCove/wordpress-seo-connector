@@ -580,3 +580,31 @@ Threat model and what pins each answer:
 - The page is written with the same no-kses row write and splice revert as
   /replace-urls. Dropping Elementor's `_elementor_element_cache` meta is a
   cache, rebuilt on the next view; no CSS files are deleted.
+
+## Addendum, 22 Oct 2026 (independent review of the 0.11 routes, before release)
+
+An adversarial review of `v0.10.8..main` found two ways a Contributor could
+get markup into their own draft past kses, and two content-damage cases. All
+fixed the same day, each with a unit test that fails on the old code:
+
+- **Forced revert wrote an unvalidated `from`.** `from` was only checked for
+  scheme and host, and a forced revert of an edited place rewrites the new
+  URL back to `from`, so a `from` with `">` could close an `href`. `from`
+  now gets `to`'s character rules.
+- **Image alt matched `alt=` inside another attribute's value**, so a
+  `title=" alt='x'"` made the replacement close the title and turn the alt
+  text's words into attributes. Attributes are now read in order by a
+  quote-aware tokenizer (`CCC_Url_Replacer::attributes()`), shared with the
+  link rewrite, which had the same blind spot for `href=`/`rel=` (no breakout
+  there, since `to` has no quotes, but wrong matches and wrong unlinks).
+- **A forced revert over-reverted** links to the new URL that were already on
+  the page. Each place now records how many it had; if any, a forced revert
+  of that place refuses (`ccc_content_changed`).
+- **Unlink could take a later anchor's `</a>`** when the matched one had none
+  of its own; it now skips such an anchor. The homepage's bare `/` form is no
+  longer matched, as it equals unrelated JSON values.
+
+Noted, not changed: `/status` shows the site-settings switches to any
+`edit_posts` user (low value, and the effects are public anyway); `/image-alt`
+answers 403 on a media item the user may not edit, which confirms it exists
+(the same as core's REST media endpoint).

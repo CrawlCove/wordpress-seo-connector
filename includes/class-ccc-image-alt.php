@@ -95,19 +95,31 @@ class CCC_Image_Alt {
 		$edits = array();
 		if ( preg_match_all( '/<img\b[^<>]*>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $tags[0] as $tag ) {
-				if ( ! preg_match( '/\ssrc\s*=\s*("|\')(.*?)\1/is', $tag[0], $s ) ) {
+				// Attributes read in order, so an "alt=" inside another
+				// attribute's value is never taken for the real one.
+				$attrs = CCC_Url_Replacer::attributes( $tag[0] );
+				if ( ! $attrs ) {
 					continue;
 				}
-				$value = str_replace( array( '&amp;', '&#038;' ), '&', trim( $s[2] ) );
-				if ( ! in_array( $value, $forms, true ) ) {
+				$src = null;
+				$old = null;
+				foreach ( $attrs as $at ) {
+					if ( 'src' === $at['name'] && null === $src ) {
+						$src = str_replace( array( '&amp;', '&#038;' ), '&', trim( $at['value'] ) );
+					}
+					if ( 'alt' === $at['name'] && null === $old ) {
+						$old = $at;
+					}
+				}
+				if ( null === $src || ! in_array( $src, $forms, true ) ) {
 					continue;
 				}
 				$attr = ' alt="' . esc_attr( $alt ) . '"';
-				if ( preg_match( '/\salt\s*=\s*("|\')(.*?)\1/is', $tag[0], $a, PREG_OFFSET_CAPTURE ) ) {
-					if ( esc_attr( $alt ) === $a[2][0] ) {
+				if ( $old ) {
+					if ( -1 !== $old['vstart'] && esc_attr( $alt ) === $old['value'] ) {
 						continue;
 					}
-					$new = substr_replace( $tag[0], $attr, $a[0][1], strlen( $a[0][0] ) );
+					$new = substr_replace( $tag[0], $attr, $old['astart'], $old['alen'] );
 				} else {
 					$new = '<img' . $attr . substr( $tag[0], 4 );
 				}

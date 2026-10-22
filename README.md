@@ -351,9 +351,12 @@ elsewhere, or unlink it) or a nofollowed internal link. Request:
 ]}
 ```
 
-- `from` and `to` are absolute http(s) URLs. `to` may not contain quotes,
-  angle brackets, backslashes or spaces (`ccc_bad_url`). `from` also matches
-  its root-relative form (`/old/`) when it is on this site. Only exact
+- `from` and `to` are absolute http(s) URLs with no quotes, angle brackets,
+  backslashes, backticks or spaces (`ccc_bad_url`; a forced revert writes
+  `from` back, so it gets the same rules). `from` also matches its
+  root-relative form (`/old/`) when it is on this site, except the bare
+  homepage `/`. Attributes are read in order the way a browser does, so
+  `href=` inside another attribute's value is never taken for a link. Only exact
   matches are changed, and only where a URL belongs: `href`, `src`, `srcset`
   and `poster` values, CSS `url()`, whole JSON string values in Gutenberg
   block comments and Elementor data, and a menu item's URL. `/old/` never
@@ -404,9 +407,12 @@ Revert puts back the exact original bytes as long as every location still
 holds exactly what the change left there. If any was edited since, nothing is
 written and it answers 409 `ccc_value_changed` with `data.post_ids` (the
 edited posts). With `force` the edited locations get the new URL rewritten
-back to the old one and the rest are restored exactly. An unlink or nofollow
-strip cannot be re-derived from edited text, so a forced revert of one
-answers 409 `ccc_content_changed`; show its message.
+back to the old one and the rest are restored exactly; a place that no
+longer exists is skipped. A forced revert answers 409 `ccc_content_changed`
+(show its message, nothing was written) when it could not be exact: an
+unlink or nofollow strip, or an edited place that already linked to the new
+URL before the change (those links cannot be told apart from the changed
+ones).
 
 ### Image alt text (`/image-alt`)
 

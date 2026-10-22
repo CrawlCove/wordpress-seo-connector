@@ -57,7 +57,9 @@ class CCC_Url_Replacer {
 		}
 
 		$from = isset( $item['from'] ) && is_string( $item['from'] ) ? trim( $item['from'] ) : '';
-		if ( ! self::is_http_url( $from ) ) {
+		// A forced revert writes from back into the content, so it gets the
+		// same character rules as to.
+		if ( ! self::is_http_url( $from ) || preg_match( '/["\'<>\\\\\s`]/', $from ) ) {
 			return self::error( 'ccc_bad_url', __( 'from must be an absolute http or https URL.', 'crawl-cove-connector' ) );
 		}
 
@@ -154,8 +156,9 @@ class CCC_Url_Replacer {
 			$query    = (string) wp_parse_url( $from, PHP_URL_QUERY );
 			$fragment = (string) wp_parse_url( $from, PHP_URL_FRAGMENT );
 			$relative = ( '' === $path ? '/' : $path ) . ( '' !== $query ? '?' . $query : '' ) . ( '' !== $fragment ? '#' . $fragment : '' );
-			// A port in from would make the relative form match links on another port.
-			if ( null === wp_parse_url( $from, PHP_URL_PORT ) || wp_parse_url( $from, PHP_URL_PORT ) === wp_parse_url( home_url(), PHP_URL_PORT ) ) {
+			// A port in from would make the relative form match links on another
+			// port; a bare "/" would match any JSON value that is just a slash.
+			if ( '/' !== $relative && ( null === wp_parse_url( $from, PHP_URL_PORT ) || wp_parse_url( $from, PHP_URL_PORT ) === wp_parse_url( home_url(), PHP_URL_PORT ) ) ) {
 				$forms[] = $relative;
 			}
 		}
@@ -199,6 +202,53 @@ class CCC_Url_Replacer {
 	}
 
 	/**
+	 * A start tag's attributes, read one after another the way a browser
+	 * does, so "alt=" or "href=" inside another attribute's quoted value is
+	 * part of that value, never an attribute of its own. In Elementor JSON
+	 * the quotes arrive as \". Null when the tag does not parse cleanly (an
+	 * unclosed quote, a ">" inside a value cut the tag short): such a tag is
+	 * left alone.
+	 *
+	 * @param string $tag  A start tag, "<name ...>".
+	 * @param bool   $json Inside a JSON string.
+	 * @return array[]|null Each: name (lower case), value (raw), vstart and vlen (the value's span in $tag; vstart -1 if it has none), astart and alen (the whole attribute, leading space included).
+	 */
+	public static function attributes( $tag, $json = false ) {
+		if ( ! preg_match( '/^<[a-zA-Z][a-zA-Z0-9-]*/', $tag, $m ) || '>' !== substr( $tag, -1 ) ) {
+			return null;
+		}
+		$double = $json ? '\\\\"((?:[^"\\\\]|\\\\[^"])*)\\\\"' : '"([^"]*)"';
+		$re     = '/\G(\s+)([^\s"\'>\/=\\\\]+)(?:(\s*=\s*)(?:' . $double . '|\'([^\']*)\'|([^\s"\'=<>`\\\\]+)))?/';
+		$pos    = strlen( $m[0] );
+		$end    = strlen( $tag ) - 1;
+		$out    = array();
+		while ( $pos < $end ) {
+			if ( ! preg_match( $re, $tag, $a, PREG_OFFSET_CAPTURE, $pos ) || $a[0][1] !== $pos || $a[0][1] + strlen( $a[0][0] ) > $end ) {
+				return preg_match( '/^\s*\/?\s*$/', substr( $tag, $pos, $end - $pos ) ) ? $out : null;
+			}
+			$value  = '';
+			$vstart = -1;
+			foreach ( array( 4, 5, 6 ) as $g ) {
+				if ( isset( $a[ $g ] ) && -1 !== $a[ $g ][1] ) {
+					$value  = $a[ $g ][0];
+					$vstart = $a[ $g ][1];
+					break;
+				}
+			}
+			$out[] = array(
+				'name'   => strtolower( $a[2][0] ),
+				'value'  => $value,
+				'vstart' => $vstart,
+				'vlen'   => strlen( $value ),
+				'astart' => $pos,
+				'alen'   => strlen( $a[0][0] ),
+			);
+			$pos  += strlen( $a[0][0] );
+		}
+		return $out;
+	}
+
+	/**
 	 * Rewrite href/src/srcset/poster values in HTML start tags; unlink or
 	 * strip nofollow on matching anchors. In Elementor JSON the HTML sits
 	 * inside JSON strings, so quotes arrive as \" and slashes may be \/.
@@ -213,66 +263,74 @@ class CCC_Url_Replacer {
 		if ( ! preg_match_all( '/<([a-zA-Z][a-zA-Z0-9-]*)(\s[^<>]*)?>/', $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			return;
 		}
-		$attr_re = '/(\s)(href|src|srcset|poster)(\s*=\s*)(\\\\"|"|\')(.*?)\4/is';
 		foreach ( $tags[0] as $n => $tag ) {
 			$old    = $tag[0];
 			$offset = $tag[1];
 			$name   = strtolower( $tags[1][ $n ][0] );
-			if ( ! isset( $tags[2][ $n ][0] ) || '' === $tags[2][ $n ][0] ) {
+			$attrs  = self::attributes( $old, $json );
+			if ( ! $attrs ) {
 				continue;
 			}
-			$matched = 0;
-			$new     = preg_replace_callback(
-				$attr_re,
-				function ( $a ) use ( $op, $json, &$matched ) {
-					$attr = strtolower( $a[2] );
-					if ( 'srcset' === $attr ) {
-						if ( $op['unlink'] ) {
-							return $a[0];
-						}
-						$parts = explode( ',', $a[5] );
-						foreach ( $parts as $i => $part ) {
-							if ( ! preg_match( '/^(\s*)(\S+)(.*)$/s', $part, $p ) ) {
-								continue;
-							}
+			$repl     = array(); // [ start, length, replacement ] within the tag.
+			$replaced = 0;
+			$href     = false;
+			$rel      = null;
+			$class    = '';
+			foreach ( $attrs as $at ) {
+				if ( 'rel' === $at['name'] ) {
+					$rel = $at;
+				}
+				if ( 'class' === $at['name'] ) {
+					$class = $at['value'];
+				}
+				if ( ! in_array( $at['name'], array( 'href', 'src', 'srcset', 'poster' ), true ) || -1 === $at['vstart'] ) {
+					continue;
+				}
+				if ( 'srcset' === $at['name'] ) {
+					if ( $op['unlink'] || false !== strpos( $op['to'], ',' ) ) {
+						continue; // A comma would split the new URL into two srcset candidates.
+					}
+					$parts = explode( ',', $at['value'] );
+					$hits  = 0;
+					foreach ( $parts as $i => $part ) {
+						if ( preg_match( '/^(\s*)(\S+)(.*)$/s', $part, $p ) ) {
 							$decoded = self::decode_attr( $p[2], $json );
-							// A comma would split the new URL into two srcset candidates.
-							if ( in_array( $decoded, $op['forms'], true ) && ! self::keeps( $decoded, $op ) && false === strpos( $op['to'], ',' ) ) {
+							if ( in_array( $decoded, $op['forms'], true ) && ! self::keeps( $decoded, $op ) ) {
 								$parts[ $i ] = $p[1] . self::encode_attr( $op['to'], $p[2], $json ) . $p[3];
-								++$matched;
+								++$hits;
 							}
 						}
-						return $a[1] . $a[2] . $a[3] . $a[4] . implode( ',', $parts ) . $a[4];
 					}
-					$decoded = self::decode_attr( trim( $a[5] ), $json );
-					if ( ! in_array( $decoded, $op['forms'], true ) ) {
-						return $a[0];
+					if ( $hits ) {
+						$repl[]    = array( $at['vstart'], $at['vlen'], implode( ',', $parts ) );
+						$replaced += $hits;
 					}
-					if ( 'href' === $attr ) {
-						++$matched; // Anchors are finished below (unlink, rel_strip).
-						return ( $op['unlink'] || self::keeps( $decoded, $op ) ) ? $a[0] : $a[1] . $a[2] . $a[3] . $a[4] . self::encode_attr( $op['to'], $a[5], $json ) . $a[4];
-					}
-					if ( $op['unlink'] || self::keeps( $decoded, $op ) ) {
-						return $a[0];
-					}
-					++$matched;
-					return $a[1] . $a[2] . $a[3] . $a[4] . self::encode_attr( $op['to'], $a[5], $json ) . $a[4];
-				},
-				$old
-			);
-			if ( ! $matched ) {
-				continue;
+					continue;
+				}
+				$decoded = self::decode_attr( trim( $at['value'] ), $json );
+				if ( ! in_array( $decoded, $op['forms'], true ) ) {
+					continue;
+				}
+				if ( 'href' === $at['name'] && 'a' === $name ) {
+					$href = true;
+				}
+				if ( $op['unlink'] || self::keeps( $decoded, $op ) ) {
+					continue;
+				}
+				$repl[] = array( $at['vstart'], $at['vlen'], self::encode_attr( $op['to'], $at['value'], $json ) );
+				++$replaced;
 			}
-			$href_matched = 'a' === $name && preg_match( '/\shref\s*=\s*(\\\\"|"|\')(.*?)\1/is', $old, $h ) && in_array( self::decode_attr( trim( $h[2] ), $json ), $op['forms'], true );
 
-			if ( $href_matched && $op['unlink'] ) {
+			if ( $href && $op['unlink'] ) {
 				// A Gutenberg button without its link is an invalid block.
-				if ( preg_match( '/\sclass\s*=\s*(\\\\"|"|\')[^"\']*\b(wp-block-button__link|wp-element-button)\b/i', $old ) ) {
+				if ( preg_match( '/(^|\s)(wp-block-button__link|wp-element-button)(\s|$)/', $class ) ) {
 					++$skip;
 					continue;
 				}
+				// Its own closing tag: the next </a>, with no other <a> opening first.
+				$after = $offset + strlen( $old );
 				$close = $json ? '/<\\\\?\/a\s*>/i' : '/<\/a\s*>/i';
-				if ( ! preg_match( $close, $text, $c, PREG_OFFSET_CAPTURE, $offset + strlen( $old ) ) ) {
+				if ( ! preg_match( $close, $text, $c, PREG_OFFSET_CAPTURE, $after ) || preg_match( '/<a[\s>]/i', substr( $text, $after, $c[0][1] - $after ) ) ) {
 					++$skip;
 					continue;
 				}
@@ -280,12 +338,34 @@ class CCC_Url_Replacer {
 				$edits[] = array( $c[0][1], strlen( $c[0][0] ), '', 0 );
 				continue;
 			}
-			if ( $href_matched && '' !== $op['rel_strip'] ) {
-				$new = self::strip_rel( $new, $op['rel_strip'] );
+			$rel_changed = false;
+			if ( $href && '' !== $op['rel_strip'] && $rel && -1 !== $rel['vstart'] ) {
+				$tokens = preg_split( '/\s+/', trim( $rel['value'] ), -1, PREG_SPLIT_NO_EMPTY );
+				$keep   = array();
+				foreach ( $tokens as $t ) {
+					if ( strtolower( $t ) !== $op['rel_strip'] ) {
+						$keep[] = $t;
+					}
+				}
+				if ( count( $keep ) !== count( $tokens ) ) {
+					$repl[]      = $keep ? array( $rel['vstart'], $rel['vlen'], implode( ' ', $keep ) ) : array( $rel['astart'], $rel['alen'], '' );
+					$rel_changed = true;
+				}
 			}
-			if ( $new !== $old ) {
-				$edits[] = array( $offset, strlen( $old ), $new, $matched );
+			if ( ! $repl ) {
+				continue;
 			}
+			usort(
+				$repl,
+				function ( $a, $b ) {
+					return $b[0] - $a[0];
+				}
+			);
+			$new = $old;
+			foreach ( $repl as $r ) {
+				$new = substr_replace( $new, $r[2], $r[0], $r[1] );
+			}
+			$edits[] = array( $offset, strlen( $old ), $new, $replaced ? $replaced : ( $rel_changed ? 1 : 0 ) );
 		}
 	}
 
@@ -300,34 +380,6 @@ class CCC_Url_Replacer {
 	 */
 	private static function keeps( $decoded, array $op ) {
 		return $decoded === $op['to'] || ( isset( $op['from'] ) && $op['from'] === $op['to'] );
-	}
-
-	/**
-	 * Remove one token from an anchor tag's rel attribute; drop the attribute
-	 * if nothing is left.
-	 *
-	 * @param string $tag   Start tag.
-	 * @param string $token Token to remove ('nofollow').
-	 * @return string
-	 */
-	private static function strip_rel( $tag, $token ) {
-		return preg_replace_callback(
-			'/\srel\s*=\s*(\\\\"|"|\')(.*?)\1/is',
-			function ( $r ) use ( $token ) {
-				$tokens = preg_split( '/\s+/', trim( $r[2] ) );
-				$keep   = array();
-				foreach ( $tokens as $t ) {
-					if ( '' !== $t && strtolower( $t ) !== $token ) {
-						$keep[] = $t;
-					}
-				}
-				if ( count( $keep ) === count( array_filter( $tokens, 'strlen' ) ) ) {
-					return $r[0];
-				}
-				return $keep ? ' rel=' . $r[1] . implode( ' ', $keep ) . $r[1] : '';
-			},
-			$tag
-		);
 	}
 
 	/**
@@ -555,11 +607,14 @@ class CCC_Url_Replacer {
 					continue;
 				}
 				$done[] = array(
-					'post_id' => $t['post_id'],
-					'where'   => $t['where'],
-					'count'   => $r['count'],
-					'text'    => $r['text'],
-					'splices' => $r['splices'],
+					'post_id'   => $t['post_id'],
+					'where'     => $t['where'],
+					'count'     => $r['count'],
+					'text'      => $r['text'],
+					'splices'   => $r['splices'],
+					// Links to the new URL already there before this change: a
+					// forced revert could not tell them from ours.
+					'to_before' => '' === $op['to'] ? 0 : self::rewrite( $value, $t['where'], self::reverse( $op ) )['count'],
 				);
 			}
 			if ( 'site' === $op['scope'] && count( $done ) > self::MAX_SITE_TARGETS ) {
@@ -596,11 +651,12 @@ class CCC_Url_Replacer {
 				foreach ( $done as $d ) {
 					self::write( $d['post_id'], $d['where'], $d['text'] );
 					$stored[] = array(
-						'post_id' => $d['post_id'],
-						'where'   => $d['where'],
-						'count'   => $d['count'],
-						'hash'    => md5( $d['text'] ),
-						'splices' => $d['splices'],
+						'post_id'   => $d['post_id'],
+						'where'     => $d['where'],
+						'count'     => $d['count'],
+						'hash'      => md5( $d['text'] ),
+						'splices'   => $d['splices'],
+						'to_before' => $d['to_before'],
 					);
 				}
 				self::purge( $stored );
@@ -895,15 +951,17 @@ class CCC_Url_Replacer {
 			if ( ! empty( $entry['unlink'] ) || ! empty( $entry['rel_strip'] ) ) {
 				return self::error( 'ccc_content_changed', __( 'The content has been edited since this change, and a removed link or nofollow cannot be put back safely. Nothing was written.', 'crawl-cove-connector' ), 409 );
 			}
+			if ( ! empty( $t['to_before'] ) ) {
+				return self::error( 'ccc_content_changed', __( 'The content has been edited since this change, and it already linked to the new URL before it, so those links cannot be told apart from the changed ones. Nothing was written.', 'crawl-cove-connector' ), 409 );
+			}
 			$back   = self::rewrite(
 				$value,
 				$t['where'],
-				array(
-					'forms'     => self::forms( $entry['to'] ),
-					'from'      => $entry['to'],
-					'to'        => $entry['from'],
-					'unlink'    => false,
-					'rel_strip' => '',
+				self::reverse(
+					array(
+						'from' => $entry['from'],
+						'to'   => $entry['to'],
+					)
 				)
 			);
 			$plan[] = array( $t, $back['text'] );
@@ -925,6 +983,22 @@ class CCC_Url_Replacer {
 		}
 		self::purge( $written );
 		return true;
+	}
+
+	/**
+	 * The op that turns a change's new URL back into its old one.
+	 *
+	 * @param array $op Has from and to.
+	 * @return array Op for rewrite().
+	 */
+	private static function reverse( array $op ) {
+		return array(
+			'forms'     => self::forms( $op['to'] ),
+			'from'      => $op['to'],
+			'to'        => $op['from'],
+			'unlink'    => false,
+			'rel_strip' => '',
+		);
 	}
 
 	/**

@@ -108,6 +108,50 @@ class UrlReplacerTest extends TestCase {
 		$this->assertLessThan( 100, strlen( serialize( $r['splices'] ) ) );
 	}
 
+	public function test_from_gets_the_same_character_rules_as_to() {
+		// Review 22 Oct: a forced revert writes from back into the content.
+		foreach ( array( 'https://example.com/a"><svg onload=x>', "https://example.com/a'b", 'https://example.com/a b', 'https://example.com/a\\b' ) as $from ) {
+			$got = CCC_Url_Replacer::validate( array( 'from' => $from, 'to' => self::NEW, 'scope' => 'site' ) );
+			$this->assertSame( 'ccc_bad_url', $got->get_error_code(), $from );
+		}
+	}
+
+	public function test_an_attribute_name_inside_another_value_is_not_an_attribute() {
+		$html = '<a title="see href=\'https://example.com/old-page/\'" href="https://example.com/keep/">k</a>'
+			. '<a title=" rel=\'nofollow\'" href="/old-page/">x</a>';
+		$r    = $this->roundtrip( $html, 'content', $this->op() );
+		$this->assertSame( 1, $r['count'] );
+		$this->assertStringContainsString( 'title="see href=\'https://example.com/old-page/\'" href="https://example.com/keep/"', $r['text'] );
+		$s = $this->roundtrip( $html, 'content', $this->op( array( 'to' => self::OLD, 'rel_strip' => 'nofollow' ) ) );
+		$this->assertSame( 0, $s['count'], 'a rel= inside a title is not the rel attribute' );
+		$u = $this->roundtrip( $html, 'content', $this->op( array( 'unlink' => true ) ) );
+		$this->assertStringContainsString( 'href="https://example.com/keep/">k</a>', $u['text'], 'unlink never takes a title for the href' );
+	}
+
+	public function test_unlink_skips_an_anchor_whose_closing_tag_is_not_its_own() {
+		$html = '<a href="https://example.com/old-page/">no close <a href="/other/">other</a>';
+		$r    = $this->roundtrip( $html, 'content', $this->op( array( 'unlink' => true ) ) );
+		$this->assertSame( 0, $r['count'] );
+		$this->assertSame( 1, $r['skipped'] );
+		$this->assertSame( $html, $r['text'] );
+	}
+
+	public function test_the_homepage_has_no_bare_slash_form() {
+		$this->assertSame( array( 'https://example.com/' ), CCC_Url_Replacer::forms( 'https://example.com/' ) );
+		$r = CCC_Url_Replacer::rewrite( '<!-- wp:separator {"sep":"/"} /-->', 'content', CCC_Url_Replacer::validate( array( 'from' => 'https://example.com/', 'to' => self::NEW, 'scope' => 'site' ) ) );
+		$this->assertSame( 0, $r['count'] );
+	}
+
+	public function test_forced_revert_refuses_where_the_new_url_was_already_linked() {
+		cc_add_post( 7, 'https://example.com/hello/' );
+		$GLOBALS['cc_posts'][7]['content'] = '<a href="https://example.com/new-page/">already</a><a href="https://example.com/old-page/">x</a>';
+		$res = CCC_Url_Replacer::run( array( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
+		$GLOBALS['cc_posts'][7]['content'] .= '<p>edit</p>';
+		$err = CCC_Change_Log::revert( $res[0]['change_id'], null, true );
+		$this->assertSame( 'ccc_content_changed', $err->get_error_code() );
+		$this->assertStringContainsString( 'href="https://example.com/new-page/">already', $GLOBALS['cc_posts'][7]['content'] );
+	}
+
 	public function test_entity_encoded_ampersands_match_and_stay_encoded() {
 		$op = CCC_Url_Replacer::validate( array( 'from' => 'https://example.com/?a=1&b=2', 'to' => 'https://example.com/n/?a=1&b=2', 'scope' => 'site' ) );
 		$r  = $this->roundtrip( '<a href="https://example.com/?a=1&amp;b=2">x</a>', 'content', $op );

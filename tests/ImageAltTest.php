@@ -32,6 +32,15 @@ class ImageAltTest extends TestCase {
 		$this->assertSame( $html, CCC_Url_Replacer::unsplice( $r['text'], $r['splices'] ) );
 	}
 
+	public function test_an_alt_inside_another_attribute_is_not_the_alt() {
+		// Review 22 Oct: the alt text's words must never become attributes.
+		$html = '<img title=" alt=\'x\'" src="' . self::IMG . '">';
+		$r    = CCC_Image_Alt::rewrite( $html, array( self::IMG ), 'hello data-ccc-marker=1' );
+		$this->assertSame( '<img alt="hello data-ccc-marker=1" title=" alt=\'x\'" src="' . self::IMG . '">', $r['text'] );
+		$attrs = CCC_Url_Replacer::attributes( $r['text'] );
+		$this->assertSame( array( 'alt', 'title', 'src' ), array_column( $attrs, 'name' ) );
+	}
+
 	public function test_empty_alt_is_written_as_an_empty_attribute() {
 		$r = CCC_Image_Alt::rewrite( '<img src="' . self::IMG . '">', array( self::IMG ), '' );
 		$this->assertSame( '<img alt="" src="' . self::IMG . '">', $r['text'] );
