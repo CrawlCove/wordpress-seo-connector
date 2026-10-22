@@ -456,6 +456,22 @@ class CCC_Url_Replacer {
 			if ( $e[0] < $pos ) {
 				continue; // Overlaps an earlier edit; never happens with the passes above, but never corrupt.
 			}
+			// Keep only the bytes that differ: a rewritten tag usually changes
+			// one attribute, and the log stores each splice's original text,
+			// so a long tag would otherwise be stored whole.
+			$old     = substr( $text, $e[0], $e[1] );
+			$old_len = strlen( $old );
+			$new_len = strlen( $e[2] );
+			$max     = min( $old_len, $new_len );
+			$keep    = 0;
+			while ( $keep < $max && $old[ $keep ] === $e[2][ $keep ] ) {
+				++$keep;
+			}
+			$tail = 0;
+			while ( $tail < $max - $keep && $old[ $old_len - 1 - $tail ] === $e[2][ $new_len - 1 - $tail ] ) {
+				++$tail;
+			}
+			$e         = array( $e[0] + $keep, $old_len - $keep - $tail, substr( $e[2], $keep, $new_len - $keep - $tail ), $e[3] );
 			$out      .= substr( $text, $pos, $e[0] - $pos );
 			$splices[] = array( strlen( $out ), strlen( $e[2] ), substr( $text, $e[0], $e[1] ) );
 			$out      .= $e[2];

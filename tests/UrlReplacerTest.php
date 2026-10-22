@@ -101,6 +101,13 @@ class UrlReplacerTest extends TestCase {
 		$this->assertStringContainsString( 'url(https://example.com/old-page/)', $r['text'] );
 	}
 
+	public function test_revert_data_keeps_only_the_bytes_that_changed() {
+		$html = '<a class="' . str_repeat( 'x', 5000 ) . '" href="https://example.com/old-page/">t</a>';
+		$r    = $this->roundtrip( $html, 'content', $this->op() );
+		$this->assertSame( 'old', $r['splices'][0][2] );
+		$this->assertLessThan( 100, strlen( serialize( $r['splices'] ) ) );
+	}
+
 	public function test_entity_encoded_ampersands_match_and_stay_encoded() {
 		$op = CCC_Url_Replacer::validate( array( 'from' => 'https://example.com/?a=1&b=2', 'to' => 'https://example.com/n/?a=1&b=2', 'scope' => 'site' ) );
 		$r  = $this->roundtrip( '<a href="https://example.com/?a=1&amp;b=2">x</a>', 'content', $op );
