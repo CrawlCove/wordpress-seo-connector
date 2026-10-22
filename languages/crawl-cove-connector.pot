@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-22T13:38:26+00:00\n"
+"POT-Creation-Date: 2026-10-22T13:57:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -316,14 +316,14 @@ msgid "A change needs the url of the page that shows the image."
 msgstr ""
 
 #: includes/class-ccc-image-alt.php:130
-#: includes/class-ccc-service.php:525
+#: includes/class-ccc-service.php:584
 #: includes/class-ccc-url-replacer.php:499
 msgid "changes must be a non-empty array."
 msgstr ""
 
 #. translators: %d: maximum number of changes allowed per request
 #: includes/class-ccc-image-alt.php:134
-#: includes/class-ccc-service.php:531
+#: includes/class-ccc-service.php:590
 #: includes/class-ccc-url-replacer.php:503
 #, php-format
 msgid "At most %d changes per request."
@@ -335,7 +335,7 @@ msgstr ""
 
 #: includes/class-ccc-image-alt.php:176
 #: includes/class-ccc-rest.php:366
-#: includes/class-ccc-service.php:588
+#: includes/class-ccc-service.php:647
 #: includes/class-ccc-url-replacer.php:111
 msgid "This user may not edit that target."
 msgstr ""
@@ -415,40 +415,58 @@ msgid "No active language with that code."
 msgstr ""
 
 #. translators: %s: field name, either "title" or "description"
+#. translators: %s: field name
 #: includes/class-ccc-service.php:464
+#: includes/class-ccc-service.php:525
 #, php-format
 msgid "%s must be a string."
 msgstr ""
 
 #. translators: 1: field name, either "title" or "description"; 2: max length allowed
+#. translators: 1: field name; 2: max length allowed
 #: includes/class-ccc-service.php:471
+#: includes/class-ccc-service.php:541
 #, php-format
 msgid "%1$s is longer than %2$d characters."
 msgstr ""
 
-#: includes/class-ccc-service.php:479
-msgid "A change needs a title and/or a description."
+#: includes/class-ccc-service.php:483
+msgid "Only the title and description can be set on the homepage or an archive page."
+msgstr ""
+
+#: includes/class-ccc-service.php:488
+msgid "A change needs at least one field to set (title, description, canonical, robots_index or a social field)."
+msgstr ""
+
+#: includes/class-ccc-service.php:518
+msgid "robots_index must be true, false or null."
+msgstr ""
+
+#. translators: %s: field name
+#: includes/class-ccc-service.php:532
+#, php-format
+msgid "%s must be an absolute http or https URL, or empty to clear it."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:559
+#: includes/class-ccc-service.php:618
 #, php-format
 msgid "%s does not support homepage title/description changes yet."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:569
+#: includes/class-ccc-service.php:628
 #, php-format
 msgid "%s does not support per-language homepage title/description changes yet."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:579
+#: includes/class-ccc-service.php:638
 #, php-format
 msgid "%s does not support taxonomy term title/description changes yet."
 msgstr ""
 
-#: includes/class-ccc-service.php:606
+#: includes/class-ccc-service.php:665
 msgid "This SEO plugin's homepage title has no automatic fallback, so clearing it would leave a blank browser-tab title. Set a new title instead, or clear it from the SEO plugin's own settings directly."
 msgstr ""
 

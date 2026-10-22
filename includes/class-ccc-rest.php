@@ -213,7 +213,7 @@ class CCC_Rest {
 	 * @return string[]
 	 */
 	public static function capabilities( $adapter ) {
-		$caps   = $adapter ? array( 'title', 'description' ) : array();
+		$caps   = $adapter ? array( 'title', 'description', 'canonical', 'robots', 'social' ) : array();
 		$caps[] = 'replace_urls';
 		$caps[] = 'site_settings';
 		$caps[] = 'image_alt';

@@ -380,18 +380,30 @@ class WPSEO_Taxonomy_Meta {
  */
 class CC_Test_Aioseo_Post {
 	public $post_id;
-	public $title       = '';
-	public $description = '';
+	public $title               = '';
+	public $description         = '';
+	public $canonical_url       = null;
+	public $og_title            = '';
+	public $og_description      = '';
+	public $og_image_type       = 'default';
+	public $og_image_custom_url = '';
+	public $twitter_title       = '';
+	public $twitter_description = '';
+	public $twitter_use_og      = true;
+	public $robots_default      = true;
+	public $robots_noindex      = false;
 
 	public static function getPost( $post_id ) {
-		$post              = new self();
-		$post->post_id     = $post_id;
-		$row               = isset( $GLOBALS['cc_aioseo'][ $post_id ] ) ? $GLOBALS['cc_aioseo'][ $post_id ] : array();
-		$post->title       = isset( $row['title'] ) ? $row['title'] : '';
-		$post->description = isset( $row['description'] ) ? $row['description'] : '';
+		$post          = new self();
+		$post->post_id = $post_id;
+		$row           = isset( $GLOBALS['cc_aioseo'][ $post_id ] ) ? $GLOBALS['cc_aioseo'][ $post_id ] : array();
+		foreach ( $row as $key => $value ) {
+			$post->$key = $value;
+		}
 		return $post;
 	}
 
+	/** Mirrors the real patch API: only passed keys change; 'default'/'noindex' are robots_* columns. */
 	public static function savePost( $post_id, $data ) {
 		if ( ! isset( $GLOBALS['cc_aioseo'][ $post_id ] ) ) {
 			$GLOBALS['cc_aioseo'][ $post_id ] = array(
@@ -399,8 +411,9 @@ class CC_Test_Aioseo_Post {
 				'description' => '',
 			);
 		}
+		$columns = array( 'default' => 'robots_default', 'noindex' => 'robots_noindex' );
 		foreach ( $data as $key => $value ) {
-			$GLOBALS['cc_aioseo'][ $post_id ][ $key ] = $value;
+			$GLOBALS['cc_aioseo'][ $post_id ][ isset( $columns[ $key ] ) ? $columns[ $key ] : $key ] = $value;
 		}
 	}
 }

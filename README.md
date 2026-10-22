@@ -291,12 +291,49 @@ returned for a TranslatePress site.
 ### Capabilities (`/status`)
 
 `/status` carries `capabilities`, the fix kinds this install can apply:
-`title` and `description` (only while a supported SEO plugin is active),
-`replace_urls`, `site_settings` and `image_alt` (always). `/status` also carries
+`title`, `description`, `canonical`, `robots` and `social` (only while a
+supported SEO plugin is active), `replace_urls`, `site_settings` and
+`image_alt` (always). `/status` also carries
 `site_settings`, the current value of each switch. A connector older than 0.11 sends no list at all,
 which means title and description only. Gate each fix kind on its name and
-ignore names you do not know; later releases add `canonical`, `robots`
-and `social` as they ship.
+ignore names you do not know.
+
+### Canonical, robots and social fields (`/apply`)
+
+Since 0.11 a change item on an ordinary post or page can carry, next to
+`title` and `description`:
+
+| Field | Value | Capability |
+|---|---|---|
+| `canonical` | absolute http(s) URL, `""` clears | `canonical` |
+| `robots_index` | `true` index, `false` noindex, `null` back to the SEO plugin's default for the post type | `robots` |
+| `og_title`, `og_description` | text, same caps as title (512) and description (1,024) | `social` |
+| `og_image` | absolute http(s) URL, `""` clears | `social` |
+| `twitter_title`, `twitter_description` | text, same caps | `social` |
+
+Each field is its own entry in `applied` and in the change log (`field` is
+the name above; `robots_index` logs `""`, `"index"` or `"noindex"`), with the
+same `from`/`to`/`changed`/`change_id` shape and the same revert rules as a
+title. A URL that is not absolute http(s) answers `ccc_bad_url`; a
+`robots_index` that is not a boolean or null answers `ccc_bad_value`; any of
+these fields on the homepage (`post_id` 0) or a term answers
+`ccc_field_unsupported` (title and description still work there).
+
+Where each plugin keeps them, confirmed in its source: Yoast
+`_yoast_wpseo_canonical`, `_yoast_wpseo_meta-robots-noindex` (`1` noindex,
+`2` index), `_yoast_wpseo_{opengraph,twitter}-{title,description}`,
+`_yoast_wpseo_opengraph-image` (+ `-image-id`); Rank Math
+`rank_math_canonical_url`, `rank_math_robots` (a token array, other
+directives kept), `rank_math_facebook_*`, `rank_math_twitter_*` (and
+`rank_math_twitter_use_facebook` off, or Rank Math serves the Facebook values
+on Twitter); SEOPress `_seopress_robots_canonical`, `_seopress_robots_index`
+(`yes` = noindex; SEOPress has no explicit "index", so `true` reads back as
+the default `""`), `_seopress_social_fb_*`, `_seopress_social_twitter_*`;
+AIOSEO's `aioseo_posts` columns through its `savePost()` patch API
+(`canonical_url`, `robots_default`/`robots_noindex`, `og_*` with
+`og_image_type` `custom_image`, `twitter_*` with `twitter_use_og` off). All
+three of Yoast, Rank Math and SEOPress leave the canonical tag out of a
+noindex page, so a push of both shows only the noindex.
 
 ### Replacing links (`/replace-urls`)
 

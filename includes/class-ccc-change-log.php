@@ -289,11 +289,7 @@ class CCC_Change_Log {
 				);
 			}
 		}
-		if ( 'title' === $entry['field'] ) {
-			$adapter->set_title( $entry['post_id'], $entry['from'], $lang );
-		} else {
-			$adapter->set_description( $entry['post_id'], $entry['from'], $lang );
-		}
+		$adapter->set_value( (int) $entry['post_id'], $entry['field'], $entry['from'], $lang );
 		// Same cache invalidation apply() runs after a real write: without
 		// this a revert silently leaves stale cached HTML exactly like an
 		// un-invalidated apply would. See CCC_Service::invalidate_caches_for().
@@ -327,9 +323,7 @@ class CCC_Change_Log {
 	 */
 	public static function current_value( array $entry, CCC_Adapter $adapter ) {
 		$lang = isset( $entry['lang'] ) ? $entry['lang'] : '';
-		return (string) ( 'title' === $entry['field']
-			? $adapter->get_title( (int) $entry['post_id'], $lang )
-			: $adapter->get_description( (int) $entry['post_id'], $lang ) );
+		return (string) $adapter->get_value( (int) $entry['post_id'], $entry['field'], $lang );
 	}
 
 	/**

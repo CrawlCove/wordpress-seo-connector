@@ -475,8 +475,17 @@ class CCC_Service {
 			$fields[ $field ] = $value;
 		}
 
+		$extra = self::validate_extra_fields( $item );
+		if ( is_wp_error( $extra ) ) {
+			return $extra;
+		}
+		if ( $extra && $post_id <= 0 ) {
+			return new WP_Error( 'ccc_field_unsupported', __( 'Only the title and description can be set on the homepage or an archive page.', 'crawl-cove-connector' ), array( 'status' => 400 ) );
+		}
+		$fields = array_merge( $fields, $extra );
+
 		if ( ! $fields ) {
-			return new WP_Error( 'ccc_nothing_to_do', __( 'A change needs a title and/or a description.', 'crawl-cove-connector' ), array( 'status' => 400 ) );
+			return new WP_Error( 'ccc_nothing_to_do', __( 'A change needs at least one field to set (title, description, canonical, robots_index or a social field).', 'crawl-cove-connector' ), array( 'status' => 400 ) );
 		}
 
 		return array(
@@ -484,6 +493,56 @@ class CCC_Service {
 			'lang'    => $lang,
 			'fields'  => $fields,
 		);
+	}
+
+	/**
+	 * Validate the 0.11 fields present on a change item.
+	 *
+	 * The canonical and og_image fields: an absolute http(s) URL, or '' to clear.
+	 * robots_index: true (index), false (noindex) or null (back to the SEO
+	 * plugin's default for the post type). Social text: sanitized like the
+	 * title and description, with the same length caps.
+	 *
+	 * @param array $item Raw change item.
+	 * @return array|WP_Error Field => normalised string value.
+	 */
+	private static function validate_extra_fields( array $item ) {
+		$out = array();
+		foreach ( CCC_Adapter::EXTRA_FIELDS as $field ) {
+			if ( ! array_key_exists( $field, $item ) ) {
+				continue;
+			}
+			$value = $item[ $field ];
+			if ( 'robots_index' === $field ) {
+				if ( null !== $value && ! is_bool( $value ) ) {
+					return new WP_Error( 'ccc_bad_value', __( 'robots_index must be true, false or null.', 'crawl-cove-connector' ), array( 'status' => 400 ) );
+				}
+				$out[ $field ] = null === $value ? '' : ( $value ? 'index' : 'noindex' );
+				continue;
+			}
+			if ( ! is_string( $value ) ) {
+				/* translators: %s: field name */
+				return new WP_Error( 'ccc_bad_value', sprintf( __( '%s must be a string.', 'crawl-cove-connector' ), $field ), array( 'status' => 400 ) );
+			}
+			if ( 'canonical' === $field || 'og_image' === $field ) {
+				$value  = trim( $value );
+				$scheme = strtolower( (string) wp_parse_url( $value, PHP_URL_SCHEME ) );
+				if ( '' !== $value && ( strlen( $value ) > CCC_Url_Replacer::MAX_URL_LEN || ( 'http' !== $scheme && 'https' !== $scheme ) || esc_url_raw( $value ) !== $value ) ) {
+					/* translators: %s: field name */
+					return new WP_Error( 'ccc_bad_url', sprintf( __( '%s must be an absolute http or https URL, or empty to clear it.', 'crawl-cove-connector' ), $field ), array( 'status' => 400 ) );
+				}
+				$out[ $field ] = $value;
+				continue;
+			}
+			$value = self::sanitize_meta_text( $value );
+			$max   = false !== strpos( $field, 'title' ) ? self::MAX_TITLE_LEN : self::MAX_DESCRIPTION_LEN;
+			if ( strlen( $value ) > $max ) {
+				/* translators: 1: field name; 2: max length allowed */
+				return new WP_Error( 'ccc_too_long', sprintf( __( '%1$s is longer than %2$d characters.', 'crawl-cove-connector' ), $field, $max ), array( 'status' => 400 ) );
+			}
+			$out[ $field ] = $value;
+		}
+		return $out;
 	}
 
 	/**
@@ -607,22 +666,18 @@ class CCC_Service {
 					);
 					continue;
 				}
-				$from = ( 'title' === $field ) ? $adapter->get_title( $post_id, $lang ) : $adapter->get_description( $post_id, $lang );
+				$from = $adapter->get_value( $post_id, $field, $lang );
 				$step = array(
 					'from'    => $from,
 					'to'      => $to,
 					'changed' => ( $from !== $to ),
 				);
 				if ( ! $dry_run && $from !== $to ) {
-					if ( 'title' === $field ) {
-						$adapter->set_title( $post_id, $to, $lang );
-					} else {
-						$adapter->set_description( $post_id, $to, $lang );
-					}
+					$adapter->set_value( $post_id, $field, $to, $lang );
 					// What the SEO plugin serves now, which revert() later
 					// checks against: a cleared value can read back as a
 					// fallback, and some savers rewrite the text.
-					$after                       = ( 'title' === $field ) ? $adapter->get_title( $post_id, $lang ) : $adapter->get_description( $post_id, $lang );
+					$after                       = $adapter->get_value( $post_id, $field, $lang );
 					$entry                       = CCC_Change_Log::record( $post_id, $field, $from, $to, $source, $lang, $after );
 					$step['change_id']           = $entry['id'];
 					$touched_targets[ $post_id ] = true;

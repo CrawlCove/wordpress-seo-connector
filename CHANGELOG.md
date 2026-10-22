@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **New: `/apply` sets canonical, robots and social fields** (ticket #262,
+  slice 2): `canonical`, `robots_index` (true / false / null), `og_title`,
+  `og_description`, `og_image`, `twitter_title`, `twitter_description`, on
+  posts and pages, through Yoast, Rank Math, SEOPress and AIOSEO, each logged
+  and revertable like a title. Verified on each plugin's real front end.
 - **New: `POST /image-alt`** (app ticket #267). Sets an image's alt text on
   the media library image and on its `<img>` tags in the page that shows it,
   from a resized copy's URL too; an empty alt is written as `alt=""`. One

@@ -190,6 +190,264 @@ class CCC_Adapter {
 	}
 
 	/**
+	 * Post fields beyond title and description (0.11), on ordinary posts
+	 * only; the homepage and taxonomy terms keep title and description.
+	 * Values are strings: a URL for canonical and og_image, '' / 'index' /
+	 * 'noindex' for robots_index ('' = the SEO plugin's default for the
+	 * post type), plain text otherwise; '' clears the override.
+	 */
+	const EXTRA_FIELDS = array( 'canonical', 'robots_index', 'og_title', 'og_description', 'og_image', 'twitter_title', 'twitter_description' );
+
+	/**
+	 * Post meta keys per adapter for the plain-text/URL extra fields,
+	 * confirmed against each plugin's source on 22 Oct 2026:
+	 * - Yoast 28.7: WPSEO_Meta::$meta_prefix '_yoast_wpseo_' + 'canonical'
+	 *   and the social fields '{opengraph|twitter}-{title|description|image}'
+	 *   (inc/class-wpseo-meta.php), which Indexable_Post_Builder maps to
+	 *   canonical, open_graph_* and twitter_* (get_indexable_lookup()).
+	 * - Rank Math 1.0.280: rank_math_canonical_url, rank_math_facebook_*,
+	 *   rank_math_twitter_* (includes/opengraph, frontend/paper).
+	 * - SEOPress 10.3: _seopress_robots_canonical, _seopress_social_fb_*,
+	 *   _seopress_social_twitter_* (src/Services/Metas).
+	 * AIOSEO keeps them in its own table, see aioseo_columns().
+	 *
+	 * @return string[] Field => meta key.
+	 */
+	private function extra_keys() {
+		$map = array(
+			'yoast'    => array(
+				'canonical'           => '_yoast_wpseo_canonical',
+				'og_title'            => '_yoast_wpseo_opengraph-title',
+				'og_description'      => '_yoast_wpseo_opengraph-description',
+				'og_image'            => '_yoast_wpseo_opengraph-image',
+				'twitter_title'       => '_yoast_wpseo_twitter-title',
+				'twitter_description' => '_yoast_wpseo_twitter-description',
+			),
+			'rankmath' => array(
+				'canonical'           => 'rank_math_canonical_url',
+				'og_title'            => 'rank_math_facebook_title',
+				'og_description'      => 'rank_math_facebook_description',
+				'og_image'            => 'rank_math_facebook_image',
+				'twitter_title'       => 'rank_math_twitter_title',
+				'twitter_description' => 'rank_math_twitter_description',
+			),
+			'seopress' => array(
+				'canonical'           => '_seopress_robots_canonical',
+				'og_title'            => '_seopress_social_fb_title',
+				'og_description'      => '_seopress_social_fb_desc',
+				'og_image'            => '_seopress_social_fb_img',
+				'twitter_title'       => '_seopress_social_twitter_title',
+				'twitter_description' => '_seopress_social_twitter_desc',
+			),
+		);
+		return isset( $map[ $this->id ] ) ? $map[ $this->id ] : array();
+	}
+
+	/**
+	 * The image-id companion each plugin stores next to a social image URL.
+	 * Kept in step so the plugin never serves the old image by id.
+	 *
+	 * @return string Meta key, '' for none.
+	 */
+	private function og_image_id_key() {
+		$keys = array(
+			'yoast'    => '_yoast_wpseo_opengraph-image-id',
+			'rankmath' => 'rank_math_facebook_image_id',
+			'seopress' => '_seopress_social_fb_img_attachment_id',
+		);
+		return isset( $keys[ $this->id ] ) ? $keys[ $this->id ] : '';
+	}
+
+	/**
+	 * AIOSEO's aioseo_posts columns for the extra fields, written through
+	 * Models\Post::savePost()'s patch-friendly field map (AIOSEO 5.0.3,
+	 * app/Common/Models/Post.php getSanitizeFieldMap() and the bespoke
+	 * canonical_url branch).
+	 *
+	 * @return string[] Field => column.
+	 */
+	private static function aioseo_columns() {
+		return array(
+			'canonical'           => 'canonical_url',
+			'og_title'            => 'og_title',
+			'og_description'      => 'og_description',
+			'og_image'            => 'og_image_custom_url',
+			'twitter_title'       => 'twitter_title',
+			'twitter_description' => 'twitter_description',
+		);
+	}
+
+	/**
+	 * Read any supported field. title/description go through their own
+	 * getters (homepage, terms, languages); the extra fields are per post.
+	 *
+	 * @param int    $post_id Post id (> 0 for extra fields).
+	 * @param string $field   Field name.
+	 * @param string $lang    Language, title/description homepage only.
+	 * @return string
+	 */
+	public function get_value( $post_id, $field, $lang = '' ) {
+		if ( 'title' === $field ) {
+			return $this->get_title( $post_id, $lang );
+		}
+		if ( 'description' === $field ) {
+			return $this->get_description( $post_id, $lang );
+		}
+		if ( 'robots_index' === $field ) {
+			return $this->get_robots_index( $post_id );
+		}
+		if ( 'aioseo' === $this->id ) {
+			$columns = self::aioseo_columns();
+			$post    = $this->aioseo_post( $post_id );
+			if ( 'og_image' === $field && 'custom_image' !== $post->og_image_type ) {
+				return '';
+			}
+			if ( 0 === strpos( $field, 'twitter_' ) && $post->twitter_use_og ) {
+				return '';
+			}
+			return (string) $post->{ $columns[ $field ] };
+		}
+		$keys = $this->extra_keys();
+		return (string) get_post_meta( $post_id, $keys[ $field ], true );
+	}
+
+	/**
+	 * Write any supported field ('' clears it).
+	 *
+	 * @param int    $post_id Post id (> 0 for extra fields).
+	 * @param string $field   Field name.
+	 * @param string $value   New value.
+	 * @param string $lang    Language, title/description homepage only.
+	 */
+	public function set_value( $post_id, $field, $value, $lang = '' ) {
+		if ( 'title' === $field ) {
+			$this->set_title( $post_id, $value, $lang );
+			return;
+		}
+		if ( 'description' === $field ) {
+			$this->set_description( $post_id, $value, $lang );
+			return;
+		}
+		if ( 'robots_index' === $field ) {
+			$this->set_robots_index( $post_id, $value );
+			return;
+		}
+		if ( 'aioseo' === $this->id ) {
+			$this->aioseo_set_extra( $post_id, $field, $value );
+			return;
+		}
+		$keys = $this->extra_keys();
+		$this->set_meta( $post_id, $keys[ $field ], $value );
+		if ( 'og_image' === $field ) {
+			$image_id = '' === $value ? 0 : (int) attachment_url_to_postid( $value );
+			$this->set_meta( $post_id, $this->og_image_id_key(), $image_id ? (string) $image_id : '' );
+		}
+		if ( 'rankmath' === $this->id && 0 === strpos( $field, 'twitter_' ) ) {
+			// Rank Math serves the Facebook values on Twitter while this is
+			// on (its editor saves it on by default), which would hide the
+			// pushed value. Back to unset once both Twitter fields are clear.
+			$both_clear = '' === (string) get_post_meta( $post_id, 'rank_math_twitter_title', true ) && '' === (string) get_post_meta( $post_id, 'rank_math_twitter_description', true );
+			$this->set_meta( $post_id, 'rank_math_twitter_use_facebook', $both_clear ? '' : 'off' );
+		}
+	}
+
+	/**
+	 * '' (post type default), 'index' or 'noindex', as the plugin stores it:
+	 * Yoast meta-robots-noindex '0'/'2'/'1'; Rank Math a rank_math_robots
+	 * token array; SEOPress _seopress_robots_index 'yes' for noindex (no
+	 * explicit index exists, so index reads as ''); AIOSEO robots_default /
+	 * robots_noindex.
+	 *
+	 * @param int $post_id Post id.
+	 * @return string
+	 */
+	private function get_robots_index( $post_id ) {
+		switch ( $this->id ) {
+			case 'yoast':
+				$v = (string) get_post_meta( $post_id, '_yoast_wpseo_meta-robots-noindex', true );
+				return '1' === $v ? 'noindex' : ( '2' === $v ? 'index' : '' );
+			case 'rankmath':
+				$robots = get_post_meta( $post_id, 'rank_math_robots', true );
+				if ( ! is_array( $robots ) || ! $robots ) {
+					return '';
+				}
+				return in_array( 'noindex', $robots, true ) ? 'noindex' : ( in_array( 'index', $robots, true ) ? 'index' : '' );
+			case 'seopress':
+				return 'yes' === get_post_meta( $post_id, '_seopress_robots_index', true ) ? 'noindex' : '';
+			case 'aioseo':
+				$post = $this->aioseo_post( $post_id );
+				if ( $post->robots_default ) {
+					return '';
+				}
+				return $post->robots_noindex ? 'noindex' : 'index';
+		}
+		return '';
+	}
+
+	/**
+	 * Write robots_index ('' / 'index' / 'noindex'), leaving every other
+	 * robots directive (nofollow, noarchive...) as it was.
+	 *
+	 * @param int    $post_id Post id.
+	 * @param string $value   '' / 'index' / 'noindex'.
+	 */
+	private function set_robots_index( $post_id, $value ) {
+		switch ( $this->id ) {
+			case 'yoast':
+				$this->set_meta( $post_id, '_yoast_wpseo_meta-robots-noindex', 'noindex' === $value ? '1' : ( 'index' === $value ? '2' : '' ) );
+				return;
+			case 'rankmath':
+				$robots = get_post_meta( $post_id, 'rank_math_robots', true );
+				$robots = is_array( $robots ) ? array_values( array_diff( $robots, array( 'index', 'noindex' ) ) ) : array();
+				if ( '' !== $value ) {
+					array_unshift( $robots, $value );
+				}
+				if ( $robots ) {
+					update_post_meta( $post_id, 'rank_math_robots', $robots );
+				} else {
+					delete_post_meta( $post_id, 'rank_math_robots' );
+				}
+				return;
+			case 'seopress':
+				$this->set_meta( $post_id, '_seopress_robots_index', 'noindex' === $value ? 'yes' : '' );
+				return;
+			case 'aioseo':
+				\AIOSEO\Plugin\Common\Models\Post::savePost(
+					$post_id,
+					'' === $value ? array( 'default' => true ) : array(
+						'default' => false,
+						'noindex' => 'noindex' === $value,
+					)
+				);
+				return;
+		}
+	}
+
+	/**
+	 * Patch one AIOSEO extra field. A social image also needs the image
+	 * source switched to the custom URL (back to the default when cleared),
+	 * and a Twitter value needs "use the Open Graph data" off, or AIOSEO
+	 * would serve the Open Graph value instead.
+	 *
+	 * @param int    $post_id Post id.
+	 * @param string $field   Extra field.
+	 * @param string $value   New value.
+	 */
+	private function aioseo_set_extra( $post_id, $field, $value ) {
+		$columns = self::aioseo_columns();
+		$data    = array( $columns[ $field ] => $value );
+		if ( 'og_image' === $field ) {
+			$data['og_image_type'] = '' === $value ? 'default' : 'custom_image';
+		}
+		if ( 0 === strpos( $field, 'twitter_' ) ) {
+			$post                   = $this->aioseo_post( $post_id );
+			$other                  = 'twitter_title' === $field ? (string) $post->twitter_description : (string) $post->twitter_title;
+			$data['twitter_use_og'] = '' === $value && ( '' === $other || $post->twitter_use_og );
+		}
+		\AIOSEO\Plugin\Common\Models\Post::savePost( $post_id, $data );
+	}
+
+	/**
 	 * Whether this adapter can read/write the homepage title/description at
 	 * all. True for Yoast, Rank Math and SEOPress — verified against real
 	 * plugin source (23 Sept 2026): all three store a "your latest posts"
