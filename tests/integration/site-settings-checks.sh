@@ -57,6 +57,10 @@ add_action( 'plugins_loaded', function () {
 		$GLOBALS['is_apache'] = true;
 	}
 }, 0 );
+// Stand-in for Jetpack (only its class name is checked), switched by an option.
+if ( get_option( 'ccc_test_fake_jetpack' ) && ! class_exists( 'Jetpack' ) ) {
+	class Jetpack {} // phpcs:ignore
+}
 PHP
 
 WP=("${WPCLI[@]}" --path="$SITE")
@@ -137,6 +141,17 @@ req POST /site-settings "$ADMIN" '{"settings":{"disable_xmlrpc":false}}'
 req POST /revert "$ADMIN" "{\"change_id\":$XML_ID}"
 check "revert: refused after a later change" 409 "$RESP_HTTP" '[.code, .data.current]' '["ccc_value_changed","off"]' "$RESP_BODY"
 has "revert: xmlrpc.php serves its marker again once off" "$(xmlrpc)" "$MARKER"
+
+echo "-- Jetpack needs XML-RPC --"
+req POST /site-settings "$ADMIN" '{"settings":{"disable_xmlrpc":true}}'
+check "jetpack: switched on while Jetpack is absent" 200 "$RESP_HTTP" '.settings.disable_xmlrpc.to' 'true' "$RESP_BODY"
+has "jetpack: xmlrpc.php blocked" "$(xmlrpc)" "HTTP 403"
+"${WP[@]}" option update ccc_test_fake_jetpack 1 --quiet
+has "jetpack: activated later, XML-RPC is served again" "$(xmlrpc)" "$MARKER"
+req POST /site-settings "$ADMIN" '{"settings":{"disable_xmlrpc":false}}'
+req POST /site-settings "$ADMIN" '{"settings":{"disable_xmlrpc":true}}'
+check "jetpack: switching on is refused while it is active" 200 "$RESP_HTTP" '.settings.disable_xmlrpc.error' 'ccc_xmlrpc_in_use' "$RESP_BODY"
+"${WP[@]}" option delete ccc_test_fake_jetpack --quiet
 
 echo "-- uploads .htaccess (Apache stand-in) --"
 "${WP[@]}" option update ccc_test_fake_apache 1 --quiet
