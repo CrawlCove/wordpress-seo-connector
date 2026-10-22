@@ -39,7 +39,7 @@ Not yet. The plugin writes the SEO title and meta description fields those plugi
 
 = Can it change my content? =
 
-No. It writes only the SEO title and meta description fields, only for changes you approved. Ordinary posts/pages are re-saved so your SEO plugin and any caching plugin pick up the new values immediately; the homepage and taxonomy archives use a best-effort cache purge instead, since neither has a post to re-save.
+No. It writes only the SEO title and meta description fields, only for changes you approved. The post body and its modified date are left exactly as they were. Each changed post or page has its cache purged so the new values show straight away; the homepage and taxonomy archives get a best-effort full cache purge instead.
 
 = Is this safe on a live site? =
 

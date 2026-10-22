@@ -86,6 +86,13 @@ class ReadmeTest extends TestCase {
 		$this->assertStringContainsString( 'switch_to_blog( $ccc_site_id );', $uninstall );
 	}
 
+	public function test_readme_never_says_pushed_posts_are_re_saved() {
+		// Since 0.10.8 a push writes meta only and purges caches; the post is
+		// never re-saved (that ran the body through kses and could strip embeds).
+		$this->assertDoesNotMatchRegularExpression( '/re-?sav/i', $this->file( 'readme.txt' ) );
+		$this->assertStringContainsString( 'The post body and its modified date are left exactly as they were.', $this->file( 'readme.txt' ) );
+	}
+
 	public function test_public_docs_carry_no_em_dashes_outside_code_blocks() {
 		// CHANGELOG.md is linked from the wordpress.org changelog, SECURITY-NOTES.md from README.md.
 		foreach ( array( 'readme.txt', 'README.md', 'CHANGELOG.md', 'SECURITY-NOTES.md', 'wordpress-org/README.md' ) as $name ) {

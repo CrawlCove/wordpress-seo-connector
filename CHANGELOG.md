@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Docs: the readme FAQ "Can it change my content?" no longer says pushed
+  posts are re-saved.** Since 0.10.8 only the SEO fields are written and the
+  post's cache is purged; the body and modified date are untouched.
 - **Fix: on Yoast SEO, a pushed category or tag title now shows on the
   archive page.** Yoast serves a term's indexable, which it rebuilds only
   when the term itself is edited, so a pushed term title or description was
