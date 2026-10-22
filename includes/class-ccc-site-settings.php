@@ -52,7 +52,9 @@ class CCC_Site_Settings {
 	 */
 	public static function enforce() {
 		$on = self::get();
-		if ( $on['disable_xmlrpc'] ) {
+		// Jetpack needs XML-RPC; if it was activated after the switch went
+		// on, leave XML-RPC alone rather than break it (/status still says on).
+		if ( $on['disable_xmlrpc'] && ! class_exists( 'Jetpack' ) ) {
 			add_filter( 'xmlrpc_enabled', '__return_false' );
 			add_filter( 'xmlrpc_methods', '__return_empty_array' );
 			add_filter( 'wp_headers', array( __CLASS__, 'drop_pingback_header' ) );
