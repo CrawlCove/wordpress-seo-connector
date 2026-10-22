@@ -17,6 +17,7 @@ The plugin is free. The Crawl Cove desktop app it works with is a paid crawler t
 ## Features
 
 - **Bulk-apply title and meta description fixes** approved in the Crawl Cove app, in batches, with per-item results.
+- **More than titles** (0.11): canonical URLs, index/noindex and Open Graph/Twitter fields; links to a redirect repointed to the final URL (or unlinked) across post content, Elementor data and menus; image alt text on the media library image and the page; four admin-only hardening switches (XML-RPC, generator tag, security headers, uploads listing).
 - **Works with the four major WordPress SEO plugins**: Yoast SEO, Rank Math, SEOPress and AIOSEO. The connector detects which one is active and writes its native fields.
 - **Full change log with one-click revert**: every write records the previous value. Undo any change from **Tools → Crawl Cove** or from the app. The log keeps the most recent 1,000 entries (a title and a description on one post are two); once it is full, each new push drops the oldest entries, already-reverted ones first, and the Tools page says so.
 - **Dry-run mode** shows exactly what would change before anything is written.
@@ -582,10 +583,10 @@ The plugin is the receiving end; fixes are reviewed and sent from the desktop cr
 No. It writes the same post meta fields your SEO plugin owns (for example Yoast's `_yoast_wpseo_title`), then gets out of the way. There is nothing to keep in sync.
 
 **Can it change content or anything besides SEO fields?**
-No. It writes SEO titles and meta descriptions, nothing else, and only for posts the authenticated user can edit.
+Only the fixes you approve that live there, and only the matching part: a link fix changes the exact URL in that link, an alt text fix only that image's `alt`, and the rest of the post is untouched (it is written directly, never through the editor's save, so embeds survive). Site settings change only for an administrator. Everything else it writes is your SEO plugin's own fields, and only on posts the authenticated user can edit.
 
 **What happens to the change log if I delete the plugin?**
-Deleting the plugin (Plugins → Delete) removes everything it stored, including the change log, so the revert history goes with it. The titles and descriptions it applied stay in your SEO plugin as they are. Deactivating the plugin keeps the log.
+Deleting the plugin (Plugins → Delete) removes everything it stored, including the change log, so the revert history goes with it. The fixes it applied stay on your site as they are; the site hardening switches stop applying and the line it added to `uploads/.htaccess` is removed. Deactivating the plugin keeps the log.
 
 ## Development
 

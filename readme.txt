@@ -8,7 +8,7 @@ Stable tag: 0.10.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Push approved title/description fixes from Crawl Cove into Yoast, Rank Math, SEOPress or AIOSEO, with a change log and one-click revert.
+Push approved SEO fixes from Crawl Cove to Yoast, Rank Math, SEOPress or AIOSEO: titles, links, alt text and more, with one-click revert.
 
 == Description ==
 
@@ -21,8 +21,9 @@ The plugin is free. The Crawl Cove desktop app it works with is a paid crawler t
 * **Dry-run mode** shows exactly what would change before anything is written.
 * Uses WordPress core **Application Passwords** for authentication: no extra accounts, no API keys stored by the plugin, revoke access any time from your profile.
 * Per-post (and per-term) capability checks: a connected user can only change posts, pages or taxonomy terms they are allowed to edit.
+* **More than titles**: canonical URLs, index/noindex and Open Graph/Twitter fields through your SEO plugin; links that point at a redirect repointed to the final URL (or unlinked) across posts, Elementor layouts and menus; image alt text; and four hardening switches for administrators (XML-RPC off, WordPress version hidden, security headers, no upload folder listing).
 
-The plugin is a small, auditable bridge (plain PHP, no framework, no external requests, no tracking, GPL). It exposes five REST routes under `crawlcove/v1`: status, resolve, apply, changes, revert.
+The plugin is a small, auditable bridge (plain PHP, no framework, no external requests, no tracking, GPL). It exposes eight REST routes under `crawlcove/v1`: status, resolve, apply, replace-urls, image-alt, site-settings, changes, revert.
 
 == Installation ==
 
@@ -35,11 +36,11 @@ The plugin is a small, auditable bridge (plain PHP, no framework, no external re
 
 = Does it work without Yoast, Rank Math, SEOPress or AIOSEO? =
 
-Not yet. The plugin writes the SEO title and meta description fields those plugins own. Support for further SEO plugins is planned; the /status endpoint reports what was detected.
+Partly. Titles, descriptions, canonical URLs, index/noindex and social fields are written into the fields those plugins own, so they need one of them. Link fixes, image alt text and the site hardening switches work on any site. The /status endpoint reports what was detected.
 
 = Can it change my content? =
 
-No. It writes only the SEO title and meta description fields, only for changes you approved. The post body and its modified date are left exactly as they were. Each changed post or page has its cache purged so the new values show straight away; the homepage and taxonomy archives get a best-effort full cache purge instead.
+Only where you approved a fix that lives in the content, and only that part. A title, description, canonical, robots or social push writes only those SEO fields: The post body and its modified date are left exactly as they were. A link fix changes only the matching link (the exact URL, never other text) and an alt text fix only the matching image's alt attribute; the rest of the page is untouched and never goes back through the editor, so embeds stay. Every change can be reverted to the exact previous content. Each changed post or page has its cache purged so the new values show straight away; the homepage and taxonomy archives get a best-effort full cache purge instead.
 
 = Is this safe on a live site? =
 
@@ -55,7 +56,7 @@ A security plugin has switched them off. Wordfence does this by default: untick 
 
 = What happens to the change log if I delete the plugin? =
 
-Deleting the plugin (Plugins → Delete) removes everything it stored, including the change log, so the revert history goes with it. The titles and descriptions it applied stay in your SEO plugin as they are. Deactivating the plugin keeps the log.
+Deleting the plugin (Plugins → Delete) removes everything it stored, including the change log, so the revert history goes with it. The fixes it applied stay on your site as they are. The site hardening switches stop applying, and the upload-folder line it added to .htaccess is removed. Deactivating the plugin keeps the log.
 
 == Screenshots ==
 
