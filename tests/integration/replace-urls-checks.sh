@@ -136,7 +136,7 @@ has "fixture: menu renders the custom link" "$(menu_html)" "href=\"$OLD\""
 
 echo "-- status and auth --"
 req GET /status "$EDITOR" ""
-check "status: capabilities with no SEO plugin are replace_urls only" 200 "$RESP_HTTP" '.capabilities' '["replace_urls"]' "$RESP_BODY"
+check "status: capabilities with no SEO plugin skip title and description" 200 "$RESP_HTTP" '.capabilities' '["replace_urls","site_settings"]' "$RESP_BODY"
 req POST /replace-urls "$SUBSCRIBER" "{\"changes\":[{\"from\":\"$OLD\",\"to\":\"$NEW\",\"scope\":\"site\"}]}"
 check_http "subscriber: refused" 403 "$RESP_HTTP" "$RESP_BODY"
 req POST /replace-urls "" "{\"changes\":[{\"from\":\"$OLD\",\"to\":\"$NEW\",\"scope\":\"site\"}]}"

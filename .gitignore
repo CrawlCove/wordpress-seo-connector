@@ -25,3 +25,5 @@ tests/integration/.server-cache.log
 build/
 tests/integration/.site-replace/
 tests/integration/.server-replace.log
+tests/integration/.site-settings/
+tests/integration/.server-settings.log
