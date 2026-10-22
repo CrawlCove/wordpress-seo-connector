@@ -155,4 +155,14 @@ HT="$(cat "$UPLOADS_HT")"
 hasnt "apache: the directive is gone after revert" "$HT" "Options -Indexes"
 has   "apache: the existing line is still kept" "$HT" 'Header set X-Test "keep me"'
 
+echo "-- uninstall removes the block and the setting --"
+req POST /site-settings "$ADMIN" '{"settings":{"uploads_no_index":true}}'
+has "uninstall: block written again first" "$(cat "$UPLOADS_HT")" "Options -Indexes"
+"${WP[@]}" plugin deactivate crawl-cove-connector --quiet
+"${WP[@]}" plugin uninstall crawl-cove-connector --quiet
+HT="$(cat "$UPLOADS_HT")"
+hasnt "uninstall: the directive is gone" "$HT" "Options -Indexes"
+has   "uninstall: the existing line is still kept" "$HT" 'Header set X-Test "keep me"'
+if "${WP[@]}" option get ccc_site_settings >/dev/null 2>&1; then fail "uninstall: ccc_site_settings still stored"; else ok "uninstall: ccc_site_settings deleted"; fi
+
 summary

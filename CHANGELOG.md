@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fix: uninstall removes the uploads `.htaccess` block and the site
+  settings**, so deleting the plugin no longer leaves `Options -Indexes`
+  behind for a setting that is gone.
+- **Docs: readme, README and the plugin description cover the 0.11 fixes**;
+  the FAQ "Can it change my content?" now says exactly which fixes touch
+  content and how.
 - **New: `/apply` sets canonical, robots and social fields** (ticket #262,
   slice 2): `canonical`, `robots_index` (true / false / null), `og_title`,
   `og_description`, `og_image`, `twitter_title`, `twitter_description`, on
