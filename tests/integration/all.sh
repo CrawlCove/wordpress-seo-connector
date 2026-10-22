@@ -29,7 +29,7 @@ run() {
 for adapter in yoast rankmath seopress aioseo; do
   run "run-$adapter" bash "$HERE/run.sh" --adapter="$adapter"
 done
-for script in caching multisite polylang polylang-yoast-home translatepress woocommerce replace-urls site-settings; do
+for script in caching multisite polylang polylang-yoast-home translatepress woocommerce replace-urls site-settings image-alt; do
   run "$script" bash "$HERE/$script-checks.sh"
 done
 

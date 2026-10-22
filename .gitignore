@@ -27,3 +27,5 @@ tests/integration/.site-replace/
 tests/integration/.server-replace.log
 tests/integration/.site-settings/
 tests/integration/.server-settings.log
+tests/integration/.site-image-alt/
+tests/integration/.server-image-alt.log

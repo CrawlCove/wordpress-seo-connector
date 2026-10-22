@@ -16,7 +16,7 @@ check "status: unauthenticated is 401" 401 "$RESP_HTTP" '.code' 'rest_forbidden'
 req GET /status "$EDITOR"
 check "status: authenticated reports adapter" 200 "$RESP_HTTP" '.seo_plugin' "$CCC_ADAPTER" "$RESP_BODY"
 check "status: can_apply true" 200 "$RESP_HTTP" '.can_apply' 'true' "$RESP_BODY"
-check "status: capabilities with an SEO plugin" 200 "$RESP_HTTP" '.capabilities' '["title","description","replace_urls","site_settings"]' "$RESP_BODY"
+check "status: capabilities with an SEO plugin" 200 "$RESP_HTTP" '.capabilities' '["title","description","replace_urls","site_settings","image_alt"]' "$RESP_BODY"
 
 echo "-- resolve --"
 EDITOR_URL="$CCC_URL/?p=$CCC_POST_EDITOR"
