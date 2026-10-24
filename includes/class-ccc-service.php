@@ -54,7 +54,7 @@ class CCC_Service {
 			return new WP_Error(
 				'ccc_wrong_site',
 				/* translators: %s: the hostname of this WordPress site */
-				sprintf( __( 'URL is not on this site (%s). Check the site profile in Crawl Cove.', 'crawl-cove-connector' ), $site_host ),
+				sprintf( __( 'URL is not on this site (%s). Check the client\'s site URL in Crawl Cove.', 'crawl-cove-connector' ), $site_host ),
 				array( 'status' => 400 )
 			);
 		}

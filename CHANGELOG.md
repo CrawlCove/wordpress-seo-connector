@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Fix: setup steps name the app screen that exists** (review #277): the
+  Tools page, readme and the wrong-site error said "site profile"; the
+  WordPress card is on the client's Connections page.
 - **Fix: uninstall removes the uploads `.htaccess` block and the site
   settings**, so deleting the plugin no longer leaves `Options -Indexes`
   behind for a setting that is gone.

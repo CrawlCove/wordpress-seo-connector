@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-22T14:32:03+00:00\n"
+"POT-Creation-Date: 2026-10-24T13:02:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -167,7 +167,7 @@ msgid "Create an <a href=\"%s\">Application Password</a> for your user (Users �
 msgstr ""
 
 #: admin/class-ccc-admin.php:255
-msgid "In Crawl Cove, open the site profile → WordPress → paste the site URL, your username and the application password."
+msgid "In Crawl Cove, open the client, then Connections, and fill in the WordPress card: site URL, username and application password."
 msgstr ""
 
 #: admin/class-ccc-admin.php:256
@@ -363,7 +363,7 @@ msgstr ""
 #. translators: %s: the hostname of this WordPress site
 #: includes/class-ccc-service.php:57
 #, php-format
-msgid "URL is not on this site (%s). Check the site profile in Crawl Cove."
+msgid "URL is not on this site (%s). Check the client's site URL in Crawl Cove."
 msgstr ""
 
 #: includes/class-ccc-service.php:145

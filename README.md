@@ -577,7 +577,7 @@ full-site purge).
 
 1. Download **[crawl-cove-connector.zip](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest/download/crawl-cove-connector.zip)** from the [latest GitHub release](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest). In your WordPress admin go to **Plugins → Add Plugin → Upload Plugin**, choose the zip and activate it (requires WordPress 6.2+ and PHP 7.4+). Don't use GitHub's "Download ZIP" of the source tree: it unpacks under the wrong folder name and includes the test suite. The wordpress.org listing is pending; once it is live you will be able to install from **Plugins → Add Plugin** by searching "Crawl Cove Connector".
 2. Create an Application Password: **Users → Profile → Application Passwords → "Crawl Cove"**.
-3. In the [Crawl Cove desktop app](https://crawlcove.com/download?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme), open your site profile → WordPress and enter the site URL, username and application password.
+3. In the [Crawl Cove desktop app](https://crawlcove.com/download?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme), open the client, then Connections, and fill in the WordPress card: site URL, username and application password.
 4. Crawl, review the suggested fixes, and push the approved ones: one at a time, or every open title and description finding at once from the Findings list. Review or revert them any time under **Tools → Crawl Cove**.
 
 ## Frequently asked questions

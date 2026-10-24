@@ -252,7 +252,7 @@ class CCC_Admin {
 					);
 				?>
 				</li>
-				<li><?php esc_html_e( 'In Crawl Cove, open the site profile → WordPress → paste the site URL, your username and the application password.', 'crawl-cove-connector' ); ?></li>
+				<li><?php esc_html_e( 'In Crawl Cove, open the client, then Connections, and fill in the WordPress card: site URL, username and application password.', 'crawl-cove-connector' ); ?></li>
 				<li><?php esc_html_e( 'Crawl, review the suggested title/description fixes, and push the approved ones. Every push lands in the log below and can be reverted.', 'crawl-cove-connector' ); ?></li>
 			</ol>
 

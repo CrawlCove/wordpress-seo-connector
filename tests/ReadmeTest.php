@@ -90,7 +90,7 @@ class ReadmeTest extends TestCase {
 		// Since 0.10.8 a push writes meta only and purges caches; the post is
 		// never re-saved (that ran the body through kses and could strip embeds).
 		$this->assertDoesNotMatchRegularExpression( '/re-?sav/i', $this->file( 'readme.txt' ) );
-		$this->assertStringContainsString( 'The post body and its modified date are left exactly as they were.', $this->file( 'readme.txt' ) );
+		$this->assertStringContainsString( 'the post body and its modified date are left exactly as they were.', $this->file( 'readme.txt' ) );
 	}
 
 	public function test_public_docs_carry_no_em_dashes_outside_code_blocks() {

@@ -26,6 +26,7 @@ check "resolve: valid url post_id" 200 "$RESP_HTTP" '.[0].post_id' "$CCC_POST_ED
 
 req POST /resolve "$EDITOR" '{"urls":["https://evil.example.com/?p=1"]}'
 check "resolve: wrong site rejected" 200 "$RESP_HTTP" '.[0].error' 'ccc_wrong_site' "$RESP_BODY"
+check "resolve: wrong site names the app's Connections fix (#277)" 200 "$RESP_HTTP" '.[0].message' "URL is not on this site (127.0.0.1). Check the client's site URL in Crawl Cove." "$RESP_BODY"
 
 req POST /resolve "$EDITOR" "{\"urls\":[\"$CCC_URL/?p=999999\"]}"
 check "resolve: phantom numeric id (url_to_postid quirk) is unresolvable, not a fake ok" 200 "$RESP_HTTP" '.[0].error' 'ccc_unresolvable' "$RESP_BODY"

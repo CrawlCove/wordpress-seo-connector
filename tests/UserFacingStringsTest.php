@@ -45,4 +45,25 @@ class UserFacingStringsTest extends TestCase {
 		$this->assertNotEmpty( $description );
 		$this->assertStringNotContainsString( "\u{2014}", $description[1] );
 	}
+
+	/**
+	 * The app has no "site profile": the WordPress card sits on the client's
+	 * Connections page (review ticket #277). Setup steps and error messages
+	 * must name the screen the user can actually find.
+	 */
+	public function test_setup_copy_names_the_apps_connections_page() {
+		$root  = dirname( __DIR__ );
+		$files = array_merge( $this->plugin_php_files(), array( $root . '/readme.txt', $root . '/README.md' ) );
+		$found = array();
+		foreach ( $files as $file ) {
+			if ( false !== stripos( (string) file_get_contents( $file ), 'site profile' ) ) {
+				$found[] = basename( $file );
+			}
+		}
+		$this->assertSame( array(), $found );
+
+		$admin = (string) file_get_contents( $root . '/admin/class-ccc-admin.php' );
+		$this->assertStringContainsString( 'then Connections, and fill in the WordPress card', $admin );
+		$this->assertStringContainsString( 'then Connections, and fill in the WordPress card', (string) file_get_contents( $root . '/readme.txt' ) );
+	}
 }
