@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fix: the Tools page setup steps no longer say the app only finds and
+  pushes title/description fixes** (review #282); step 1 names the 0.11 fix
+  kinds. The directory screenshot is recaptured with the new steps and a log
+  showing links, alt text and social fields.
 - **Fix: setup steps name the app screen that exists** (review #277): the
   Tools page, readme and the wrong-site error said "site profile"; the
   WordPress card is on the client's Connections page.

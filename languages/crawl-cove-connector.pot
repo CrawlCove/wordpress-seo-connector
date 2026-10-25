@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-24T13:02:33+00:00\n"
+"POT-Creation-Date: 2026-10-25T14:02:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -157,7 +157,7 @@ msgstr ""
 #. translators: %s: link to the Crawl Cove download page
 #: admin/class-ccc-admin.php:241
 #, php-format
-msgid "Install the <a href=\"%s\">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the title and description problems; this plugin only applies the fixes you approve there. New accounts start on a free trial."
+msgid "Install the <a href=\"%s\">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the problems (titles and descriptions, links, image alt text, canonical, indexing and social tags); this plugin only applies the fixes you approve there. New accounts start on a free trial."
 msgstr ""
 
 #. translators: %s: link to the current user's profile page
@@ -171,7 +171,7 @@ msgid "In Crawl Cove, open the client, then Connections, and fill in the WordPre
 msgstr ""
 
 #: admin/class-ccc-admin.php:256
-msgid "Crawl, review the suggested title/description fixes, and push the approved ones. Every push lands in the log below and can be reverted."
+msgid "Crawl, review the suggested fixes, and push the approved ones. Every push lands in the log below and can be reverted."
 msgstr ""
 
 #: admin/class-ccc-admin.php:259

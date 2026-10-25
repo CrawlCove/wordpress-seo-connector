@@ -66,4 +66,15 @@ class UserFacingStringsTest extends TestCase {
 		$this->assertStringContainsString( 'then Connections, and fill in the WordPress card', $admin );
 		$this->assertStringContainsString( 'then Connections, and fill in the WordPress card', (string) file_get_contents( $root . '/readme.txt' ) );
 	}
+
+	/**
+	 * 0.11 fixes far more than titles and descriptions; the setup steps must
+	 * not undersell it (review ticket #282).
+	 */
+	public function test_setup_steps_do_not_limit_fixes_to_titles_and_descriptions() {
+		$admin = (string) file_get_contents( dirname( __DIR__ ) . '/admin/class-ccc-admin.php' );
+		$this->assertStringNotContainsString( 'title/description fixes', $admin );
+		$this->assertStringNotContainsString( 'finds the title and description problems', $admin );
+		$this->assertStringContainsString( 'links, image alt text, canonical, indexing and social tags', $admin );
+	}
 }

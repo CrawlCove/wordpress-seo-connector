@@ -8,11 +8,15 @@ repo and gated behind a human-only wordpress.org account.
 - `screenshot-1.png`: Tools → Crawl Cove admin page with sample data,
   captured against the real-WP integration harness (see readme.txt's
   `== Screenshots ==` section for the caption that must stay in step).
-  Recipe (14 Oct 2026): `tests/integration/run.sh --adapter=rankmath`, then
+  Recipe (25 Oct 2026): `tests/integration/run.sh --adapter=rankmath`, then
   on `.site`: blogname "Crawl Cove Connector Demo", delete the harness posts
-  and the `ccc_change_log`/`ccc_change_seq`/`ccc_last_connection` options,
-  create two demo posts, push three fixes through the real `/apply` with an
-  admin application password, serve with `php -S 127.0.0.1:8987`, log in as
+  and attachments and the `ccc_change_log`/`ccc_change_seq`/`ccc_last_connection`
+  options, import an image as `leaky-kitchen-tap.png`, create two demo posts
+  (one linking to an old URL and showing that image with an empty alt), then
+  with an admin application password push through the real routes: `/apply`
+  title + description on one post, title + `og_title` on the other,
+  `/replace-urls` on the link and `/image-alt` on the image (six log rows,
+  so the shot shows the 0.11 fix kinds). Serve with `php -S 127.0.0.1:8987`, log in as
   admin/admin with Playwright and capture `tools.php?page=crawl-cove-connector`
   at a 1280x900 viewport. Regenerate whenever the Tools page changes.
 - `make-assets.php`: regenerates the icon/banner PNGs (PHP GD, run directly:

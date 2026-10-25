@@ -238,7 +238,7 @@ class CCC_Admin {
 				<?php
 					printf(
 						/* translators: %s: link to the Crawl Cove download page */
-						wp_kses( __( 'Install the <a href="%s">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the title and description problems; this plugin only applies the fixes you approve there. New accounts start on a free trial.', 'crawl-cove-connector' ), array( 'a' => array( 'href' => array() ) ) ),
+						wp_kses( __( 'Install the <a href="%s">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the problems (titles and descriptions, links, image alt text, canonical, indexing and social tags); this plugin only applies the fixes you approve there. New accounts start on a free trial.', 'crawl-cove-connector' ), array( 'a' => array( 'href' => array() ) ) ),
 						esc_url( self::APP_URL )
 					);
 				?>
@@ -253,7 +253,7 @@ class CCC_Admin {
 				?>
 				</li>
 				<li><?php esc_html_e( 'In Crawl Cove, open the client, then Connections, and fill in the WordPress card: site URL, username and application password.', 'crawl-cove-connector' ); ?></li>
-				<li><?php esc_html_e( 'Crawl, review the suggested title/description fixes, and push the approved ones. Every push lands in the log below and can be reverted.', 'crawl-cove-connector' ); ?></li>
+				<li><?php esc_html_e( 'Crawl, review the suggested fixes, and push the approved ones. Every push lands in the log below and can be reverted.', 'crawl-cove-connector' ); ?></li>
 			</ol>
 
 			<h2><?php esc_html_e( 'Change log', 'crawl-cove-connector' ); ?></h2>
