@@ -1,6 +1,6 @@
 # Crawl Cove Connector: WordPress SEO Plugin for Bulk Title & Meta Description Fixes
 
-The official WordPress companion plugin for [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme), the desktop SEO crawler. Push approved page title and meta description fixes from your SEO audit straight into **Yoast SEO**, **Rank Math**, **SEOPress** or **All in One SEO (AIOSEO)**, with a full change log and one-click revert.
+The official WordPress companion plugin for [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme), the desktop SEO crawler. Push approved title and meta description fixes, and since 0.11 canonical, indexing, social tag, link and image alt text fixes, from your SEO audit straight into **Yoast SEO**, **Rank Math**, **SEOPress** or **All in One SEO (AIOSEO)**, with a full change log and one-click revert.
 
 Crawl your site, review the suggested fixes in the app, push the ones you approve. No CSV exports, no spreadsheets, no copy-pasting into the post editor one page at a time.
 
