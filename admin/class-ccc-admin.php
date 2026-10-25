@@ -88,6 +88,21 @@ class CCC_Admin {
 	}
 
 	/**
+	 * Print a change log row's post: its title linked to the editor, or its
+	 * id when this user cannot edit it (or it is gone).
+	 *
+	 * @param int $post_id Post id.
+	 */
+	private static function post_link( $post_id ) {
+		$edit = get_edit_post_link( $post_id );
+		if ( $edit ) {
+			echo '<a href="' . esc_url( $edit ) . '">' . esc_html( get_the_title( $post_id ) ) . '</a>';
+		} else {
+			echo '#' . (int) $post_id;
+		}
+	}
+
+	/**
 	 * Render the Tools → Crawl Cove page: status, setup steps, change log.
 	 */
 	public static function render() {
@@ -319,7 +334,12 @@ class CCC_Admin {
 								<?php if ( isset( $e['kind'] ) && 'site_setting' === $e['kind'] ) : ?>
 									<?php esc_html_e( 'Site setting', 'crawl-cove-connector' ); ?>
 								<?php elseif ( isset( $e['kind'] ) && 'image_alt' === $e['kind'] ) : ?>
+									<?php if ( (int) $e['post_id'] > 0 ) : ?>
+										<?php self::post_link( (int) $e['post_id'] ); ?><br>
+									<?php endif; ?>
 									<?php echo esc_html( isset( $e['src'] ) ? wp_basename( $e['src'] ) : '' ); ?>
+								<?php elseif ( isset( $e['kind'] ) && 'page' === ( isset( $e['scope'] ) ? $e['scope'] : '' ) && (int) $e['post_id'] > 0 ) : ?>
+									<?php self::post_link( (int) $e['post_id'] ); ?>
 								<?php elseif ( isset( $e['kind'] ) ) : ?>
 									<?php
 									$ccc_places = isset( $e['targets'] ) && is_array( $e['targets'] ) ? count( $e['targets'] ) : 0;
@@ -341,12 +361,7 @@ class CCC_Admin {
 										#<?php echo (int) $e['post_id']; ?>
 									<?php endif; ?>
 								<?php else : ?>
-									<?php $edit = get_edit_post_link( $e['post_id'] ); ?>
-									<?php if ( $edit ) : ?>
-										<a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( get_the_title( $e['post_id'] ) ); ?></a>
-									<?php else : ?>
-										#<?php echo (int) $e['post_id']; ?>
-									<?php endif; ?>
+									<?php self::post_link( (int) $e['post_id'] ); ?>
 								<?php endif; ?>
 							</td>
 							<td><?php echo esc_html( $e['field'] ); ?></td>

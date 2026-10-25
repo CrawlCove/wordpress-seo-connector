@@ -18,7 +18,7 @@ repo and gated behind a human-only wordpress.org account.
   `/replace-urls` on the link and `/image-alt` on the image (six log rows,
   so the shot shows the 0.11 fix kinds). Serve with `php -S 127.0.0.1:8987`, log in as
   admin/admin with Playwright and capture `tools.php?page=crawl-cove-connector`
-  at a 1280x900 viewport. Regenerate whenever the Tools page changes.
+  at a 1280-wide viewport, full page (`fullPage: true`, so the last log row is not cut). Regenerate whenever the Tools page changes.
 - `make-assets.php`: regenerates the icon/banner PNGs (PHP GD, run directly:
   `php wordpress-org/make-assets.php`, writes back into this folder).
 

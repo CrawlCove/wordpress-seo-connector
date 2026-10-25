@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fix: the Tools page change log names the page for link and alt text
+  changes.** A one-page link change said only "Links in 1 place" and an alt
+  text change only the image file name; both now link the page they edited
+  (a site-wide link change still counts its places).
 - **Fix: the Tools page setup steps no longer say the app only finds and
   pushes title/description fixes** (review #282); step 1 names the 0.11 fix
   kinds. The directory screenshot is recaptured with the new steps and a log
