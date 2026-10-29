@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.0 (2026-10-29)
 
 - **Fix: the Tools page change log names the page for link and alt text
   changes.** A one-page link change said only "Links in 1 place" and an alt
