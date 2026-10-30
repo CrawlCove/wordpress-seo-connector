@@ -1,6 +1,6 @@
 === Crawl Cove Connector ===
 Contributors: crawlcove
-Tags: seo, yoast, rank math, seopress, aioseo
+Tags: seo, meta description, bulk edit, yoast, rank math
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,22 +8,32 @@ Stable tag: 0.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Push approved SEO fixes from Crawl Cove to Yoast, Rank Math, SEOPress or AIOSEO: titles, links, alt text and more, with one-click revert.
+Bulk-apply SEO fixes to Yoast, Rank Math, SEOPress or AIOSEO: titles, meta descriptions, links and alt text, each with one-click revert.
 
 == Description ==
 
-Crawl Cove Connector closes the loop between an SEO crawl and your CMS. Instead of exporting a spreadsheet of title and meta description problems and fixing each post by hand, the [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme) desktop crawler sends the fixes you approved straight to your site, and this plugin applies them to whichever SEO plugin you already use.
+Fixing SEO problems one post at a time is slow. Crawl Cove Connector lets you bulk-apply the fixes you approved in the [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme) desktop crawler straight to your WordPress site. Titles and meta descriptions go into the SEO plugin you already use (Yoast SEO, Rank Math, SEOPress or AIOSEO), and every change is logged so you can revert it in one click.
 
 The plugin is free. The Crawl Cove desktop app it works with is a paid crawler that starts with a free trial, no card needed: see [Crawl Cove pricing](https://crawlcove.com/pricing?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme).
 
-* Works with **Yoast SEO**, **Rank Math**, **SEOPress** and **AIOSEO** (writes their native fields, so nothing is duplicated or overridden at render time).
-* **You stay in control**: nothing is applied unless you approved it in the crawler, every change is logged with its previous value, and any change can be reverted with one click from Tools → Crawl Cove (or from the app). The log keeps the most recent 1,000 entries; once it is full, each new push drops the oldest (already-reverted ones first) and the Tools page says so.
-* **Dry-run mode** shows exactly what would change before anything is written.
-* Uses WordPress core **Application Passwords** for authentication: no extra accounts, no API keys stored by the plugin, revoke access any time from your profile.
-* Per-post (and per-term) capability checks: a connected user can only change posts, pages or taxonomy terms they are allowed to edit.
-* **More than titles**: canonical URLs, index/noindex and Open Graph/Twitter fields through your SEO plugin; links that point at a redirect repointed to the final URL (or unlinked) across posts, Elementor layouts and menus; image alt text; and four hardening switches for administrators (XML-RPC off, WordPress version hidden, security headers, no upload folder listing).
+= What it fixes =
 
-The plugin is a small, auditable bridge (plain PHP, no framework, no external requests, no tracking, GPL). It exposes eight REST routes under `crawlcove/v1`: status, resolve, apply, replace-urls, image-alt, site-settings, changes, revert.
+* **Titles and meta descriptions** for posts, pages, WooCommerce products, the homepage and category and tag archives (homepage and archive support varies by SEO plugin). They are written to your SEO plugin's own fields, so nothing is duplicated or overridden when the page renders.
+* **Canonical URLs, index or noindex, and Open Graph and Twitter tags**, through the same SEO plugin.
+* **Links that point at a redirect**, repointed to the final URL or unlinked, across posts, Elementor layouts and menus.
+* **Image alt text**, on the image and in the page that shows it.
+* **Four hardening switches** for administrators: XML-RPC off, WordPress version hidden, security headers, no upload folder listing.
+
+= You stay in control =
+
+* Nothing is applied unless you approved it in the crawler.
+* **Dry-run mode** shows exactly what would change before anything is written.
+* Every change is logged with its previous value. Revert any of them with one click from Tools → Crawl Cove, or from the app. The log keeps the most recent 1,000 entries; once it is full, each new push drops the oldest (already-reverted ones first) and the Tools page says so.
+* A connected user can only change the posts, pages or taxonomy terms they are allowed to edit.
+
+= Security and privacy =
+
+Sign-in uses WordPress core **Application Passwords**, so the plugin stores no API keys and needs no extra account. You can revoke access any time from your profile. The code is a small bridge you can audit, written in plain PHP without a framework and released under the GPL. It makes no external requests and does no tracking. It exposes eight REST routes under `crawlcove/v1`: status, resolve, apply, replace-urls, image-alt, site-settings, changes, revert. The full API is documented in the [GitHub repository](https://github.com/CrawlCove/wordpress-seo-connector).
 
 == Installation ==
 
@@ -33,6 +43,14 @@ The plugin is a small, auditable bridge (plain PHP, no framework, no external re
 4. Crawl, review the suggested fixes, and push the approved ones: one at a time, or every open title and description finding at once from the Findings list. Review or revert them any time under Tools → Crawl Cove.
 
 == Frequently Asked Questions ==
+
+= Can I bulk edit meta descriptions in Yoast or Rank Math with it? =
+
+Yes. Approve the fixes in the Crawl Cove desktop app, then push them one at a time or every open title and description finding at once. The plugin writes each one into Yoast SEO, Rank Math, SEOPress or AIOSEO and logs it so you can revert it.
+
+= Is the plugin free? =
+
+Yes, the plugin is free and GPL. The fixes come from the Crawl Cove desktop crawler, which is paid after its free trial.
 
 = Does it work without Yoast, Rank Math, SEOPress or AIOSEO? =
 
@@ -60,14 +78,14 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 == Screenshots ==
 
-1. Tools → Crawl Cove: the detected SEO plugin, whether Application Passwords are on, whether the desktop app has connected, setup steps, and the change log with one-click revert.
+1. Tools → Crawl Cove: the detected SEO plugin, Application Passwords and desktop app status, setup steps, and the change log of pushed title, description, link and alt text fixes with one-click revert.
 
 == Changelog ==
 
 = 0.11.0 =
-* New: fix links on one page or across the site (repoint, unlink or drop nofollow), set image alt text, set canonical, robots and social fields, and switch on four site hardening settings. Every change is logged and revertable.
-* On Yoast SEO, a pushed category or tag title now shows on the archive page.
-* Deleting the plugin removes its data from every site of a network, and the uploads .htaccess block it added.
+* Feature: fix links on one page or across the site (repoint, unlink or drop nofollow), set image alt text, set canonical, robots and social fields, and switch on four site hardening settings. Every change is logged and revertable.
+* Fix: on Yoast SEO, a pushed category or tag title now shows on the archive page.
+* Fix: deleting the plugin removes its data from every site of a network, and the uploads .htaccess block it added.
 
 = 0.1.0 to 0.10.8 =
 * Released on GitHub only. Highlights: a push writes only the SEO fields and leaves the post body and modified date alone; Revert refuses to overwrite a newer value unless you choose Revert anyway; Contributors and Authors see only their own posts and changes; adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang per-language homepage with Yoast; TranslatePress URLs; WooCommerce products and categories; cache purge for common caching plugins after a change; a 1,000-entry change log; Tools page status for Application Passwords (including when a security plugin switches them off) and the desktop app connection. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).

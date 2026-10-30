@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Docs: readme.txt listing copy rewritten for the wordpress.org directory**
+  (wp-readme-optimizer audit). Benefit-led short description (136 chars),
+  tags now seo, meta description, bulk edit, yoast, rank math, the
+  description split into What it fixes / You stay in control / Security and
+  privacy, two FAQs (bulk editing meta descriptions; is the plugin free) and
+  Feature/Fix prefixes on the 0.11.0 changelog lines. No code change.
+
 ## 0.11.0 (2026-10-29)
 
 - **Fix: the Tools page change log names the page for link and alt text
