@@ -95,7 +95,7 @@ class ReadmeTest extends TestCase {
 
 	public function test_public_docs_carry_no_em_dashes_outside_code_blocks() {
 		// CHANGELOG.md is linked from the wordpress.org changelog, SECURITY-NOTES.md from README.md.
-		foreach ( array( 'readme.txt', 'README.md', 'CHANGELOG.md', 'SECURITY-NOTES.md', 'wordpress-org/README.md' ) as $name ) {
+		foreach ( array( 'readme.txt', 'README.md', 'CHANGELOG.md', 'SECURITY-NOTES.md', 'SECURITY.md', 'CONTRIBUTING.md', 'wordpress-org/README.md' ) as $name ) {
 			$prose = preg_replace( '/^```.*?^```/ms', '', $this->file( $name ) );
 			$this->assertStringNotContainsString( "\u{2014}", $prose, $name );
 		}

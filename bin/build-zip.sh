@@ -92,7 +92,8 @@ stage() {
     --exclude=composer.json --exclude=composer.lock --exclude=phpcs.xml.dist \
     --exclude=phpcompatibility.xml.dist \
     --exclude=phpunit.xml --exclude=.phpunit.result.cache --exclude=.gitignore \
-    --exclude=SECURITY-NOTES.md --exclude=README.md --exclude=CHANGELOG.md \
+    --exclude=SECURITY-NOTES.md --exclude=SECURITY.md --exclude=CONTRIBUTING.md \
+    --exclude=README.md --exclude=CHANGELOG.md \
     --exclude=CLAUDE.md --exclude=.claude --exclude='*.zip' --exclude='*.log' \
     "$PLUGIN_ROOT/" "$dest/"
   if [[ "$WPORG" -eq 1 ]]; then

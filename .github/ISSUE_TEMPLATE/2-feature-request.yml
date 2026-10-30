@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest a fix type, an SEO plugin to support, or a change to the plugin.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The problem on your site, in your own words.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+  - type: input
+    id: seo-plugin
+    attributes:
+      label: SEO plugin you use
+      placeholder: "Rank Math"

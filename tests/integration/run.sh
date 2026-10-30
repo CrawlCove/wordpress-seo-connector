@@ -50,7 +50,7 @@ trap cleanup EXIT
 
 for f in wordpress.zip sqlite.zip rankmath.zip yoast.zip seopress.zip aioseo.zip wp-cli.phar; do
   if [[ ! -f "$CACHE/$f" ]]; then
-    echo "missing $CACHE/$f — see NEXT.md for the download commands" >&2
+    echo "missing $CACHE/$f: see CONTRIBUTING.md for the download commands" >&2
     exit 1
   fi
 done

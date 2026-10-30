@@ -1,5 +1,7 @@
 # Crawl Cove Connector: WordPress SEO Plugin for Bulk Title & Meta Description Fixes
 
+[![tests](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml/badge.svg)](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml) [![Latest release](https://img.shields.io/github/v/release/CrawlCove/wordpress-seo-connector)](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest) [![License: GPL v2+](https://img.shields.io/badge/license-GPLv2%2B-blue)](LICENSE)
+
 The official WordPress companion plugin for [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme), the desktop SEO crawler. Push approved title and meta description fixes, and since 0.11 canonical, indexing, social tag, link and image alt text fixes, from your SEO audit straight into **Yoast SEO**, **Rank Math**, **SEOPress** or **All in One SEO (AIOSEO)**, with a full change log and one-click revert.
 
 Crawl your site, review the suggested fixes in the app, push the ones you approve. No CSV exports, no spreadsheets, no copy-pasting into the post editor one page at a time.
@@ -600,9 +602,13 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 composer install
 composer test     # PHPUnit against lightweight WP stubs (tests/bootstrap.php)
 composer lint     # php -l over all plugin files
+composer phpcompat  # PHP 7.4 compatibility
+composer phpcs     # WordPress coding standards
 ```
 
 The core logic (`CCC_Service`, `CCC_Adapter`, `CCC_Change_Log`) is deliberately free of `WP_REST_*` types so it unit-tests without a WordPress install. Integration smoke-testing against a real WordPress (all four adapters, plus a security check suite) runs before each release: see `tests/integration/`.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full setup and the rules the code follows, and [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 
 ## Releasing
 

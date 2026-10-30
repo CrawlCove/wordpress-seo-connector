@@ -1,0 +1,23 @@
+# The same gate the maintainers run before every push: syntax lint, PHP 7.4
+# compatibility, WordPress coding standards and the PHPUnit suite. No
+# third-party actions: checkout plus the runner's own PHP and Composer.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: composer install --no-interaction --no-progress
+      - run: composer lint
+      - run: composer phpcompat
+      - run: composer phpcs
+      - run: composer test

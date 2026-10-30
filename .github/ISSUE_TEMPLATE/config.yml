@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help with the Crawl Cove desktop app or your account
+    url: https://crawlcove.com/contact
+    about: Questions about crawling, findings, licences or billing go to Crawl Cove support.
+  - name: Report a security problem
+    url: https://github.com/CrawlCove/wordpress-seo-connector/blob/main/SECURITY.md
+    about: Please report vulnerabilities privately, not in a public issue.

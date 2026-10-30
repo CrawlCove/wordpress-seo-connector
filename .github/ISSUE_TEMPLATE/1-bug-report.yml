@@ -1,0 +1,55 @@
+name: Bug report
+description: The plugin did something wrong on your WordPress site.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please leave out passwords, Application Passwords and private URLs.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead. Paste any error code the app showed (they start with `ccc_`).
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Push a title fix to a post
+        2. Open the post on the front end
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: connector-version
+    attributes:
+      label: Crawl Cove Connector version
+      description: Plugins page, or Tools → Crawl Cove.
+      placeholder: "0.11.0"
+    validations:
+      required: true
+  - type: input
+    id: seo-plugin
+    attributes:
+      label: SEO plugin and version
+      placeholder: "Yoast SEO 26.2"
+    validations:
+      required: true
+  - type: input
+    id: wordpress
+    attributes:
+      label: WordPress and PHP versions
+      placeholder: "WordPress 6.8, PHP 8.2"
+  - type: input
+    id: app-version
+    attributes:
+      label: Crawl Cove desktop app version
+      placeholder: "1.3.12"
+  - type: textarea
+    id: other-plugins
+    attributes:
+      label: Caching, security or multilingual plugins
+      description: For example WP Rocket, Wordfence, Polylang or WooCommerce. These change how pushes behave.
