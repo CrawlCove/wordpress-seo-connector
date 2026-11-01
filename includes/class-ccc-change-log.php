@@ -339,9 +339,10 @@ class CCC_Change_Log {
 		$newer = array();
 		$out   = array();
 		foreach ( $log as $entry ) {
-			// A URL replace has no single field to supersede; its own revert
-			// checks every location it touched.
-			if ( ! empty( $entry['reverted'] ) || isset( $entry['kind'] ) ) {
+			// A URL replace or alt change has no single field to supersede
+			// (its own revert checks every location it touched). A site
+			// setting is one switch, keyed by its name like a field.
+			if ( ! empty( $entry['reverted'] ) || ( isset( $entry['kind'] ) && 'site_setting' !== $entry['kind'] ) ) {
 				continue;
 			}
 			$key = (int) $entry['post_id'] . '|' . $entry['field'] . '|' . ( isset( $entry['lang'] ) ? $entry['lang'] : '' );

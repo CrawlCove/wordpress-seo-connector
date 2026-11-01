@@ -233,6 +233,16 @@ class ChangeLogTest extends TestCase {
 		$this->assertSame( array( 3 => 5, 1 => 3 ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
 	}
 
+	public function test_a_site_switch_flipped_again_supersedes_the_earlier_flip() {
+		$on  = CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'off', 'to' => 'on' ), 'bloo' );
+		CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'security_headers', 'from' => 'off', 'to' => 'on' ), 'bloo' );
+		CCC_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => 7, 'field' => 'alt', 'from' => '', 'to' => 'a', 'attachment' => 40 ), 'bloo' );
+		CCC_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => 7, 'field' => 'alt', 'from' => 'a', 'to' => 'b', 'attachment' => 40 ), 'bloo' );
+		$off = CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'on', 'to' => 'off' ), 'bloo' );
+
+		$this->assertSame( array( $on['id'] => $off['id'] ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+	}
+
 	public function test_a_reverted_change_does_not_supersede_the_one_before_it() {
 		$this->adapter->set_title( 7, 'Original' );
 		$first  = $this->push_title( 'First push' );

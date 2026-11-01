@@ -17,6 +17,9 @@
   said only "Could not revert that change."; it now shows the current alt
   text and offers "Revert anyway". When the page showing the image was
   edited, it says the old alt cannot be put back safely.
+- **Fix: a site switch flipped twice no longer offers a Revert that can only
+  fail.** The earlier row now reads "replaced by a later change", as title
+  and description rows already do.
 - **Docs: readme.txt listing copy rewritten for the wordpress.org directory**
   (wp-readme-optimizer audit). Benefit-led short description (136 chars),
   tags now seo, meta description, bulk edit, yoast, rank math, the

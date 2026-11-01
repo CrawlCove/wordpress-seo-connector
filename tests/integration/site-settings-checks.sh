@@ -149,6 +149,12 @@ req POST /site-settings "$ADMIN" '{"settings":{"disable_xmlrpc":false}}'
 req POST /revert "$ADMIN" "{\"change_id\":$XML_ID}"
 check "revert: refused after a later change" 409 "$RESP_HTTP" '[.code, .data.current]' '["ccc_value_changed","off"]' "$RESP_BODY"
 has "revert: xmlrpc.php serves its marker again once off" "$(xmlrpc)" "$MARKER"
+# The Tools page XML-RPC rows as "before|after|action": the earlier flip is superseded, so it
+# must not offer a Revert that can only fail.
+XML_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); foreach ( explode( "</tr>", $h ) as $row ) { if ( preg_match( "#<td>XML-RPC off</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#", $row, $m ) ) { $act = false !== strpos( $row, "replaced by a later change" ) ? "replaced" : ( false !== strpos( $row, "<em>reverted</em>" ) ? "reverted" : ( false !== strpos( $row, "name=\"change_id\"" ) ? "Revert" : "?" ) ); echo $m[1], "|", $m[2], "|", $act, "\n"; } }')"
+has   "tools: the earlier XML-RPC flip reads replaced by a later change" "$XML_ROWS" "off|on|replaced"
+has   "tools: the later XML-RPC flip keeps its Revert" "$XML_ROWS" "on|off|Revert"
+hasnt "tools: no XML-RPC row offers a Revert that must fail" "$XML_ROWS" "off|on|Revert"
 
 echo "-- Jetpack needs XML-RPC --"
 req POST /site-settings "$ADMIN" '{"settings":{"disable_xmlrpc":true}}'
