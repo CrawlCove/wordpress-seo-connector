@@ -209,12 +209,15 @@ class CCC_Admin {
 					<?php
 					if ( 'title' === $failed['field'] ) {
 						/* translators: %s: the title currently stored in the SEO plugin */
-						$changed_msg = __( 'Not reverted: this title has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' );
-					} else {
+						$changed_msg = sprintf( __( 'Not reverted: this title has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), '' === $now ? '—' : $now );
+					} elseif ( 'description' === $failed['field'] ) {
 						/* translators: %s: the description currently stored in the SEO plugin */
-						$changed_msg = __( 'Not reverted: this description has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' );
+						$changed_msg = sprintf( __( 'Not reverted: this description has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), '' === $now ? '—' : $now );
+					} else {
+						/* translators: 1: field name, such as "Open Graph title"; 2: the value currently stored in the SEO plugin */
+						$changed_msg = sprintf( __( 'Not reverted: this %1$s has changed since that push and now reads "%2$s". Reverting would overwrite it.', 'crawl-cove-connector' ), self::field_label( $failed['field'] ), '' === $now ? '—' : $now );
 					}
-					echo esc_html( sprintf( $changed_msg, '' === $now ? '—' : $now ) );
+					echo esc_html( $changed_msg );
 					?>
 					</p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">

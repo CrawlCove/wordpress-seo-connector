@@ -64,4 +64,16 @@ else
   fail "revert: tags differ from before — $(diff <(grep -iE 'canonical|robots|og:|twitter:' <<<"$BEFORE" | sort) <(grep -iE 'canonical|robots|og:|twitter:' <<<"$REVERTED" | sort) | head -6 | tr '\n' ' ')"
 fi
 
+echo "-- Tools page: a changed social field is named in the not-reverted notice --"
+req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$POST_ID,\"og_title\":\"OG first $R\"}]}"
+FIRST="$(echo "$RESP_BODY" | jq -r '.[0].applied.og_title.change_id')"
+req POST /apply "$EDITOR" "{\"changes\":[{\"post_id\":$POST_ID,\"og_title\":\"OG second $R\"}]}"
+SECOND="$(echo "$RESP_BODY" | jq -r '.[0].applied.og_title.change_id')"
+NOTICE="$("${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$FIRST'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" 2>/dev/null | grep -o 'Not reverted[^<]*')"
+has   "notice: names the Open Graph title" "$NOTICE" "this Open Graph title has changed"
+has   "notice: shows the value it holds now" "$NOTICE" "OG second $R"
+hasnt "notice: does not call it a description" "$NOTICE" "description"
+for id in $SECOND $FIRST; do req POST /revert "$EDITOR" "{\"change_id\":$id}"; done
+hasnt "notice: both pushes reverted" "$(head_of "$POST_ID")" "OG first $R"
+
 summary

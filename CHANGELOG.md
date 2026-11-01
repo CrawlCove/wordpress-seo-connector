@@ -8,6 +8,10 @@
   title, Link, Image alt text). A link change that only removed nofollow
   showed the same URL as Before and After; After now says "(nofollow
   removed)". Display only, nothing stored changes (review #301).
+- **Fix: the "Not reverted" notice names the field it refused.** A refused
+  revert of a canonical, index or social field said "this description has
+  changed"; it now says which field, for example "this Open Graph title has
+  changed".
 - **Docs: readme.txt listing copy rewritten for the wordpress.org directory**
   (wp-readme-optimizer audit). Benefit-led short description (136 chars),
   tags now seo, meta description, bulk edit, yoast, rank math, the
