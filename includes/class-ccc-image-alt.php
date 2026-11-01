@@ -336,6 +336,29 @@ class CCC_Image_Alt {
 	}
 
 	/**
+	 * Why a revert of this entry would be refused, for the Tools page notice:
+	 * 'page' when the page holding the inline alt was edited since (a forced
+	 * revert is refused too), 'alt' when only the attachment alt changed (a
+	 * forced revert overwrites it), '' when nothing changed.
+	 *
+	 * @param array $entry Change log entry (kind image_alt).
+	 * @return string
+	 */
+	public static function conflict( array $entry ) {
+		$inline = isset( $entry['inline'] ) ? $entry['inline'] : null;
+		if ( $inline ) {
+			$value = CCC_Url_Replacer::read( (int) $inline['post_id'], 'content' );
+			if ( null === $value || md5( $value ) !== $inline['hash'] ) {
+				return 'page';
+			}
+		}
+		if ( ! empty( $entry['attachment'] ) && (string) get_post_meta( (int) $entry['attachment'], self::META_KEY, true ) !== $entry['to'] ) {
+			return 'alt';
+		}
+		return '';
+	}
+
+	/**
 	 * After an attachment's alt changes: purge its own page, and drop
 	 * Elementor's rendered-widget cache, which otherwise keeps serving the old
 	 * alt from every image widget for up to a day. Only the cached HTML goes

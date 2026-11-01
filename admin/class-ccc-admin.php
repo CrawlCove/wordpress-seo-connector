@@ -202,6 +202,33 @@ class CCC_Admin {
 						<button type="submit" class="button button-small"><?php esc_html_e( 'Revert anyway', 'crawl-cove-connector' ); ?></button>
 					</form>
 				</div>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'image_alt' === $failed['kind'] && empty( $failed['reverted'] ) && 'page' === CCC_Image_Alt::conflict( $failed ) ) : ?>
+				<div class="notice notice-warning">
+					<p><?php esc_html_e( 'Not reverted: the page showing this image has been edited since that push, so its old alt text cannot be put back into it safely. Nothing was written.', 'crawl-cove-connector' ); ?></p>
+				</div>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'image_alt' === $failed['kind'] && empty( $failed['reverted'] ) ) : ?>
+				<div class="notice notice-warning">
+					<p>
+					<?php
+					$now = (string) get_post_meta( (int) $failed['attachment'], CCC_Image_Alt::META_KEY, true );
+					/* translators: %s: the image's alt text as it is now */
+					echo esc_html( sprintf( __( 'Not reverted: this image\'s alt text has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), '' === $now ? '—' : $now ) );
+					?>
+					</p>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
+						<input type="hidden" name="action" value="ccc_revert" />
+						<input type="hidden" name="change_id" value="<?php echo (int) $failed['id']; ?>" />
+						<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
+						<input type="hidden" name="force" value="1" />
+						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
+						<button type="submit" class="button button-small">
+						<?php
+						/* translators: %s: the alt text the revert would restore */
+						echo esc_html( sprintf( __( 'Revert anyway to "%s"', 'crawl-cove-connector' ), '' === $failed['from'] ? '—' : $failed['from'] ) );
+						?>
+						</button>
+					</form>
+				</div>
 			<?php elseif ( 'changed' === $notice && $failed && $adapter && ! isset( $failed['kind'] ) && empty( $failed['reverted'] ) ) : ?>
 				<?php $now = CCC_Change_Log::current_value( $failed, $adapter ); ?>
 				<div class="notice notice-warning">

@@ -84,6 +84,19 @@ class ImageAltTest extends TestCase {
 		$this->assertSame( 'ccc_content_changed', CCC_Change_Log::revert( $res[0]['change_id'], null, true )->get_error_code() );
 	}
 
+	public function test_conflict_says_whether_the_alt_or_the_page_changed() {
+		$GLOBALS['cc_posts'][7]['content'] = '<img src="' . self::IMG . '">';
+		$res   = CCC_Image_Alt::run( array( $this->item( 'Door' ) ), false, 'bloo' );
+		$entry = CCC_Change_Log::find( $res[0]['change_id'] );
+		$this->assertSame( '', CCC_Image_Alt::conflict( $entry ) );
+
+		update_post_meta( 40, '_wp_attachment_image_alt', 'Typed in the media library' );
+		$this->assertSame( 'alt', CCC_Image_Alt::conflict( $entry ) );
+
+		$GLOBALS['cc_posts'][7]['content'] .= '<p>new</p>';
+		$this->assertSame( 'page', CCC_Image_Alt::conflict( $entry ) );
+	}
+
 	public function test_an_image_found_nowhere_is_refused_and_an_uneditable_page_is_forbidden() {
 		$GLOBALS['cc_posts'][7]['content'] = '<p>No images.</p>';
 		$got = CCC_Image_Alt::run( array( array( 'url' => 'https://example.com/hello/', 'src' => 'https://example.com/x.jpg', 'alt' => 'x' ) ), false, 'bloo' );

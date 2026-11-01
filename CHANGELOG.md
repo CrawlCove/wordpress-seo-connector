@@ -12,6 +12,11 @@
   revert of a canonical, index or social field said "this description has
   changed"; it now says which field, for example "this Open Graph title has
   changed".
+- **Fix: a refused alt text revert on the Tools page says why.** When the
+  image's alt text was edited in the media library after the push, the page
+  said only "Could not revert that change."; it now shows the current alt
+  text and offers "Revert anyway". When the page showing the image was
+  edited, it says the old alt cannot be put back safely.
 - **Docs: readme.txt listing copy rewritten for the wordpress.org directory**
   (wp-readme-optimizer audit). Benefit-led short description (136 chars),
   tags now seo, meta description, bulk edit, yoast, rank math, the
