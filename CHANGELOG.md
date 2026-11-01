@@ -6,6 +6,9 @@
   "Revert anyway" when it can work.** For an unlink, a nofollow strip, or a
   page that already linked to the new URL, a forced revert is always
   refused, so the Tools page now says why instead of showing the button.
+- **Fix: a second alt text push to the same image on the same page marks
+  the first row "replaced by a later change".** Its Revert was refused and
+  blamed a page edit that was really the later push.
 
 ## 0.11.1 (2026-11-01)
 

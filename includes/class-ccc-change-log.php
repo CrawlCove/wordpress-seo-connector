@@ -339,13 +339,19 @@ class CCC_Change_Log {
 		$newer = array();
 		$out   = array();
 		foreach ( $log as $entry ) {
-			// A URL replace or alt change has no single field to supersede
-			// (its own revert checks every location it touched). A site
-			// setting is one switch, keyed by its name like a field.
-			if ( ! empty( $entry['reverted'] ) || ( isset( $entry['kind'] ) && 'site_setting' !== $entry['kind'] ) ) {
+			// A URL replace has no single field to supersede (its own revert
+			// checks every location it touched). A site setting is one
+			// switch, keyed by its name like a field; an alt change is keyed
+			// by its page and image, since a later push to the same pair
+			// rewrites the very alt and bytes the earlier revert checks.
+			$kind = isset( $entry['kind'] ) ? $entry['kind'] : '';
+			if ( ! empty( $entry['reverted'] ) || ! in_array( $kind, array( '', 'site_setting', 'image_alt' ), true ) ) {
 				continue;
 			}
 			$key = (int) $entry['post_id'] . '|' . $entry['field'] . '|' . ( isset( $entry['lang'] ) ? $entry['lang'] : '' );
+			if ( 'image_alt' === $kind ) {
+				$key .= ! empty( $entry['attachment'] ) ? 'a' . (int) $entry['attachment'] : 's' . ( isset( $entry['src'] ) ? $entry['src'] : '' );
+			}
 			if ( isset( $newer[ $key ] ) ) {
 				$out[ (int) $entry['id'] ] = $newer[ $key ];
 			}

@@ -185,4 +185,18 @@ N="$(notice "$CID")"
 has   "tools notice: says the page was edited" "$N" "the page showing this image has been edited since that push"
 hasnt "tools notice: no Revert anyway for an edited page" "$N" "Revert anyway"
 
+echo "-- Tools page: a later alt push to the same page and image supersedes the earlier one --"
+req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P1\",\"src\":\"$MEDIUM\",\"alt\":\"Green door\"}]}"
+G1="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
+req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P1\",\"src\":\"$MEDIUM\",\"alt\":\"Yellow door\"}]}"
+G2="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
+# Alt rows as "after|action".
+ALT_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); foreach ( explode( "</tr>", $h ) as $row ) { if ( preg_match( "#<td>Image alt text</td>\s*<td>[^<]*</td>\s*<td>([^<]*)</td>#", $row, $m ) ) { $act = false !== strpos( $row, "replaced by a later change" ) ? "replaced" : ( false !== strpos( $row, "<em>reverted</em>" ) ? "reverted" : ( false !== strpos( $row, "name=\"change_id\"" ) ? "Revert" : "?" ) ); echo $m[1], "|", $act, "\n"; } }')"
+has "tools: the earlier alt push reads replaced by a later change" "$ALT_ROWS" "Green door|replaced"
+has "tools: the later alt push keeps its Revert" "$ALT_ROWS" "Yellow door|Revert"
+req POST /revert "$EDITOR" "{\"change_id\":$G2}"
+check "supersede: the later push reverts" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
+req POST /revert "$EDITOR" "{\"change_id\":$G1}"
+check "supersede: then the earlier one reverts too" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
+
 summary

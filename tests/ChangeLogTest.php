@@ -236,11 +236,25 @@ class ChangeLogTest extends TestCase {
 	public function test_a_site_switch_flipped_again_supersedes_the_earlier_flip() {
 		$on  = CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'off', 'to' => 'on' ), 'bloo' );
 		CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'security_headers', 'from' => 'off', 'to' => 'on' ), 'bloo' );
-		CCC_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => 7, 'field' => 'alt', 'from' => '', 'to' => 'a', 'attachment' => 40 ), 'bloo' );
-		CCC_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => 7, 'field' => 'alt', 'from' => 'a', 'to' => 'b', 'attachment' => 40 ), 'bloo' );
 		$off = CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'on', 'to' => 'off' ), 'bloo' );
 
 		$this->assertSame( array( $on['id'] => $off['id'] ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+	}
+
+	public function test_a_later_alt_push_to_the_same_image_and_page_supersedes_the_earlier_one() {
+		$alt = function ( $post_id, $attachment, $to, $src = 'https://example.com/a.jpg' ) {
+			return CCC_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => $post_id, 'field' => 'alt', 'src' => $src, 'from' => '', 'to' => $to, 'attachment' => $attachment ), 'bloo' );
+		};
+		$first  = $alt( 7, 40, 'a' );
+		$alt( 8, 40, 'other page' );
+		$alt( 7, 41, 'other image' );
+		$inline = $alt( 7, 0, 'inline only', 'https://example.com/b.jpg' );
+		$second = $alt( 7, 40, 'b' );
+		$again  = $alt( 7, 0, 'inline again', 'https://example.com/b.jpg' );
+		CCC_Change_Log::record_entry( array( 'kind' => 'replace_urls', 'post_id' => 7, 'field' => 'links', 'from' => 'x', 'to' => 'y' ), 'bloo' );
+		CCC_Change_Log::record_entry( array( 'kind' => 'replace_urls', 'post_id' => 7, 'field' => 'links', 'from' => 'y', 'to' => 'z' ), 'bloo' );
+
+		$this->assertSame( array( $inline['id'] => $again['id'], $first['id'] => $second['id'] ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
 	}
 
 	public function test_a_reverted_change_does_not_supersede_the_one_before_it() {
