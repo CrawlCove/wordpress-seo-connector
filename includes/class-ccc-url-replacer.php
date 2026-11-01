@@ -924,6 +924,29 @@ class CCC_Url_Replacer {
 	}
 
 	/**
+	 * Whether a forced revert of this entry could succeed, for the Tools page
+	 * notice: false when a location was edited since and the entry is an
+	 * unlink or nofollow strip, or that location already linked to the new
+	 * URL before the change (revert() refuses those even with $force).
+	 *
+	 * @param array $entry Change log entry.
+	 * @return bool
+	 */
+	public static function can_force( array $entry ) {
+		$targets = isset( $entry['targets'] ) && is_array( $entry['targets'] ) ? $entry['targets'] : array();
+		foreach ( $targets as $t ) {
+			$value = self::read( (int) $t['post_id'], $t['where'] );
+			if ( null === $value || md5( $value ) === $t['hash'] ) {
+				continue;
+			}
+			if ( ! empty( $entry['unlink'] ) || ! empty( $entry['rel_strip'] ) || ! empty( $t['to_before'] ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Revert a logged replace: every location goes back to its exact original
 	 * bytes, or nothing is written. A location edited since (its hash no
 	 * longer matches) refuses with ccc_value_changed; with $force a plain URL

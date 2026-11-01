@@ -190,6 +190,10 @@ class CCC_Admin {
 
 			<?php if ( 'reverted' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Change reverted.', 'crawl-cove-connector' ); ?></p></div>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'replace_urls' === $failed['kind'] && empty( $failed['reverted'] ) && ! CCC_Url_Replacer::can_force( $failed ) ) : ?>
+				<div class="notice notice-warning">
+					<p><?php esc_html_e( 'Not reverted: the content holding these links has been edited since that change, and a removed link or nofollow, or a link that already pointed at the new URL, cannot be put back safely. Nothing was written.', 'crawl-cove-connector' ); ?></p>
+				</div>
 			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'replace_urls' === $failed['kind'] && empty( $failed['reverted'] ) ) : ?>
 				<div class="notice notice-warning">
 					<p><?php esc_html_e( 'Not reverted: the content holding these links has been edited since that change. Reverting anyway changes the new URL back to the old one wherever it now appears.', 'crawl-cove-connector' ); ?></p>

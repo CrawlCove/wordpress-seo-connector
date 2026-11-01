@@ -147,6 +147,7 @@ class UrlReplacerTest extends TestCase {
 		$GLOBALS['cc_posts'][7]['content'] = '<a href="https://example.com/new-page/">already</a><a href="https://example.com/old-page/">x</a>';
 		$res = CCC_Url_Replacer::run( array( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
 		$GLOBALS['cc_posts'][7]['content'] .= '<p>edit</p>';
+		$this->assertFalse( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $res[0]['change_id'] ) ) );
 		$err = CCC_Change_Log::revert( $res[0]['change_id'], null, true );
 		$this->assertSame( 'ccc_content_changed', $err->get_error_code() );
 		$this->assertStringContainsString( 'href="https://example.com/new-page/">already', $GLOBALS['cc_posts'][7]['content'] );
@@ -261,6 +262,7 @@ class UrlReplacerTest extends TestCase {
 		$this->assertSame( array( 7 ), $err->get_error_data()['post_ids'] );
 		$this->assertSame( 'Intro. <a href="https://example.com/new-page/">x</a>', $GLOBALS['cc_posts'][7]['content'] );
 
+		$this->assertTrue( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $id ) ) );
 		$this->assertTrue( CCC_Change_Log::revert( $id, null, true ) );
 		$this->assertSame( 'Intro. <a href="https://example.com/old-page/">x</a>', $GLOBALS['cc_posts'][7]['content'] );
 	}
@@ -270,7 +272,9 @@ class UrlReplacerTest extends TestCase {
 		$GLOBALS['cc_posts'][7]['content'] = '<a href="https://example.com/old-page/">x</a>';
 		$res = CCC_Url_Replacer::run( array( array( 'from' => self::OLD, 'unlink' => true, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
 		$this->assertSame( 'x', $GLOBALS['cc_posts'][7]['content'] );
+		$this->assertTrue( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $res[0]['change_id'] ) ) );
 		$GLOBALS['cc_posts'][7]['content'] = 'x!';
+		$this->assertFalse( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $res[0]['change_id'] ) ) );
 		$this->assertSame( 'ccc_content_changed', CCC_Change_Log::revert( $res[0]['change_id'], null, true )->get_error_code() );
 		$this->assertSame( 'x!', $GLOBALS['cc_posts'][7]['content'] );
 	}

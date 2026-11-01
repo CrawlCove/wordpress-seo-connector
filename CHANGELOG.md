@@ -17,6 +17,10 @@
   said only "Could not revert that change."; it now shows the current alt
   text and offers "Revert anyway". When the page showing the image was
   edited, it says the old alt cannot be put back safely.
+- **Fix: a link revert refused after the page was edited only offers
+  "Revert anyway" when it can work.** For an unlink, a nofollow strip, or a
+  page that already linked to the new URL, a forced revert is always
+  refused, so the Tools page now says why instead of showing the button.
 - **Fix: a site switch flipped twice no longer offers a Revert that can only
   fail.** The earlier row now reads "replaced by a later change", as title
   and description rows already do.

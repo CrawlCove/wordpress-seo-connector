@@ -213,6 +213,22 @@ has "unlink: the button keeps its link" "$P1_NOW" "wp-element-button\" href=\"$O
 req POST /replace-urls "$EDITOR" "{\"changes\":[{\"post_id\":$P4,\"from\":\"$OLD\",\"to\":\"$OLD\",\"rel_strip\":\"nofollow\",\"scope\":\"page\"}]}"
 check "rel_strip: one anchor changed" 200 "$RESP_HTTP" '.[0].count' '1' "$RESP_BODY"
 same "rel_strip: nofollow gone, noopener and the other link kept, href stays relative" '<p><a href="/old-page/" rel="noopener">a</a> <a href="/elsewhere/" rel="nofollow">b</a></p>' "$(content "$P4")"
+RS_ID="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
+
+echo "-- Tools page: Revert anyway only where a forced revert can work --"
+notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*Change log'; }
+put_content "$P4" "get_post( $P4 )->post_content . '<p>edited</p>'"
+N="$(notice "$RS_ID")"
+has   "notice: an edited nofollow strip says it cannot be put back" "$N" "cannot be put back safely"
+hasnt "notice: an edited nofollow strip offers no Revert anyway" "$N" 'name="force"'
+P5="$("${WP[@]}" post create --post_title="Plain drift post" --post_status=publish --post_author="$EDITOR_ID" --porcelain)"
+put_content "$P5" "'<p><a href=\"$OLD\">x</a></p>'"
+req POST /replace-urls "$EDITOR" "{\"changes\":[{\"post_id\":$P5,\"from\":\"$OLD\",\"to\":\"$NEW\",\"scope\":\"page\"}]}"
+P5_ID="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
+put_content "$P5" "get_post( $P5 )->post_content . '<p>edited</p>'"
+N="$(notice "$P5_ID")"
+has   "notice: an edited plain replace still offers Revert anyway" "$N" 'name="force" value="1"'
+hasnt "notice: an edited plain replace is not called unrecoverable" "$N" "cannot be put back safely"
 
 echo "-- Tools page change log --"
 # Each row as "field|post|before|after", rendered by the real admin page.
