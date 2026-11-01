@@ -83,7 +83,7 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 == Changelog ==
 
 = 0.11.1 =
-* Fix: the Tools page change log names each field in words, shows when a link lost nofollow, and explains a refused revert of links, alt text, social fields or site settings.
+* Fix: the Tools page change log names each field in words, shows when a link lost nofollow, and explains a refused revert of alt text, social fields or site settings.
 
 = 0.11.0 =
 * Feature: fix links on one page or across the site (repoint, unlink or drop nofollow), set image alt text, set canonical, robots and social fields, and switch on four site hardening settings. Every change is logged and revertable.
