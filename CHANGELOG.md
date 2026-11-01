@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.1 (2026-11-01)
 
 - **Fix: the Tools page change log reads in words for the 0.11 fix kinds.**
   The Field column printed the stored key (disable_xmlrpc, og_title, links,

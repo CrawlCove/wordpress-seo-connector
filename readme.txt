@@ -4,7 +4,7 @@ Tags: seo, meta description, bulk edit, yoast, rank math
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.11.0
+Stable tag: 0.11.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,9 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 1. Tools → Crawl Cove: the detected SEO plugin, Application Passwords and desktop app status, setup steps, and the change log of pushed title, description, link and alt text fixes with one-click revert.
 
 == Changelog ==
+
+= 0.11.1 =
+* Fix: the Tools page change log names each field in words, shows when a link lost nofollow, and explains a refused revert of alt text, social fields or site settings.
 
 = 0.11.0 =
 * Feature: fix links on one page or across the site (repoint, unlink or drop nofollow), set image alt text, set canonical, robots and social fields, and switch on four site hardening settings. Every change is logged and revertable.
