@@ -131,6 +131,14 @@ has   "on: a POST to xmlrpc.php is refused too" "$(curl -s -w 'HTTP %{http_code}
 req GET /status "$EDITOR" ""
 check "status: reports the switches" 200 "$RESP_HTTP" '.site_settings | [.disable_xmlrpc, .hide_generator, .security_headers, .uploads_no_index]' '[true,true,true,false]' "$RESP_BODY"
 
+echo "-- Tools page change log --"
+# Each row as "post|field|before|after", rendered by the real admin page.
+TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( wp_strip_all_tags( $c ) ), "|", trim( $m[2][ $i ] ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
+has "tools: XML-RPC row in words" "$TOOLS_ROWS" "Site setting|XML-RPC off|off|on"
+has "tools: generator row in words" "$TOOLS_ROWS" "Site setting|WordPress version hidden|off|on"
+has "tools: headers row in words" "$TOOLS_ROWS" "Site setting|Security headers|off|on"
+hasnt "tools: no raw setting key" "$TOOLS_ROWS" "_"
+
 echo "-- revert --"
 req POST /revert "$EDITOR" "{\"change_id\":$GEN_ID}"
 check_http "revert: an editor cannot revert a site setting" 403 "$RESP_HTTP" "$RESP_BODY"

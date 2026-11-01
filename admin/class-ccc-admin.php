@@ -103,6 +103,57 @@ class CCC_Admin {
 	}
 
 	/**
+	 * The change log's Field column in words. Entries store the API key
+	 * (og_title, disable_xmlrpc); the readme names them, so the log does too.
+	 * An unknown key is shown as stored.
+	 *
+	 * @param string $field Stored field key.
+	 * @return string
+	 */
+	public static function field_label( $field ) {
+		$labels = array(
+			'title'               => __( 'Title', 'crawl-cove-connector' ),
+			'description'         => __( 'Meta description', 'crawl-cove-connector' ),
+			'canonical'           => __( 'Canonical URL', 'crawl-cove-connector' ),
+			'robots_index'        => __( 'Index or noindex', 'crawl-cove-connector' ),
+			'og_title'            => __( 'Open Graph title', 'crawl-cove-connector' ),
+			'og_description'      => __( 'Open Graph description', 'crawl-cove-connector' ),
+			'og_image'            => __( 'Open Graph image', 'crawl-cove-connector' ),
+			'twitter_title'       => __( 'Twitter title', 'crawl-cove-connector' ),
+			'twitter_description' => __( 'Twitter description', 'crawl-cove-connector' ),
+			'links'               => __( 'Link', 'crawl-cove-connector' ),
+			'alt'                 => __( 'Image alt text', 'crawl-cove-connector' ),
+			'disable_xmlrpc'      => __( 'XML-RPC off', 'crawl-cove-connector' ),
+			'hide_generator'      => __( 'WordPress version hidden', 'crawl-cove-connector' ),
+			'security_headers'    => __( 'Security headers', 'crawl-cove-connector' ),
+			'uploads_no_index'    => __( 'No upload folder listing', 'crawl-cove-connector' ),
+		);
+		return isset( $labels[ $field ] ) ? $labels[ $field ] : (string) $field;
+	}
+
+	/**
+	 * The change log's After column. A link entry that only stripped
+	 * nofollow stores the same URL as from and to, so it says what changed.
+	 *
+	 * @param array $e Change log entry.
+	 * @return string
+	 */
+	public static function after_text( array $e ) {
+		if ( ! empty( $e['unlink'] ) ) {
+			return __( '(link removed)', 'crawl-cove-connector' );
+		}
+		$to = isset( $e['to'] ) ? (string) $e['to'] : '';
+		if ( ! empty( $e['rel_strip'] ) ) {
+			if ( isset( $e['from'] ) && $to === (string) $e['from'] ) {
+				return __( '(nofollow removed)', 'crawl-cove-connector' );
+			}
+			/* translators: %s: the URL the links now point to */
+			return sprintf( __( '%s (nofollow removed)', 'crawl-cove-connector' ), $to );
+		}
+		return '' === $to ? '—' : $to;
+	}
+
+	/**
 	 * Render the Tools → Crawl Cove page: status, setup steps, change log.
 	 */
 	public static function render() {
@@ -364,9 +415,9 @@ class CCC_Admin {
 									<?php self::post_link( (int) $e['post_id'] ); ?>
 								<?php endif; ?>
 							</td>
-							<td><?php echo esc_html( $e['field'] ); ?></td>
+							<td><?php echo esc_html( self::field_label( $e['field'] ) ); ?></td>
 							<td><?php echo esc_html( '' === $e['from'] ? '—' : $e['from'] ); ?></td>
-							<td><?php echo esc_html( ! empty( $e['unlink'] ) ? __( '(link removed)', 'crawl-cove-connector' ) : ( '' === $e['to'] ? '—' : $e['to'] ) ); ?></td>
+							<td><?php echo esc_html( self::after_text( $e ) ); ?></td>
 							<td><?php echo esc_html( $e['source'] ); ?></td>
 							<td>
 								<?php if ( isset( $superseded[ (int) $e['id'] ] ) ) : ?>

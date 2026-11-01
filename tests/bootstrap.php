@@ -548,3 +548,4 @@ require __DIR__ . '/../includes/class-ccc-service.php';
 require __DIR__ . '/../includes/class-ccc-url-replacer.php';
 require __DIR__ . '/../includes/class-ccc-site-settings.php';
 require __DIR__ . '/../includes/class-ccc-image-alt.php';
+require __DIR__ . '/../admin/class-ccc-admin.php';

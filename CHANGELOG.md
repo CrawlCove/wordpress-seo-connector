@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fix: the Tools page change log reads in words for the 0.11 fix kinds.**
+  The Field column printed the stored key (disable_xmlrpc, og_title, links,
+  alt); it now uses the names the readme uses (XML-RPC off, Open Graph
+  title, Link, Image alt text). A link change that only removed nofollow
+  showed the same URL as Before and After; After now says "(nofollow
+  removed)". Display only, nothing stored changes (review #301).
 - **Docs: readme.txt listing copy rewritten for the wordpress.org directory**
   (wp-readme-optimizer audit). Benefit-led short description (136 chars),
   tags now seo, meta description, bulk edit, yoast, rank math, the

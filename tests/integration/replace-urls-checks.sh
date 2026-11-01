@@ -215,8 +215,11 @@ check "rel_strip: one anchor changed" 200 "$RESP_HTTP" '.[0].count' '1' "$RESP_B
 same "rel_strip: nofollow gone, noopener and the other link kept, href stays relative" '<p><a href="/old-page/" rel="noopener">a</a> <a href="/elsewhere/" rel="nofollow">b</a></p>' "$(content "$P4")"
 
 echo "-- Tools page change log --"
-# Each row's Field and Post cells as "field|post", rendered by the real admin page.
-TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( $m[2][ $i ] ), "|", trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( $c ) ) ), "\n"; }')"
-has "tools: a page-scope links row names its page" "$TOOLS_ROWS" "links|Links page"
-has "tools: a site-wide links row counts its places" "$TOOLS_ROWS" "links|Links in "
+# Each row as "field|post|before|after", rendered by the real admin page.
+TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( $m[2][ $i ] ), "|", trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( $c ) ) ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
+has "tools: a page-scope links row names its page" "$TOOLS_ROWS" "Link|Links page"
+has "tools: a site-wide links row counts its places" "$TOOLS_ROWS" "Link|Links in "
+has "tools: the nofollow-strip row says what changed" "$TOOLS_ROWS" "|$OLD|(nofollow removed)"
+has "tools: the unlink row says the link went" "$TOOLS_ROWS" "|$OLD|(link removed)"
+hasnt "tools: no row shows the raw links key" "$TOOLS_ROWS" "links|"
 summary
