@@ -10,8 +10,8 @@
   the first row "replaced by a later change".** Its Revert was refused and
   blamed a page edit that was really the later push.
 - **Fix: a refused revert says "empty" in words.** When the old value was
-  empty (most alt text fixes start from none), the button read
-  `Revert anyway to "—"`; it now reads "Revert anyway (leaves it empty)".
+  empty (most alt text fixes start from none), the button quoted a lone
+  dash as that value; it now reads "Revert anyway (leaves it empty)".
   A value emptied since the push is described as emptied instead of
   quoted as a dash (review #304).
 
