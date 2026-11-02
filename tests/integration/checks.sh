@@ -197,9 +197,10 @@ else
 fi
 OLD_SEED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval 'foreach ( CCC_Change_Log::all() as $e ) { if ( "seed-new-0" === $e["to"] ) { echo (int) $e["id"]; break; } }' --path="$CCC_SITE" 2>/dev/null)"
 CHANGED_HTML="$(php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$OLD_SEED_ID'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" --path="$CCC_SITE" 2>/dev/null)"
-if [[ -n "$OLD_SEED_ID" && "$CHANGED_HTML" == *'Not reverted: this title has changed since that push and now reads &quot;'* \
+# The seeds go through record() only, so the post's stored title is empty.
+if [[ -n "$OLD_SEED_ID" && "$CHANGED_HTML" == *'Not reverted: this title has been emptied since that push.'* \
    && "$CHANGED_HTML" == *'name="force" value="1"'* && "$CHANGED_HTML" == *'Revert anyway to &quot;seed-old-0&quot;'* ]]; then
-  PASS=$((PASS+1)); echo "  ok   admin: value-changed notice names the current value and offers Revert anyway"
+  PASS=$((PASS+1)); echo "  ok   admin: value-changed notice describes the current value and offers Revert anyway"
 else
   FAIL=$((FAIL+1)); echo "  FAIL admin: value-changed notice missing or wrong (seed id '$OLD_SEED_ID')"; echo "$CHANGED_HTML" | grep -o 'Not reverted[^<]*' | head -2
 fi
@@ -220,6 +221,27 @@ if [[ "$HR_LOC" == *'ccc_notice=reverted'* && "$TITLE_AFTER" == 'seed-old-0' ]];
   PASS=$((PASS+1)); echo "  ok   admin: Revert anyway restores the entry's previous value"
 else
   FAIL=$((FAIL+1)); echo "  FAIL admin: Revert anyway wrong (redirect '$HR_LOC', title now '$TITLE_AFTER')"
+fi
+
+# Review #304 minor (2 Nov): an empty value read as a quoted dash in the
+# notice and on the button. A push onto an empty title says Revert anyway
+# leaves it empty; a title emptied since a push says so in words.
+render_changed() {
+  php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" --path="$CCC_SITE" 2>/dev/null
+}
+EMPTY_FROM_ID="$(php "$CCC_CACHE/wp-cli.phar" eval "\$e = CCC_Change_Log::record( $CCC_POST_EDITOR, 'title', '', 'pushed-onto-empty', 'harness' ); echo (int) \$e['id'];" --path="$CCC_SITE" 2>/dev/null)"
+N="$(render_changed "$EMPTY_FROM_ID")"
+if [[ "$N" == *'Revert anyway (leaves it empty)'* && "$N" != *'&quot;—&quot;'* && "$N" == *'now reads &quot;seed-old-0&quot;'* ]]; then
+  PASS=$((PASS+1)); echo "  ok   admin: Revert anyway to an empty old title says it leaves it empty"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL admin: empty-from notice wrong"; echo "$N" | grep -o 'Not reverted[^<]*\|Revert anyway[^<]*' | head -3
+fi
+EMPTIED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval "\$e = CCC_Change_Log::record( $CCC_POST_EDITOR, 'title', 'before-emptied', 'pushed-then-emptied', 'harness' ); CCC_Adapter::detect()->set_title( $CCC_POST_EDITOR, '' ); echo (int) \$e['id'];" --path="$CCC_SITE" 2>/dev/null)"
+N="$(render_changed "$EMPTIED_ID")"
+if [[ "$N" == *'Not reverted: this title has been emptied since that push.'* && "$N" != *'&quot;—&quot;'* && "$N" == *'Revert anyway to &quot;before-emptied&quot;'* ]]; then
+  PASS=$((PASS+1)); echo "  ok   admin: a title emptied since the push is described in words"
+else
+  FAIL=$((FAIL+1)); echo "  FAIL admin: emptied-since notice wrong"; echo "$N" | grep -o 'Not reverted[^<]*\|Revert anyway[^<]*' | head -3
 fi
 
 summary

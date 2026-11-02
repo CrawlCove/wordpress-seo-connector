@@ -39,4 +39,28 @@ class AdminTest extends TestCase {
 		$this->assertSame( 'http://x/b/', CCC_Admin::after_text( array( 'from' => 'http://x/a/', 'to' => 'http://x/b/', 'rel_strip' => '' ) ) );
 		$this->assertSame( '—', CCC_Admin::after_text( array( 'from' => 'Old', 'to' => '' ) ) );
 	}
+
+	public function test_revert_anyway_names_the_value_it_restores() {
+		$this->assertSame( 'Revert anyway to "Old title"', CCC_Admin::revert_anyway_label( 'Old title' ) );
+	}
+
+	public function test_revert_anyway_to_an_empty_value_says_so() {
+		$label = CCC_Admin::revert_anyway_label( '' );
+		$this->assertSame( 'Revert anyway (leaves it empty)', $label );
+		$this->assertStringNotContainsString( "\u{2014}", $label );
+	}
+
+	public function test_drift_notice_quotes_the_current_value() {
+		$this->assertSame( 'Not reverted: this title has changed since that push and now reads "Typed later". Reverting would overwrite it.', CCC_Admin::changed_notice( 'title', 'Typed later' ) );
+		$this->assertSame( 'Not reverted: this Open Graph title has changed since that push and now reads "X". Reverting would overwrite it.', CCC_Admin::changed_notice( 'og_title', 'X' ) );
+		$this->assertSame( 'Not reverted: this image\'s alt text has changed since that push and now reads "Cat". Reverting would overwrite it.', CCC_Admin::changed_notice( 'alt', 'Cat' ) );
+	}
+
+	public function test_drift_notice_for_a_cleared_value_says_it_is_empty() {
+		foreach ( array( 'title', 'description', 'og_title', 'alt' ) as $field ) {
+			$msg = CCC_Admin::changed_notice( $field, '' );
+			$this->assertStringContainsString( 'has been emptied since that push', $msg, $field );
+			$this->assertStringNotContainsString( "\u{2014}", $msg, $field );
+		}
+	}
 }

@@ -154,6 +154,60 @@ class CCC_Admin {
 	}
 
 	/**
+	 * The Revert anyway button text. An empty old value gets words, not a
+	 * quoted dash.
+	 *
+	 * @param string $from The value the revert would restore.
+	 * @return string
+	 */
+	public static function revert_anyway_label( $from ) {
+		if ( '' === (string) $from ) {
+			return __( 'Revert anyway (leaves it empty)', 'crawl-cove-connector' );
+		}
+		/* translators: %s: the value the revert would restore */
+		return sprintf( __( 'Revert anyway to "%s"', 'crawl-cove-connector' ), $from );
+	}
+
+	/**
+	 * The notice for a revert refused because the value changed since the
+	 * push. A value emptied since then is said in words.
+	 *
+	 * @param string $field Stored field key (title, description, alt, og_title...).
+	 * @param string $now   The value as it is now.
+	 * @return string
+	 */
+	public static function changed_notice( $field, $now ) {
+		$now = (string) $now;
+		if ( '' === $now ) {
+			if ( 'title' === $field ) {
+				return __( 'Not reverted: this title has been emptied since that push. Reverting would fill it in again.', 'crawl-cove-connector' );
+			}
+			if ( 'description' === $field ) {
+				return __( 'Not reverted: this description has been emptied since that push. Reverting would fill it in again.', 'crawl-cove-connector' );
+			}
+			if ( 'alt' === $field ) {
+				return __( 'Not reverted: this image\'s alt text has been emptied since that push. Reverting would fill it in again.', 'crawl-cove-connector' );
+			}
+			/* translators: %s: field name, such as "Open Graph title" */
+			return sprintf( __( 'Not reverted: this %s has been emptied since that push. Reverting would fill it in again.', 'crawl-cove-connector' ), self::field_label( $field ) );
+		}
+		if ( 'title' === $field ) {
+			/* translators: %s: the title currently stored in the SEO plugin */
+			return sprintf( __( 'Not reverted: this title has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), $now );
+		}
+		if ( 'description' === $field ) {
+			/* translators: %s: the description currently stored in the SEO plugin */
+			return sprintf( __( 'Not reverted: this description has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), $now );
+		}
+		if ( 'alt' === $field ) {
+			/* translators: %s: the image's alt text as it is now */
+			return sprintf( __( 'Not reverted: this image\'s alt text has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), $now );
+		}
+		/* translators: 1: field name, such as "Open Graph title"; 2: the value currently stored in the SEO plugin */
+		return sprintf( __( 'Not reverted: this %1$s has changed since that push and now reads "%2$s". Reverting would overwrite it.', 'crawl-cove-connector' ), self::field_label( $field ), $now );
+	}
+
+	/**
 	 * Render the Tools → Crawl Cove page: status, setup steps, change log.
 	 */
 	public static function render() {
@@ -213,11 +267,7 @@ class CCC_Admin {
 			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'image_alt' === $failed['kind'] && empty( $failed['reverted'] ) ) : ?>
 				<div class="notice notice-warning">
 					<p>
-					<?php
-					$now = (string) get_post_meta( (int) $failed['attachment'], CCC_Image_Alt::META_KEY, true );
-					/* translators: %s: the image's alt text as it is now */
-					echo esc_html( sprintf( __( 'Not reverted: this image\'s alt text has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), '' === $now ? '—' : $now ) );
-					?>
+					<?php echo esc_html( self::changed_notice( 'alt', (string) get_post_meta( (int) $failed['attachment'], CCC_Image_Alt::META_KEY, true ) ) ); ?>
 					</p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
 						<input type="hidden" name="action" value="ccc_revert" />
@@ -226,10 +276,7 @@ class CCC_Admin {
 						<input type="hidden" name="force" value="1" />
 						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
 						<button type="submit" class="button button-small">
-						<?php
-						/* translators: %s: the alt text the revert would restore */
-						echo esc_html( sprintf( __( 'Revert anyway to "%s"', 'crawl-cove-connector' ), '' === $failed['from'] ? '—' : $failed['from'] ) );
-						?>
+						<?php echo esc_html( self::revert_anyway_label( $failed['from'] ) ); ?>
 						</button>
 					</form>
 				</div>
@@ -237,19 +284,7 @@ class CCC_Admin {
 				<?php $now = CCC_Change_Log::current_value( $failed, $adapter ); ?>
 				<div class="notice notice-warning">
 					<p>
-					<?php
-					if ( 'title' === $failed['field'] ) {
-						/* translators: %s: the title currently stored in the SEO plugin */
-						$changed_msg = sprintf( __( 'Not reverted: this title has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), '' === $now ? '—' : $now );
-					} elseif ( 'description' === $failed['field'] ) {
-						/* translators: %s: the description currently stored in the SEO plugin */
-						$changed_msg = sprintf( __( 'Not reverted: this description has changed since that push and now reads "%s". Reverting would overwrite it.', 'crawl-cove-connector' ), '' === $now ? '—' : $now );
-					} else {
-						/* translators: 1: field name, such as "Open Graph title"; 2: the value currently stored in the SEO plugin */
-						$changed_msg = sprintf( __( 'Not reverted: this %1$s has changed since that push and now reads "%2$s". Reverting would overwrite it.', 'crawl-cove-connector' ), self::field_label( $failed['field'] ), '' === $now ? '—' : $now );
-					}
-					echo esc_html( $changed_msg );
-					?>
+					<?php echo esc_html( self::changed_notice( $failed['field'], $now ) ); ?>
 					</p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
 						<input type="hidden" name="action" value="ccc_revert" />
@@ -258,10 +293,7 @@ class CCC_Admin {
 						<input type="hidden" name="force" value="1" />
 						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
 						<button type="submit" class="button button-small">
-						<?php
-						/* translators: %s: the value the revert would restore */
-						echo esc_html( sprintf( __( 'Revert anyway to "%s"', 'crawl-cove-connector' ), '' === $failed['from'] ? '—' : $failed['from'] ) );
-						?>
+						<?php echo esc_html( self::revert_anyway_label( $failed['from'] ) ); ?>
 						</button>
 					</form>
 				</div>

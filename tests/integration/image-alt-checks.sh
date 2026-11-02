@@ -177,6 +177,22 @@ req POST /revert "$EDITOR" "{\"change_id\":$CID,\"force\":true}"
 check "drift: force puts the old alt back" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
 same "drift: attachment alt is the original" "Old" "$(alt_meta)"
 
+echo "-- Tools page: empty alt values are said in words (review #304 minor) --"
+"${WP[@]}" post meta update "$IMG_ID" _wp_attachment_image_alt "" >/dev/null
+req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P1\",\"src\":\"$MEDIUM\",\"alt\":\"Pushed onto empty\"}]}"
+CID="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
+"${WP[@]}" post meta update "$IMG_ID" _wp_attachment_image_alt "Typed over it" >/dev/null
+N="$(notice "$CID")"
+has   "tools notice: a push onto an empty alt offers Revert anyway (leaves it empty)" "$N" "Revert anyway (leaves it empty)"
+hasnt "tools notice: no quoted dash on the button" "$N" "&quot;—&quot;"
+"${WP[@]}" post meta update "$IMG_ID" _wp_attachment_image_alt "" >/dev/null
+N="$(notice "$CID")"
+has   "tools notice: an alt emptied since the push is said in words" "$N" "alt text has been emptied since that push"
+hasnt "tools notice: no quoted dash for the current value" "$N" "&quot;—&quot;"
+req POST /revert "$EDITOR" "{\"change_id\":$CID,\"force\":true}"
+check "empty: force puts the empty alt back" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
+"${WP[@]}" post meta update "$IMG_ID" _wp_attachment_image_alt "Old" >/dev/null
+
 echo "-- Tools page: an edited page cannot be forced --"
 req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P1\",\"src\":\"$MEDIUM\",\"alt\":\"Blue door\"}]}"
 CID="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
