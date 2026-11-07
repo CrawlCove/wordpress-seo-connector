@@ -64,13 +64,21 @@ class ReadmeTest extends TestCase {
 		$this->assertSame( $copy['github'], (string) file_get_contents( $root . '/readme.txt' ) );
 	}
 
-	public function test_readmes_say_the_desktop_app_is_paid_with_a_free_trial() {
+	public function test_readmes_say_pushes_need_a_paid_plan_or_the_trial() {
+		// App v1.3.15 (6 Nov 2026) has a permanent Free plan that crawls but
+		// blocks every push to WordPress, so "paid crawler" is false and the
+		// fact a plugin user needs is which plan can push (inbox #325).
 		foreach ( array( 'readme.txt', 'README.md' ) as $name ) {
 			$text = $this->file( $name );
-			$this->assertMatchesRegularExpression( '/desktop app it works with is a paid crawler/', $text, $name );
-			$this->assertMatchesRegularExpression( '/free trial/i', $text, $name );
+			$this->assertStringNotContainsString( 'paid crawler', $text, $name );
+			$this->assertStringNotContainsString( 'paid after its free trial', $text, $name );
+			$this->assertStringContainsString( 'has a Free plan', $text, $name );
+			$this->assertMatchesRegularExpression( '/[Pp]ushing fixes to WordPress needs a paid Crawl Cove plan or the free trial/', $text, $name );
 			$this->assertStringContainsString( 'https://crawlcove.com/pricing?utm_source=wordpress-plugin', $text, $name );
 		}
+		$faq = $this->file( 'readme.txt' );
+		$faq = substr( $faq, (int) strpos( $faq, '= Is the plugin free? =' ), 400 );
+		$this->assertStringContainsString( 'paid Crawl Cove plan or the free trial', $faq );
 	}
 
 	public function test_readme_faqs_say_deleting_the_plugin_removes_the_change_log() {

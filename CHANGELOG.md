@@ -14,6 +14,11 @@
   dash as that value; it now reads "Revert anyway (leaves it empty)".
   A value emptied since the push is described as emptied instead of
   quoted as a dash (review #304).
+- **Docs: which Crawl Cove plan can push.** The desktop app now has a
+  Free plan that crawls and lists fixes, and pushing them through this
+  plugin needs a paid plan or the free trial. The readme, README and the
+  Settings page setup steps say so instead of calling the app a paid
+  crawler (review #325).
 
 ## 0.11.1 (2026-11-01)
 

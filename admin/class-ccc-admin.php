@@ -370,7 +370,7 @@ class CCC_Admin {
 				<?php
 					printf(
 						/* translators: %s: link to the Crawl Cove download page */
-						wp_kses( __( 'Install the <a href="%s">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the problems (titles and descriptions, links, image alt text, canonical, indexing and social tags); this plugin only applies the fixes you approve there. New accounts start on a free trial.', 'crawl-cove-connector' ), array( 'a' => array( 'href' => array() ) ) ),
+						wp_kses( __( 'Install the <a href="%s">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the problems (titles and descriptions, links, image alt text, canonical, indexing and social tags); this plugin only applies the fixes you approve there. The app has a Free plan for crawling. Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial.', 'crawl-cove-connector' ), array( 'a' => array( 'href' => array() ) ) ),
 						esc_url( self::APP_URL )
 					);
 				?>

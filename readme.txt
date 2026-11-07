@@ -14,7 +14,7 @@ Bulk-apply SEO fixes to Yoast, Rank Math, SEOPress or AIOSEO: titles, meta descr
 
 Fixing SEO problems one post at a time is slow. Crawl Cove Connector lets you bulk-apply the fixes you approved in the [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme) desktop crawler straight to your WordPress site. Titles and meta descriptions go into the SEO plugin you already use (Yoast SEO, Rank Math, SEOPress or AIOSEO), and every change is logged so you can revert it in one click.
 
-The plugin is free. The Crawl Cove desktop app it works with is a paid crawler that starts with a free trial, no card needed: see [Crawl Cove pricing](https://crawlcove.com/pricing?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme).
+The plugin is free. The Crawl Cove desktop app it works with has a Free plan that crawls your site and lists the fixes. Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial, no card needed: see [Crawl Cove pricing](https://crawlcove.com/pricing?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme).
 
 = What it fixes =
 
@@ -50,7 +50,7 @@ Yes. Approve the fixes in the Crawl Cove desktop app, then push them one at a ti
 
 = Is the plugin free? =
 
-Yes, the plugin is free and GPL. The fixes come from the Crawl Cove desktop crawler, which is paid after its free trial.
+Yes, the plugin is free and GPL. The fixes come from the Crawl Cove desktop app, which has a Free plan for crawling and listing fixes. Pushing those fixes to your site through this plugin needs a paid Crawl Cove plan or the free trial.
 
 = Does it work without Yoast, Rank Math, SEOPress or AIOSEO? =
 

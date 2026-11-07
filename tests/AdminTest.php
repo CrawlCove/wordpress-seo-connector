@@ -20,6 +20,14 @@ class AdminTest extends TestCase {
 		}
 	}
 
+	public function test_setup_step_says_which_plan_can_push() {
+		// The app's Free plan (v1.3.15) blocks every push, so "New accounts
+		// start on a free trial" leaves a Free plan user stuck at step 4.
+		$src = file_get_contents( __DIR__ . '/../admin/class-ccc-admin.php' );
+		$this->assertStringNotContainsString( 'New accounts start on a free trial', $src );
+		$this->assertStringContainsString( 'Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial', $src );
+	}
+
 	public function test_unknown_key_is_shown_as_stored() {
 		$this->assertSame( 'something_new', CCC_Admin::field_label( 'something_new' ) );
 	}

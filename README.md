@@ -14,7 +14,7 @@ Every SEO crawler can find missing, duplicate, too-long or too-short titles and 
 
 Crawl Cove Connector closes that loop. The [Crawl Cove desktop crawler](https://crawlcove.com) sends the fixes you approved to your site over the WordPress REST API, and this plugin writes them into the native fields of whichever SEO plugin you already use. Nothing is duplicated or overridden at render time; your SEO plugin keeps working exactly as before, just with better values.
 
-The plugin is free. The Crawl Cove desktop app it works with is a paid crawler that starts with a free trial, no card needed: see [Crawl Cove pricing](https://crawlcove.com/pricing?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme).
+The plugin is free. The Crawl Cove desktop app it works with has a Free plan that crawls your site and lists the fixes. Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial, no card needed: see [Crawl Cove pricing](https://crawlcove.com/pricing?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme).
 
 ## Features
 
