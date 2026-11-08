@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.2 (2026-11-08)
 
 - **Fix: a link revert refused after the page was edited only offers
   "Revert anyway" when it can work.** For an unlink, a nofollow strip, or a

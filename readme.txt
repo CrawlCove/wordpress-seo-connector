@@ -4,7 +4,7 @@ Tags: seo, meta description, bulk edit, yoast, rank math
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.11.1
+Stable tag: 0.11.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,8 +82,11 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 == Changelog ==
 
+= 0.11.2 =
+* Fix: a refused revert on the Tools page explains itself and only offers "Revert anyway" where it can work. A second alt text push to the same image marks the first one replaced.
+
 = 0.11.1 =
-* Fix: the Tools page change log names each field in words, shows when a link lost nofollow, and explains a refused revert of alt text, social fields or site settings.
+* Fix: the Tools page change log names each field in words and explains refused reverts.
 
 = 0.11.0 =
 * Feature: fix links on one page or across the site (repoint, unlink or drop nofollow), set image alt text, set canonical, robots and social fields, and switch on four site hardening settings. Every change is logged and revertable.
