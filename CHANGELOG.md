@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Fix: the Tools page Status row on a site with no SEO plugin no longer
+  says fixes cannot be applied.** Since 0.11 link, image alt text and site
+  hardening fixes work without one; the row now says which fields need
+  Yoast SEO, Rank Math, SEOPress or AIOSEO and which fixes do not, matching
+  the readme FAQ and what /status tells the desktop app.
+
 ## 0.11.2 (2026-11-08)
 
 - **Fix: a link revert refused after the page was edited only offers

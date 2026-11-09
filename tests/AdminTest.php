@@ -28,6 +28,15 @@ class AdminTest extends TestCase {
 		$this->assertStringContainsString( 'Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial', $src );
 	}
 
+	public function test_no_seo_plugin_row_says_which_fixes_still_work() {
+		// Since 0.11 link, alt text and hardening fixes need no SEO plugin
+		// (readme FAQ, /status capabilities); the Tools row must not deny it
+		// (review ticket #341).
+		$src = file_get_contents( __DIR__ . '/../admin/class-ccc-admin.php' );
+		$this->assertStringNotContainsString( 'fixes cannot be applied without one', $src );
+		$this->assertStringContainsString( 'link, image alt text and site hardening fixes work without one', $src );
+	}
+
 	public function test_unknown_key_is_shown_as_stored() {
 		$this->assertSame( 'something_new', CCC_Admin::field_label( 'something_new' ) );
 	}

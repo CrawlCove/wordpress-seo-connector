@@ -98,6 +98,12 @@ hasnt "before: no X-Frame-Options" "$(home_head)" "X-Frame-Options"
 req GET /status "$EDITOR" ""
 check "status: site_settings all off" 200 "$RESP_HTTP" '[.site_settings[]] | any' 'false' "$RESP_BODY"
 check "status: capabilities list site_settings" 200 "$RESP_HTTP" '.capabilities | index("site_settings") != null' 'true' "$RESP_BODY"
+# The Tools page Status row on a site with no SEO plugin (review #341): it must
+# not deny the fixes /status just advertised.
+TOOLS_STATUS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $s = strpos( $h, "SEO plugin detected" ); echo trim( preg_replace( "/\\s+/", " ", wp_strip_all_tags( substr( $h, $s, strpos( $h, "</tr>", $s ) - $s ) ) ) );')"
+has   "tools: Status row says None" "$TOOLS_STATUS" "SEO plugin detected None"
+has   "tools: Status row says which fixes work without one" "$TOOLS_STATUS" "link, image alt text and site hardening fixes work without one"
+hasnt "tools: Status row no longer says fixes cannot be applied" "$TOOLS_STATUS" "cannot be applied"
 
 echo "-- who may switch --"
 req POST /site-settings "$EDITOR" '{"settings":{"hide_generator":true}}'
