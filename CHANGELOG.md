@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Security: an image alt push only edits real `<img>` tags.** Text that
+  looks like an image tag inside another tag's attribute value, a `<script>`
+  or a comment was patched too, and the inserted `alt="..."` quotes could
+  turn the alt text into new attributes or script. An Editor without
+  `unfiltered_html` (every site admin on multisite) could use that to plant
+  markup in a page an administrator wrote. The content is now left alone
+  unless core's HTML tokenizer confirms every change landed on a real image;
+  the media library alt is still set.
+
 - **Fix: the Tools page Status row on a site with no SEO plugin no longer
   says fixes cannot be applied.** Since 0.11 link, image alt text and site
   hardening fixes work without one; the row now says which fields need

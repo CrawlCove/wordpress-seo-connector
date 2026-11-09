@@ -608,3 +608,38 @@ Noted, not changed: `/status` shows the site-settings switches to any
 `edit_posts` user (low value, and the effects are public anyway); `/image-alt`
 answers 403 on a media item the user may not edit, which confirms it exists
 (the same as core's REST media endpoint).
+
+## Addendum, 9 Nov 2026 (security sweep: image alt patched text that was not a tag)
+
+Full review of every route, the admin revert form, option writes, file
+writes, SQL, output escaping and direct-access guards. One real bug:
+
+- **`/image-alt` patched `<img>` text that is not a tag.** `rewrite()` finds
+  images with a regex, so an `<img src=...>` inside another tag's attribute
+  value (a tooltip's `data-tip`, say) or a `<script>` string matched, and the
+  inserted `alt="..."` closed the surrounding quote. With the alt
+  `onmouseover=alert(1) x` the outer `<div>` gained an `onmouseover`
+  attribute. The page is written without kses, so an Editor without
+  `unfiltered_html` (multisite, or `DISALLOW_UNFILTERED_HTML`) could plant
+  script in an administrator's page. Content saved through kses cannot hold
+  such text (kses entity-encodes the outer tag), so an Author's own posts
+  were never exposed. Fixed by reading the content before and after with
+  core's `WP_HTML_Tag_Processor`: the rewrite stands only if every tag keeps
+  its name and attributes (a matching image may gain `alt`) and exactly as
+  many real matching images carry the new alt as were changed. Otherwise the
+  content is left byte-identical. Pinned in image-alt-checks.sh, which fails
+  on the old code.
+
+Checked and fine: every route's `permission_callback` (`edit_posts`, then
+per-target `edit_post`/`edit_term`/`manage_options`); the fix routes write
+only whitelisted fields and fixed option/meta keys, never a caller-named
+option, meta key or path; the one file write is a fixed `.htaccess` block;
+`$wpdb` queries are prepared; no remote fetch, `unserialize` or open redirect;
+the admin revert form is nonce-checked and redirects with
+`wp_safe_redirect()`. Probed against real kses: `/replace-urls` unlink cannot
+join kses-filtered fragments into new markup.
+
+Noted, not changed: any `edit_posts` user can fill the 1,000-entry change log
+(50 changes a request), which evicts older live entries, an administrator's
+included, so they can no longer be reverted from the log. The fix belongs in
+the log's design (per-user caps or a table), not this sweep.

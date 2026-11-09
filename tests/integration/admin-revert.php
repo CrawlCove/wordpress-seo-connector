@@ -3,6 +3,7 @@
 // Drive CCC_Admin::handle_revert() as the Tools page form would: admin user,
 // real nonce, and the redirect captured by throwing out of wp_redirect before
 // the handler's exit.
+defined( 'ABSPATH' ) || exit;
 require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php';
 wp_set_current_user( 1 );
 $id    = (int) getenv( 'CCC_HR_ID' );

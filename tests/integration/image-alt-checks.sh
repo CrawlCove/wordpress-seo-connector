@@ -215,4 +215,13 @@ check "supersede: the later push reverts" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_B
 req POST /revert "$EDITOR" "{\"change_id\":$G1}"
 check "supersede: then the earlier one reverts too" 200 "$RESP_HTTP" '.ok' 'true' "$RESP_BODY"
 
+echo "-- an <img> that is only text (in an attribute, a script) is never patched --"
+P3="$("${WP[@]}" post create --post_type=page --post_title="Tooltip page" --post_status=publish --post_author="$EDITOR_ID" --porcelain)"
+put_content "$P3" "'<div data-tip=\"<img src=\\'$MEDIUM\\'>\">tip</div><script>var s=\"<img src=\\'$MEDIUM\\'>\";</script>'"
+P3_BEFORE="$(content "$P3")"
+has "fixture: the tooltip page holds both fake tags" "$P3_BEFORE" "data-tip=\"<img src='$MEDIUM'>\""
+req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P3\",\"src\":\"$MEDIUM\",\"alt\":\"onmouseover=alert(1) x\"}]}"
+check "fake tags: no inline change" 200 "$RESP_HTTP" '.[0].inline' '0' "$RESP_BODY"
+same "fake tags: page content byte-identical" "$P3_BEFORE" "$(content "$P3")"
+
 summary
