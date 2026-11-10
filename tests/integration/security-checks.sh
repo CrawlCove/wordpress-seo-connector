@@ -24,6 +24,26 @@ check_http "unauth: GET /changes is 401" 401 "$RESP_HTTP" "$RESP_BODY"
 req POST /revert "" '{"change_id":1}'
 check_http "unauth: POST /revert is 401" 401 "$RESP_HTTP" "$RESP_BODY"
 
+echo "-- every route and method the namespace advertises refuses anonymous and subscriber calls --"
+# Read from the live REST index, so a route added later is swept without
+# editing this list. One body carries every param any route requires: WP
+# validates required args BEFORE the permission callback, so a bare request
+# would get a 400 and prove nothing about auth.
+ANY_BODY='{"urls":["https://example.com/"],"changes":[],"settings":{},"key":"abcdefgh1","change_id":1}'
+INDEX="$(curl -s --max-time 10 "$BASE")"
+ROUTE_METHODS="$(echo "$INDEX" | jq -r '.routes | to_entries[] | select(.key != "/crawlcove/v1") | .key as $r | .value.methods[] | "\($r) \(.)"' 2>/dev/null)"
+SWEPT=0
+while read -r route method; do
+  [[ -z "$route" ]] && continue
+  path="${route#/crawlcove/v1}"
+  req "$method" "$path" "" "$ANY_BODY"
+  check_http "unauth: $method $path is 401" 401 "$RESP_HTTP" "$RESP_BODY"
+  req "$method" "$path" "$SUBSCRIBER" "$ANY_BODY"
+  check_http "subscriber: $method $path is 403" 403 "$RESP_HTTP" "$RESP_BODY"
+  SWEPT=$((SWEPT+1))
+done <<<"$ROUTE_METHODS"
+if [[ $SWEPT -ge 11 ]]; then PASS=$((PASS+1)); echo "  ok   swept $SWEPT route methods from the index"; else FAIL=$((FAIL+1)); echo "  FAIL only $SWEPT route methods found in the index"; fi
+
 req GET /status "ccc_editor:not-the-real-password"
 check_http "unauth: wrong application password is 401" 401 "$RESP_HTTP" "$RESP_BODY"
 

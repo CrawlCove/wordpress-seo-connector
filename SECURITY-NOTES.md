@@ -646,3 +646,18 @@ the log's design (per-user caps or a table), not this sweep.
 Fixed 10 Nov 2026 (after 0.11.3): once the log is full, a live entry is
 evicted from the user holding the most entries, so a flood only evicts the
 flooder's own history (ChangeLogTest, red on the old evict()).
+
+## Addendum, 10 Nov 2026 (0.11.3: /indexnow-key, and a sweep that finds routes itself)
+
+- `/indexnow-key` (GET, POST, DELETE) uses the same `can_use` permission
+  callback as every route; POST and DELETE also require `manage_options`
+  inside `CCC_IndexNow`, so an Editor gets 403 `ccc_forbidden`. The key must
+  match `^[a-zA-Z0-9-]{8,128}$`, so it cannot carry a path, a dot or markup,
+  and it is printed through `esc_html()`. The key file is answered only for
+  the exact path `<home path>/<key>.txt`, and the `init` hook is added only
+  while a key is stored. `indexnow-checks.sh` (32 checks) covers it.
+- `security-checks.sh` now reads the route list from the live `crawlcove/v1`
+  index and asserts 401 anonymous and 403 subscriber for every route and
+  method (11 today), so a route added later is swept without editing the
+  script. Mutation-checked: opening DELETE /indexnow-key's permission makes
+  it fail.
