@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.3 (2026-11-10)
 
 - **New: the plugin can serve an IndexNow key file.** `/indexnow-key`
   (GET, POST, DELETE) stores a key the desktop app chooses and answers
