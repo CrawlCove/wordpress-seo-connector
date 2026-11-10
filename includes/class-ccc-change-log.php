@@ -185,8 +185,11 @@ class CCC_Change_Log {
 	 * Already-reverted entries go first (oldest first): their "before" value
 	 * is back on the site and nothing further can be done with them, so they
 	 * are history, not a safety net. Only if the log is still over the cap
-	 * after that are the oldest live entries dropped. Order (newest first)
-	 * is preserved throughout.
+	 * after that are live entries dropped, each time the oldest one of the
+	 * user who holds the most (the oldest overall on a tie), so one user
+	 * filling the log cannot push out anyone else's revert history. With a
+	 * single user that is simply the oldest. Order (newest first) is
+	 * preserved throughout.
 	 *
 	 * @param array $log Log entries, newest first, more than MAX_ENTRIES.
 	 * @return array Exactly MAX_ENTRIES entries, newest first.
@@ -202,8 +205,26 @@ class CCC_Change_Log {
 				--$excess;
 			}
 		}
-		$log = array_values( $log );
-		return array_slice( $log, 0, self::MAX_ENTRIES );
+		if ( $excess > 0 ) {
+			$held = array();
+			foreach ( $log as $entry ) {
+				$who          = isset( $entry['source'] ) ? (string) $entry['source'] : '';
+				$held[ $who ] = isset( $held[ $who ] ) ? $held[ $who ] + 1 : 1;
+			}
+			while ( $excess > 0 ) {
+				$most = max( $held );
+				foreach ( array_reverse( array_keys( $log ) ) as $i ) {
+					$who = isset( $log[ $i ]['source'] ) ? (string) $log[ $i ]['source'] : '';
+					if ( $held[ $who ] === $most ) {
+						unset( $log[ $i ] );
+						--$held[ $who ];
+						--$excess;
+						break;
+					}
+				}
+			}
+		}
+		return array_values( $log );
 	}
 
 	/**

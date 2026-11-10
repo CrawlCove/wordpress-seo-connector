@@ -643,3 +643,6 @@ Noted, not changed: any `edit_posts` user can fill the 1,000-entry change log
 (50 changes a request), which evicts older live entries, an administrator's
 included, so they can no longer be reverted from the log. The fix belongs in
 the log's design (per-user caps or a table), not this sweep.
+Fixed 10 Nov 2026 (after 0.11.3): once the log is full, a live entry is
+evicted from the user holding the most entries, so a flood only evicts the
+flooder's own history (ChangeLogTest, red on the old evict()).

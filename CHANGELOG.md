@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Security: one user can no longer push other users' changes out of the
+  log.** The log keeps 1,000 entries; once full, a new entry used to drop
+  the oldest live one whoever made it, so an Author pushing 1,000 changes
+  could leave an administrator's earlier fixes unrevertable. Now the entry
+  dropped is the oldest of the user who holds the most, so a flood only
+  evicts its own history. A site with one pushing user sees no change.
+
 ## 0.11.3 (2026-11-10)
 
 - **Security: an image alt push only edits real `<img>` tags.** Text that

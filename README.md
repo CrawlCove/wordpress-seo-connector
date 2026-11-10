@@ -537,8 +537,11 @@ Entries without `kind` are title or description changes. A user sees a
 replace entry only if they may edit every place it touched. The log is a single non-autoloaded
 option capped at **1,000 entries**. When a new entry would take it past the
 cap, already-reverted entries are dropped first (oldest first) and only then
-the oldest live ones, so the entries that can still undo something survive
-longest. `/revert` with an id that has been dropped returns `ccc_not_found`
+live ones, so the entries that can still undo something survive longest.
+A live entry is dropped from the user who holds the most entries (their
+oldest; the oldest overall on a tie), so one user filling the log only
+evicts their own history, never an administrator's. On a site with one
+pushing user that is simply the oldest. `/revert` with an id that has been dropped returns `ccc_not_found`
 (HTTP 404), the same as an id that never existed; the app should treat that
 as "no longer revertable from here", not as a transport error. The Tools page
 shows 100 rows a page and says so when the log is full.

@@ -94,6 +94,39 @@ class ChangeLogTest extends TestCase {
 		$this->assertSame( CCC_Change_Log::MAX_ENTRIES + 3, $ids[0] );
 	}
 
+	public function test_one_user_filling_the_log_evicts_only_their_own_entries() {
+		// Security sweep, 9 Nov: any edit_posts user could push 1,000 changes
+		// and evict an administrator's live entries, so they could no longer
+		// be reverted. Over the cap, the user holding the most entries pays.
+		for ( $i = 1; $i <= 10; $i++ ) {
+			CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', "old$i", "new$i", 'admin' );
+		}
+		for ( $i = 1; $i <= CCC_Change_Log::MAX_ENTRIES; $i++ ) {
+			CCC_Change_Log::record( 7, 'title', "old$i", "new$i", 'author' );
+		}
+		$log = CCC_Change_Log::all();
+		$this->assertCount( CCC_Change_Log::MAX_ENTRIES, $log );
+		for ( $id = 1; $id <= 10; $id++ ) {
+			$this->assertNotNull( CCC_Change_Log::find( $id ), "admin entry $id survives the flood" );
+		}
+		$this->assertNull( CCC_Change_Log::find( 11 ), "the author's oldest entry is the one evicted" );
+		$this->assertSame( CCC_Change_Log::MAX_ENTRIES + 10, $log[0]['id'] );
+	}
+
+	public function test_evict_takes_the_oldest_entry_when_users_hold_equal_shares() {
+		$log = array();
+		for ( $i = CCC_Change_Log::MAX_ENTRIES + 2; $i >= 1; $i-- ) {
+			$log[] = array( 'id' => $i, 'source' => ( $i % 2 ) ? 'a' : 'b' );
+		}
+		$ids = array_column( CCC_Change_Log::evict( $log ), 'id' );
+		$this->assertNotContains( 1, $ids );
+		$this->assertNotContains( 2, $ids );
+		$this->assertContains( 3, $ids );
+		$sorted = $ids;
+		rsort( $sorted );
+		$this->assertSame( $sorted, $ids, 'still newest-first' );
+	}
+
 	public function test_revert_restores_previous_value_and_marks_entry() {
 		$this->adapter->set_title( 7, 'Original' );
 		$entry = CCC_Change_Log::record( 7, 'title', 'Original', 'Pushed', 'bloo' );
