@@ -18,6 +18,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_resaved'] = array(); // wp_update_post calls (must stay empty)
 	$GLOBALS['cc_db_writes'] = array(); // post ids whose post_content $wpdb->update() wrote
 	$GLOBALS['cc_actions'] = array(); // do_action() calls (tag name only)
+	$GLOBALS['cc_hooks']   = array(); // add_action() registrations: tag => callbacks
 	$GLOBALS['cc_yoast_term_rebuilds'] = array(); // Yoast term watcher build_indexable() calls
 	$GLOBALS['cc_home']    = 'https://example.com';
 	$GLOBALS['is_apache']  = false;
@@ -112,6 +113,16 @@ function get_option( $name, $default = false ) {
 }
 function update_option( $name, $value, $autoload = null ) {
 	$GLOBALS['cc_options'][ $name ] = $value;
+	return true;
+}
+function delete_option( $name ) {
+	$existed = array_key_exists( $name, $GLOBALS['cc_options'] );
+	unset( $GLOBALS['cc_options'][ $name ] );
+	return $existed;
+}
+/** Stub: records tag => callback in $GLOBALS['cc_hooks'] (nothing runs). */
+function add_action( $tag, $callback, $priority = 10 ) {
+	$GLOBALS['cc_hooks'][ $tag ][] = $callback;
 	return true;
 }
 
@@ -548,4 +559,5 @@ require __DIR__ . '/../includes/class-ccc-service.php';
 require __DIR__ . '/../includes/class-ccc-url-replacer.php';
 require __DIR__ . '/../includes/class-ccc-site-settings.php';
 require __DIR__ . '/../includes/class-ccc-image-alt.php';
+require __DIR__ . '/../includes/class-ccc-indexnow.php';
 require __DIR__ . '/../admin/class-ccc-admin.php';

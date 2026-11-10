@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **New: the plugin can serve an IndexNow key file.** `/indexnow-key`
+  (GET, POST, DELETE) stores a key the desktop app chooses and answers
+  `/<key>.txt` with it, so the app can ask Bing and Yandex to recrawl a
+  page once its fix is verified. Opt-in, set by an administrator's
+  connection only; the plugin itself still makes no external requests.
+  `/status` lists the `indexnow` capability (app ticket #349).
 - **Fix: the Tools page Status row on a site with no SEO plugin no longer
   says fixes cannot be applied.** Since 0.11 link, image alt text and site
   hardening fixes work without one; the row now says which fields need

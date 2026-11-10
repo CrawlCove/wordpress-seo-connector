@@ -29,3 +29,5 @@ tests/integration/.site-settings/
 tests/integration/.server-settings.log
 tests/integration/.site-image-alt/
 tests/integration/.server-image-alt.log
+tests/integration/.site-indexnow/
+tests/integration/.server-indexnow.log

@@ -19,7 +19,7 @@ class CCC_Rest {
 	const NS = 'crawlcove/v1';
 
 	/**
-	 * Register all eight REST routes.
+	 * Register all nine REST routes.
 	 */
 	public static function register_routes() {
 		register_rest_route(
@@ -130,6 +130,34 @@ class CCC_Rest {
 
 		register_rest_route(
 			self::NS,
+			'/indexnow-key',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'indexnow_key' ),
+					'permission_callback' => array( __CLASS__, 'can_use' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'indexnow_key' ),
+					'permission_callback' => array( __CLASS__, 'can_use' ),
+					'args'                => array(
+						'key' => array(
+							'required' => true,
+							'type'     => 'string',
+						),
+					),
+				),
+				array(
+					'methods'             => 'DELETE',
+					'callback'            => array( __CLASS__, 'indexnow_key' ),
+					'permission_callback' => array( __CLASS__, 'can_use' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/changes',
 			array(
 				'methods'             => 'GET',
@@ -207,7 +235,7 @@ class CCC_Rest {
 	/**
 	 * The fix kinds this install can apply, so the desktop app offers only
 	 * those. title and description need a supported SEO plugin; replace_urls,
-	 * site_settings and image_alt work on any site.
+	 * site_settings, image_alt and indexnow work on any site.
 	 *
 	 * @param CCC_Adapter|null $adapter Detected SEO adapter.
 	 * @return string[]
@@ -217,6 +245,7 @@ class CCC_Rest {
 		$caps[] = 'replace_urls';
 		$caps[] = 'site_settings';
 		$caps[] = 'image_alt';
+		$caps[] = 'indexnow';
 		return $caps;
 	}
 
@@ -334,6 +363,27 @@ class CCC_Rest {
 			(bool) $request->get_param( 'dry_run' ),
 			$user ? $user->user_login : 'unknown'
 		);
+		return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
+	}
+
+	/**
+	 * GET, POST or DELETE /indexnow-key: read, set or remove the IndexNow key
+	 * the site serves at /<key>.txt. Setting and removing need an administrator.
+	 *
+	 * @param WP_REST_Request $request Request; POST carries a 'key' string.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function indexnow_key( $request ) {
+		switch ( $request->get_method() ) {
+			case 'POST':
+				$result = CCC_IndexNow::store( $request->get_param( 'key' ) );
+				break;
+			case 'DELETE':
+				$result = CCC_IndexNow::remove();
+				break;
+			default:
+				$result = CCC_IndexNow::read();
+		}
 		return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
 	}
 

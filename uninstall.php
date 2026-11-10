@@ -15,7 +15,7 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-$ccc_options = array( 'ccc_change_log', 'ccc_change_seq', 'ccc_last_connection', 'ccc_site_settings' );
+$ccc_options = array( 'ccc_change_log', 'ccc_change_seq', 'ccc_last_connection', 'ccc_site_settings', 'ccc_indexnow_key' );
 
 /**
  * Remove the current site's uploads/.htaccess block, if its setting is on.

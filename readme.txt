@@ -33,7 +33,7 @@ The plugin is free. The Crawl Cove desktop app it works with has a Free plan tha
 
 = Security and privacy =
 
-Sign-in uses WordPress core **Application Passwords**, so the plugin stores no API keys and needs no extra account. You can revoke access any time from your profile. The code is a small bridge you can audit, written in plain PHP without a framework and released under the GPL. It makes no external requests and does no tracking. It exposes eight REST routes under `crawlcove/v1`: status, resolve, apply, replace-urls, image-alt, site-settings, changes, revert. The full API is documented in the [GitHub repository](https://github.com/CrawlCove/wordpress-seo-connector).
+Sign-in uses WordPress core **Application Passwords**, so the plugin stores no passwords and needs no extra account. You can revoke access any time from your profile. The code is a small bridge you can audit, written in plain PHP without a framework and released under the GPL. It makes no external requests and does no tracking. It exposes nine REST routes under `crawlcove/v1`: status, resolve, apply, replace-urls, image-alt, site-settings, indexnow-key, changes, revert. The full API is documented in the [GitHub repository](https://github.com/CrawlCove/wordpress-seo-connector).
 
 == Installation ==
 

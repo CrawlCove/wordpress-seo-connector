@@ -40,6 +40,7 @@ The plugin registers a REST API under `crawlcove/v1` (auth: WordPress core Appli
 | `/replace-urls` | POST | Repoint, unlink or un-nofollow links to one URL in a page or across the site (`dry_run` supported; needs no SEO plugin) |
 | `/image-alt` | POST | Set an image's alt text on the media library image and in the page that shows it (`dry_run` supported; needs no SEO plugin) |
 | `/site-settings` | POST | Switch site hardening settings on or off: XML-RPC, generator tag, security headers, uploads listing (administrators only) |
+| `/indexnow-key` | GET, POST, DELETE | Read, set or remove the IndexNow key the site serves at `/<key>.txt` (setting and removing: administrators only; needs no SEO plugin) |
 | `/changes` | GET | The change log (entries this user may edit; all of it for an administrator) |
 | `/revert` | POST | Restore a change's previous value (refused if the value has changed since, unless `force`) |
 
@@ -295,8 +296,8 @@ returned for a TranslatePress site.
 
 `/status` carries `capabilities`, the fix kinds this install can apply:
 `title`, `description`, `canonical`, `robots` and `social` (only while a
-supported SEO plugin is active), `replace_urls`, `site_settings` and
-`image_alt` (always). `/status` also carries
+supported SEO plugin is active), `replace_urls`, `site_settings`,
+`image_alt` and `indexnow` (always; `indexnow` since 0.11.3). `/status` also carries
 `site_settings`, the current value of each switch. A connector older than 0.11 sends no list at all,
 which means title and description only. Gate each fix kind on its name and
 ignore names you do not know.
@@ -491,6 +492,34 @@ after a real change; each setting is its own log entry (`kind:
 `post_id` 0), visible to administrators only. `/revert` puts the previous
 value back, and answers 409 `ccc_value_changed` with `current` if the
 switch was changed again since (`force` overrides).
+
+### IndexNow key (`/indexnow-key`)
+
+Lets the desktop app ping IndexNow (Bing, Yandex) when a fix is verified.
+IndexNow only accepts a ping for a host that serves the key at a URL on
+that host, so the plugin stores the key the app chose and answers
+`https://site/<key>.txt` itself. The plugin never contacts IndexNow; the
+app sends the ping. Opt-in: nothing is served until a key is set.
+
+- `POST {"key": "..."}` stores the key, replacing any earlier one.
+  Administrators only (403 `ccc_forbidden` otherwise). The key must be 8 to
+  128 characters of `a-z`, `A-Z`, `0-9` and `-` (400 `ccc_bad_indexnow_key`).
+  Reply: `{"key": "...", "keyLocation": "https://site/<key>.txt"}`.
+- `GET` returns the same object, or 404 `ccc_no_indexnow_key` when no key is
+  set. Any user who may use the API can read it (the key is public at its URL).
+- `DELETE` stops serving the key. Administrators only. Reply
+  `{"deleted": true}`, or `false` when there was no key.
+
+The key file answers `200`, `Content-Type: text/plain; charset=utf-8`,
+`X-Robots-Tag: noindex`, body exactly the key, no redirect, with plain or
+pretty permalinks. On a site in a subdirectory it lives under the home path
+(`keyLocation` says where). It is answered by WordPress, not written to
+disk, so the web server must hand unknown paths to WordPress: true on nginx
+and LiteSpeed with the usual WordPress config, and on Apache with pretty
+permalinks. On Apache with plain permalinks and no WordPress rewrite block
+the server answers 404 itself, so fetch `keyLocation` once before the first
+ping and skip IndexNow for that site if it does not return the key.
+Key changes are not change-log entries; deleting the plugin removes the key.
 
 ### The change log
 
