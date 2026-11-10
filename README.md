@@ -519,7 +519,8 @@ and LiteSpeed with the usual WordPress config, and on Apache with pretty
 permalinks. On Apache with plain permalinks and no WordPress rewrite block
 the server answers 404 itself, so fetch `keyLocation` once before the first
 ping and skip IndexNow for that site if it does not return the key.
-Key changes are not change-log entries; deleting the plugin removes the key.
+Key changes are not change-log entries. While a key is set, **Tools → Crawl Cove** shows it
+with a Remove button (administrators, nonce-checked), and deleting the plugin removes it.
 
 ### The change log
 

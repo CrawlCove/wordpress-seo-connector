@@ -37,6 +37,7 @@ class CCC_Admin {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_post_ccc_revert', array( __CLASS__, 'handle_revert' ) );
+		add_action( 'admin_post_ccc_indexnow_remove', array( __CLASS__, 'handle_indexnow_remove' ) );
 	}
 
 	/**
@@ -80,6 +81,28 @@ class CCC_Admin {
 					'ccc_notice' => $notice,
 					'change_id'  => $change_id,
 					'paged'      => $paged,
+				),
+				admin_url( 'tools.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Admin-post.php handler for the IndexNow row's "Remove" button: stop
+	 * serving the key file without needing the desktop app.
+	 */
+	public static function handle_indexnow_remove() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'crawl-cove-connector' ) );
+		}
+		check_admin_referer( 'ccc_indexnow_remove' );
+		$done = CCC_IndexNow::remove();
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'       => 'crawl-cove-connector',
+					'ccc_notice' => is_wp_error( $done ) ? 'error' : 'indexnow_removed',
 				),
 				admin_url( 'tools.php' )
 			)
@@ -211,9 +234,10 @@ class CCC_Admin {
 	 * Render the Tools → Crawl Cove page: status, setup steps, change log.
 	 */
 	public static function render() {
-		$adapter = CCC_Adapter::detect();
-		$log     = CCC_Change_Log::all();
-		$conn    = CCC_Connection::last();
+		$adapter  = CCC_Adapter::detect();
+		$log      = CCC_Change_Log::all();
+		$conn     = CCC_Connection::last();
+		$indexnow = CCC_IndexNow::get_key();
 		// Read-only display flags from our own redirect / pagination links
 		// (handle_revert() already nonce-checked the action that set the
 		// notice); nothing here changes state.
@@ -242,7 +266,9 @@ class CCC_Admin {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Crawl Cove Connector', 'crawl-cove-connector' ); ?></h1>
 
-			<?php if ( 'reverted' === $notice ) : ?>
+			<?php if ( 'indexnow_removed' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'IndexNow key removed. The key file is no longer served.', 'crawl-cove-connector' ); ?></p></div>
+			<?php elseif ( 'reverted' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Change reverted.', 'crawl-cove-connector' ); ?></p></div>
 			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'replace_urls' === $failed['kind'] && empty( $failed['reverted'] ) && ! CCC_Url_Replacer::can_force( $failed ) ) : ?>
 				<div class="notice notice-warning">
@@ -361,6 +387,25 @@ class CCC_Admin {
 							<?php endif; ?>
 						</td>
 					</tr>
+					<?php if ( '' !== $indexnow ) : ?>
+						<tr>
+							<td><?php esc_html_e( 'IndexNow key', 'crawl-cove-connector' ); ?></td>
+							<td>
+								<?php
+								printf(
+									/* translators: %s: URL of the IndexNow key file */
+									esc_html__( 'Served at %s, so the desktop app can ask Bing and other IndexNow search engines to recrawl a page once its fix is verified. This plugin contacts no one itself.', 'crawl-cove-connector' ),
+									'<a href="' . esc_url( CCC_IndexNow::key_location( $indexnow ) ) . '"><code>' . esc_html( CCC_IndexNow::key_location( $indexnow ) ) . '</code></a>'
+								);
+								?>
+								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:6px">
+									<input type="hidden" name="action" value="ccc_indexnow_remove">
+									<?php wp_nonce_field( 'ccc_indexnow_remove' ); ?>
+									<button type="submit" class="button"><?php esc_html_e( 'Remove the key', 'crawl-cove-connector' ); ?></button>
+								</form>
+							</td>
+						</tr>
+					<?php endif; ?>
 				</tbody>
 			</table>
 

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **The Tools page shows the IndexNow key while one is set**, with the URL it
+  is served at and a Remove button, so a site owner can see and stop the key
+  file without the desktop app.
 - **Security: one user can no longer push other users' changes out of the
   log.** The log keeps 1,000 entries; once full, a new entry used to drop
   the oldest live one whoever made it, so an Author pushing 1,000 changes
