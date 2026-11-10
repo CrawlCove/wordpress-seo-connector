@@ -5,6 +5,11 @@
  * php .wporg-assets/make-assets.php
  */
 
+// A git checkout in wp-content/plugins makes this file web-reachable; it only runs from the command line.
+if ( 'cli' !== PHP_SAPI ) {
+	exit;
+}
+
 $font       = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 $navy_deep  = array( 11, 30, 48 );   // #0b1e30
 $navy_mid   = array( 15, 58, 82 );   // #0f3a52

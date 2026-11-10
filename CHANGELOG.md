@@ -2,6 +2,14 @@
 
 ## 0.11.3 (2026-11-10)
 
+- **Security: an image alt push only edits real `<img>` tags.** Text that
+  looks like an image tag inside another tag's attribute value, a `<script>`
+  or a comment was patched too, and the inserted `alt="..."` quotes could
+  turn the alt text into new attributes or script. An Editor without
+  `unfiltered_html` (every site admin on multisite) could use that to plant
+  markup in a page an administrator wrote. The content is now left alone
+  unless core's HTML tokenizer confirms every change landed on a real image;
+  the media library alt is still set.
 - **New: the plugin can serve an IndexNow key file.** `/indexnow-key`
   (GET, POST, DELETE) stores a key the desktop app chooses and answers
   `/<key>.txt` with it, so the app can ask Bing and Yandex to recrawl a

@@ -126,7 +126,83 @@ class CCC_Image_Alt {
 				$edits[] = array( $tag[1], strlen( $tag[0] ), $new, 1 );
 			}
 		}
-		return CCC_Url_Replacer::splice( (string) $text, $edits, 0 );
+		$result = CCC_Url_Replacer::splice( (string) $text, $edits, 0 );
+		if ( $result['count'] && ! self::only_real_images_changed( (string) $text, $result['text'], $forms, $alt, $result['count'] ) ) {
+			return CCC_Url_Replacer::splice( (string) $text, array(), 0 );
+		}
+		return $result;
+	}
+
+	/**
+	 * Whether a rewrite only set the alt on real <img> tags. The regex above
+	 * also matches "<img ...>" text that a browser never parses as a tag:
+	 * inside another tag's attribute value, a <script> or a comment. There
+	 * the inserted alt="..." quotes close the surrounding attribute or JS
+	 * string, so the alt text would become markup or script (an Editor
+	 * without unfiltered_html could plant it in a page an admin wrote). Core's
+	 * HTML tokenizer reads both versions; the rewrite stands only if every
+	 * tag kept its name and attributes (a matching image may gain alt) and
+	 * exactly $count real matching images now carry the new alt.
+	 *
+	 * @param string $before Content before the rewrite.
+	 * @param string $after  Content after it.
+	 * @param array  $forms  The image URL's matching forms.
+	 * @param string $alt    New alt (plain text).
+	 * @param int    $count  Images the rewrite changed.
+	 * @return bool
+	 */
+	private static function only_real_images_changed( $before, $after, array $forms, $alt, $count ) {
+		if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
+			return true; // Core since 6.2, this plugin's minimum; absent only under the unit-test stubs.
+		}
+		$old = self::real_tags( $before, $forms, $alt );
+		$new = self::real_tags( $after, $forms, $alt );
+		if ( count( $old['tags'] ) !== count( $new['tags'] ) || $new['with_alt'] - $old['with_alt'] !== $count ) {
+			return false;
+		}
+		foreach ( $old['tags'] as $i => $tag ) {
+			$names = $tag['names'];
+			if ( $tag['match'] && ! in_array( 'alt', $names, true ) ) {
+				$names[] = 'alt';
+				sort( $names );
+			}
+			if ( $new['tags'][ $i ]['name'] !== $tag['name'] || ( $new['tags'][ $i ]['names'] !== $tag['names'] && $new['tags'][ $i ]['names'] !== $names ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Every real opening tag in $html, as core's tokenizer reads it.
+	 *
+	 * @param string $html  Content.
+	 * @param array  $forms The image URL's matching forms.
+	 * @param string $alt   Alt text to count.
+	 * @return array { tags: [ { name, names (sorted attribute names), match } ], with_alt: matching images whose alt is $alt }
+	 */
+	private static function real_tags( $html, array $forms, $alt ) {
+		$p    = new WP_HTML_Tag_Processor( $html );
+		$tags = array();
+		$hits = 0;
+		while ( $p->next_tag() ) {
+			$names = (array) $p->get_attribute_names_with_prefix( '' );
+			sort( $names );
+			$src   = 'IMG' === $p->get_tag() ? $p->get_attribute( 'src' ) : null;
+			$match = is_string( $src ) && in_array( trim( $src ), $forms, true );
+			if ( $match && $alt === $p->get_attribute( 'alt' ) ) {
+				++$hits;
+			}
+			$tags[] = array(
+				'name'  => $p->get_tag(),
+				'names' => $names,
+				'match' => $match,
+			);
+		}
+		return array(
+			'tags'     => $tags,
+			'with_alt' => $hits,
+		);
 	}
 
 	/**
