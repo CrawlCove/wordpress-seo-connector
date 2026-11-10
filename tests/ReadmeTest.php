@@ -117,4 +117,20 @@ class ReadmeTest extends TestCase {
 		$this->assertLessThan( 250, str_word_count( $changelog ) );
 		$this->assertStringContainsString( 'CHANGELOG.md', $changelog );
 	}
+
+	public function test_readme_route_list_matches_the_registered_routes() {
+		// The readme names every route and their count; both go stale silently
+		// when a route is added (0.11.3 added indexnow-key by hand).
+		preg_match_all( "/register_rest_route\\(\\s*self::NS,\\s*'\\/([a-z-]+)'/", file_get_contents( __DIR__ . '/../includes/class-ccc-rest.php' ), $m );
+		$routes = $m[1];
+		$this->assertGreaterThanOrEqual( 9, count( $routes ) );
+		preg_match( '/It exposes (\\w+) REST routes under `crawlcove\\/v1`: ([a-z, -]+)\\./', $this->file( 'readme.txt' ), $claim );
+		$this->assertNotEmpty( $claim, 'readme.txt route sentence not found' );
+		$words = array( 'eight' => 8, 'nine' => 9, 'ten' => 10, 'eleven' => 11, 'twelve' => 12 );
+		$this->assertSame( count( $routes ), $words[ $claim[1] ] ?? -1, 'route count in readme.txt' );
+		$listed = array_map( 'trim', explode( ',', $claim[2] ) );
+		sort( $listed );
+		sort( $routes );
+		$this->assertSame( $routes, $listed, 'route names in readme.txt' );
+	}
 }
