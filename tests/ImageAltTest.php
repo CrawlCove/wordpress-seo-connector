@@ -58,6 +58,26 @@ class ImageAltTest extends TestCase {
 		$this->assertSame( 1, $r['count'] );
 	}
 
+	public function test_a_greater_than_sign_inside_an_attribute_value_does_not_hide_the_image() {
+		// Review #354 minor: alt="Home > Shop" ended the regex's tag early.
+		$html = '<img alt="Home > Shop" src="' . self::IMG . '"><img title=\'a>b\' src="' . self::IMG . '">';
+		$r    = CCC_Image_Alt::rewrite( $html, array( self::IMG ), 'A door' );
+		$this->assertSame( 2, $r['count'] );
+		$this->assertSame( '<img alt="A door" src="' . self::IMG . '"><img alt="A door" title=\'a>b\' src="' . self::IMG . '">', $r['text'] );
+
+		$GLOBALS['cc_posts'][7]['content'] = '<img alt="Home > Shop" src="https://example.com/x.jpg">';
+		$got = CCC_Image_Alt::run( array( array( 'url' => 'https://example.com/hello/', 'src' => 'https://example.com/x.jpg', 'alt' => 'x' ) ), false, 'bloo' );
+		$this->assertTrue( $got[0]['ok'] );
+		$this->assertSame( 1, $got[0]['inline'] );
+	}
+
+	public function test_an_unclosed_quote_does_not_stall_the_scan() {
+		$html = '<img ' . str_repeat( '"\'', 5000 ) . ' src="' . self::IMG . '"';
+		$r    = CCC_Image_Alt::rewrite( $html, array( self::IMG ), 'A door' );
+		$this->assertSame( 0, $r['count'] );
+		$this->assertSame( PREG_NO_ERROR, preg_last_error() );
+	}
+
 	public function test_empty_alt_is_written_as_an_empty_attribute() {
 		$r = CCC_Image_Alt::rewrite( '<img src="' . self::IMG . '">', array( self::IMG ), '' );
 		$this->assertSame( '<img alt="" src="' . self::IMG . '">', $r['text'] );

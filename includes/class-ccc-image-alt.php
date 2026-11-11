@@ -89,14 +89,18 @@ class CCC_Image_Alt {
 	 * @param string $text  post_content.
 	 * @param array  $forms The image URL's matching forms.
 	 * @param string $alt   New alt (plain text).
-	 * @return array CCC_Url_Replacer::splice() result, plus `held`: matching
-	 *               images left alone because they are not real tags.
+	 * @return array CCC_Url_Replacer::splice() result, plus `found`: images
+	 *               with this src, and `held`: those left alone because they
+	 *               are not real tags.
 	 */
 	public static function rewrite( $text, array $forms, $alt ) {
 		$edits  = array();
 		$held   = 0;
+		$found  = 0;
 		$inside = self::shortcode_openers( (string) $text );
-		if ( preg_match_all( '/<img\b[^<>]*>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
+		// A quoted attribute value may hold '>' (alt="Home > Shop"). Atomic
+		// groups keep a stray quote from backtracking without end.
+		if ( preg_match_all( '/<img\b(?>"[^"]*"|\'[^\']*\'|[^<>"\']+|["\'])*+>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $tags[0] as $tag ) {
 				// Attributes read in order, so an "alt=" inside another
 				// attribute's value is never taken for the real one.
@@ -117,6 +121,7 @@ class CCC_Image_Alt {
 				if ( null === $src || ! in_array( $src, $forms, true ) ) {
 					continue;
 				}
+				++$found;
 				if ( self::in_spans( $tag[1], $inside ) ) {
 					++$held;
 					continue;
@@ -138,7 +143,8 @@ class CCC_Image_Alt {
 			$held  += $result['count'];
 			$result = CCC_Url_Replacer::splice( (string) $text, array(), 0 );
 		}
-		$result['held'] = $held;
+		$result['held']  = $held;
+		$result['found'] = $found;
 		return $result;
 	}
 
@@ -319,7 +325,7 @@ class CCC_Image_Alt {
 			$inline  = self::rewrite( (string) $content, $op['forms'], $op['alt'] );
 		}
 
-		$found_inline = $op['post_id'] && preg_match( '/<img\b[^<>]*\ssrc\s*=\s*("|\')' . self::any_form( $op['forms'] ) . '\1/i', (string) CCC_Url_Replacer::read( $op['post_id'], 'content' ) );
+		$found_inline = $inline && $inline['found'] > 0;
 		if ( ! $attachment_id && ! $found_inline ) {
 			return self::refusal( self::error( 'ccc_image_not_found', __( 'That image is neither in the media library nor in this page\'s content, so there is nothing to set.', 'crawl-cove-connector' ), 404 ) );
 		}
@@ -375,22 +381,6 @@ class CCC_Image_Alt {
 		);
 		$result['change_id'] = $entry['id'];
 		return $result;
-	}
-
-	/**
-	 * A regex alternation of the image URL's forms, as they may appear
-	 * HTML-escaped in a src attribute.
-	 *
-	 * @param array $forms Matching forms.
-	 * @return string
-	 */
-	private static function any_form( array $forms ) {
-		$out = array();
-		foreach ( $forms as $f ) {
-			$out[] = preg_quote( $f, '/' );
-			$out[] = preg_quote( str_replace( '&', '&amp;', $f ), '/' );
-		}
-		return '\s*(?:' . implode( '|', array_unique( $out ) ) . ')\s*';
 	}
 
 	/**

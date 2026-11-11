@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Fix: an image whose current alt or title holds a `>` can have its alt
+  set.** The tag scan stopped at the first `>`, even inside a quoted value
+  such as `alt="Home > Shop"`, so the image was missed. Without a media
+  library copy the push was refused as not found; with one, only the
+  library alt changed.
+
 ## 0.11.4 (2026-11-11)
 
 - **Security: an image alt push leaves shortcode attributes alone.** An
