@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.4 (2026-11-11)
 
 - **Fix: a `>` inside a quoted attribute value no longer hides an image or
   a link.** The tag scan stopped at the first `>`, even inside a value such
@@ -10,8 +10,6 @@
   browser does: a quote opens a value only right after `=`. One side effect:
   link fixes no longer edit `<a>` text that sits inside another tag's
   attribute.
-
-## 0.11.4 (2026-11-11)
 
 - **Security: an image alt push leaves shortcode attributes alone.** An
   `<img>` written inside a shortcode's opening tag, such as a `[caption]`'s
