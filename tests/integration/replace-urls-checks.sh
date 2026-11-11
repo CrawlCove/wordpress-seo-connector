@@ -238,4 +238,10 @@ has "tools: a site-wide links row counts its places" "$TOOLS_ROWS" "Link|Links i
 has "tools: the nofollow-strip row says what changed" "$TOOLS_ROWS" "|$OLD|(nofollow removed)"
 has "tools: the unlink row says the link went" "$TOOLS_ROWS" "|$OLD|(link removed)"
 hasnt "tools: no row shows the raw links key" "$TOOLS_ROWS" "links|"
+echo "-- a '>' inside a quoted value does not hide the link (review #354 minor) --"
+P7="$("${WP[@]}" post create --post_type=page --post_title="Breadcrumb links" --post_status=publish --post_author="$EDITOR_ID" --porcelain)"
+put_content "$P7" "'<p><a title=\"Home > Shop\" href=\"$OLD\">shop</a></p>'"
+req POST /replace-urls "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P7\",\"from\":\"$OLD\",\"to\":\"$NEW\",\"scope\":\"page\"}]}"
+check "'>' in title: the link is repointed" 200 "$RESP_HTTP" '.[0].count' '1' "$RESP_BODY"
+same "'>' in title: only the href changed" "<p><a title=\"Home > Shop\" href=\"$NEW\">shop</a></p>" "$("${WP[@]}" post get "$P7" --field=post_content)"
 summary

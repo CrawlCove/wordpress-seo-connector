@@ -98,9 +98,10 @@ class CCC_Image_Alt {
 		$held   = 0;
 		$found  = 0;
 		$inside = self::shortcode_openers( (string) $text );
-		// A quoted attribute value may hold '>' (alt="Home > Shop"). Atomic
-		// groups keep a stray quote from backtracking without end.
-		if ( preg_match_all( '/<img\b(?>"[^"]*"|\'[^\']*\'|[^<>"\']+|["\'])*+>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
+		// A quoted attribute value may hold '>' (alt="Home > Shop"). As in a
+		// browser, a quote opens a value only right after '='; atomic groups
+		// keep a stray quote from backtracking without end.
+		if ( preg_match_all( '/<img\b(?>\s*=\s*(?:"[^"]*"|\'[^\']*\')|[^<>"\'=]+|["\'=])*+>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $tags[0] as $tag ) {
 				// Attributes read in order, so an "alt=" inside another
 				// attribute's value is never taken for the real one.

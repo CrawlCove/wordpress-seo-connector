@@ -65,6 +65,11 @@ class ImageAltTest extends TestCase {
 		$this->assertSame( 2, $r['count'] );
 		$this->assertSame( '<img alt="A door" src="' . self::IMG . '"><img alt="A door" title=\'a>b\' src="' . self::IMG . '">', $r['text'] );
 
+		// A quote opens a value only after '=': an apostrophe in an unquoted
+		// value must not swallow the next tag.
+		$r = CCC_Image_Alt::rewrite( '<img alt=Bob\'s src=b.jpg><p>x</p><img src=\'' . self::IMG . '\'>', array( self::IMG ), 'A door' );
+		$this->assertSame( '<img alt=Bob\'s src=b.jpg><p>x</p><img alt="A door" src=\'' . self::IMG . '\'>', $r['text'] );
+
 		$GLOBALS['cc_posts'][7]['content'] = '<img alt="Home > Shop" src="https://example.com/x.jpg">';
 		$got = CCC_Image_Alt::run( array( array( 'url' => 'https://example.com/hello/', 'src' => 'https://example.com/x.jpg', 'alt' => 'x' ) ), false, 'bloo' );
 		$this->assertTrue( $got[0]['ok'] );
@@ -72,7 +77,7 @@ class ImageAltTest extends TestCase {
 	}
 
 	public function test_an_unclosed_quote_does_not_stall_the_scan() {
-		$html = '<img ' . str_repeat( '"\'', 5000 ) . ' src="' . self::IMG . '"';
+		$html = '<img ' . str_repeat( '"\'= =\'', 5000 ) . ' src="' . self::IMG . '"';
 		$r    = CCC_Image_Alt::rewrite( $html, array( self::IMG ), 'A door' );
 		$this->assertSame( 0, $r['count'] );
 		$this->assertSame( PREG_NO_ERROR, preg_last_error() );

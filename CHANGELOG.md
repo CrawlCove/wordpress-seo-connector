@@ -2,11 +2,14 @@
 
 ## Unreleased
 
-- **Fix: an image whose current alt or title holds a `>` can have its alt
-  set.** The tag scan stopped at the first `>`, even inside a quoted value
-  such as `alt="Home > Shop"`, so the image was missed. Without a media
-  library copy the push was refused as not found; with one, only the
-  library alt changed.
+- **Fix: a `>` inside a quoted attribute value no longer hides an image or
+  a link.** The tag scan stopped at the first `>`, even inside a value such
+  as `alt="Home > Shop"` or `title="Home > Shop"`, so an alt push missed
+  the image (refused as not found when it was not in the media library) and
+  a link fix missed the link. The scan now reads quoted values the way a
+  browser does: a quote opens a value only right after `=`. One side effect:
+  link fixes no longer edit `<a>` text that sits inside another tag's
+  attribute.
 
 ## 0.11.4 (2026-11-11)
 

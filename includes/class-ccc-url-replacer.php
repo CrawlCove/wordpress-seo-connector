@@ -260,7 +260,12 @@ class CCC_Url_Replacer {
 	 * @param int    $skip  Matches deliberately left alone (by reference).
 	 */
 	private static function rewrite_tags( $text, $json, array $op, array &$edits, &$skip ) {
-		if ( ! preg_match_all( '/<([a-zA-Z][a-zA-Z0-9-]*)(\s[^<>]*)?>/', $text, $tags, PREG_OFFSET_CAPTURE ) ) {
+		// In HTML a quoted value may hold '>' (title="Home > Shop"). As in a
+		// browser, a quote opens a value only right after '='; atomic groups
+		// keep a stray quote from backtracking without end. In JSON a bare
+		// '"' ends the JSON string, so there the old scan stays.
+		$scan = $json ? '/<([a-zA-Z][a-zA-Z0-9-]*)(\s[^<>]*)?>/' : '/<([a-zA-Z][a-zA-Z0-9-]*)(\s(?>\s*=\s*(?:"[^"]*"|\'[^\']*\')|[^<>"\'=]+|["\'=])*+)?>/';
+		if ( ! preg_match_all( $scan, $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			return;
 		}
 		foreach ( $tags[0] as $n => $tag ) {

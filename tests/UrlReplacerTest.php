@@ -128,6 +128,26 @@ class UrlReplacerTest extends TestCase {
 		$this->assertStringContainsString( 'href="https://example.com/keep/">k</a>', $u['text'], 'unlink never takes a title for the href' );
 	}
 
+	public function test_a_greater_than_sign_inside_a_quoted_value_does_not_hide_the_tag() {
+		// Review #354 minor, same scan as image alt: title="a > b" ended the tag early.
+		$html = '<a title="Home > Shop" href="https://example.com/old-page/" rel="nofollow">x</a>';
+		$r    = $this->roundtrip( $html, 'content', $this->op() );
+		$this->assertSame( '<a title="Home > Shop" href="https://example.com/new-page/" rel="nofollow">x</a>', $r['text'] );
+		$s = $this->roundtrip( $html, 'content', $this->op( array( 'to' => self::OLD, 'rel_strip' => 'nofollow' ) ) );
+		$this->assertSame( '<a title="Home > Shop" href="https://example.com/old-page/">x</a>', $s['text'] );
+		$u = $this->roundtrip( $html, 'content', $this->op( array( 'unlink' => true, 'to' => null ) ) );
+		$this->assertSame( 'x', $u['text'] );
+		$q = $this->roundtrip( '<a title=Bob\'s href=/a/>a</a> <a href=\'/old-page/\'>b</a>', 'content', $this->op() );
+		$this->assertSame( 1, $q['count'], 'an apostrophe in an unquoted value does not open a quote' );
+	}
+
+	public function test_an_unclosed_quote_does_not_stall_the_tag_scan() {
+		$html = '<a ' . str_repeat( '"\'= =\'', 5000 ) . ' href="https://example.com/old-page/"';
+		$r    = $this->roundtrip( $html, 'content', $this->op() );
+		$this->assertSame( 0, $r['count'] );
+		$this->assertSame( PREG_NO_ERROR, preg_last_error() );
+	}
+
 	public function test_unlink_skips_an_anchor_whose_closing_tag_is_not_its_own() {
 		$html = '<a href="https://example.com/old-page/">no close <a href="/other/">other</a>';
 		$r    = $this->roundtrip( $html, 'content', $this->op( array( 'unlink' => true ) ) );
