@@ -681,5 +681,5 @@ flooder's own history (ChangeLogTest, red on the old evict()).
   modifier matches before a final `\n`, so `"key\n"` was stored, and the key
   file could then never be served (a working key replaced by a dead one;
   `manage_options` only). The pattern is now `/^[a-zA-Z0-9-]{8,128}$/D`.
-  The other `$`-anchored patterns in the plugin allow a newline anyway; this
-  only one.
+  It was the only validator where that mattered: the plugin's other
+  `$`-anchored patterns accept a newline by design.
