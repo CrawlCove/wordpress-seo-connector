@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.4 (2026-11-11)
 
 - **Security: an image alt push leaves shortcode attributes alone.** An
   `<img>` written inside a shortcode's opening tag, such as a `[caption]`'s
