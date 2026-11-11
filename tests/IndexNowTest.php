@@ -27,7 +27,7 @@ class IndexNowTest extends TestCase {
 	}
 
 	public function test_keys_outside_the_indexnow_format_are_refused() {
-		foreach ( array( 'short12', str_repeat( 'a', 129 ), 'has_underscore1', 'dot.ted.key', '../../etc/x', 'key with space', 12345678, null ) as $bad ) {
+		foreach ( array( 'short12', str_repeat( 'a', 129 ), 'has_underscore1', 'dot.ted.key', '../../etc/x', 'key with space', "abcdef123\n", "abcdef123\r\n", 12345678, null ) as $bad ) {
 			$got = CCC_IndexNow::store( $bad );
 			$this->assertSame( 'ccc_bad_indexnow_key', $got->get_error_code(), var_export( $bad, true ) );
 		}

@@ -41,6 +41,23 @@ class ImageAltTest extends TestCase {
 		$this->assertSame( array( 'alt', 'title', 'src' ), array_column( $attrs, 'name' ) );
 	}
 
+	public function test_an_img_inside_a_shortcode_attribute_is_left_alone() {
+		// Review #354: an Editor's alt pushed into [caption caption="<img>"]
+		// closed the admin's attribute and dropped the whole figure.
+		$GLOBALS['shortcode_tags'] = array( 'caption' => '__return_empty_string', 'column' => '__return_empty_string' );
+		$cap  = '[caption id="c1" width="300" caption="Logo <img src=' . self::IMG . '>"]';
+		$html = '[column]' . $cap . '<img src="' . self::IMG . '">[/caption][/column]';
+		$r    = CCC_Image_Alt::rewrite( $html, array( self::IMG ), 'A door' );
+		$this->assertSame( 1, $r['count'] );
+		$this->assertSame( '[column]' . $cap . '<img alt="A door" src="' . self::IMG . '">[/caption][/column]', $r['text'] );
+	}
+
+	public function test_a_bracket_that_is_not_a_registered_shortcode_changes_nothing() {
+		$html = '[note text="<img src=' . self::IMG . '>"]';
+		$r    = CCC_Image_Alt::rewrite( $html, array( self::IMG ), 'A door' );
+		$this->assertSame( 1, $r['count'] );
+	}
+
 	public function test_empty_alt_is_written_as_an_empty_attribute() {
 		$r = CCC_Image_Alt::rewrite( '<img src="' . self::IMG . '">', array( self::IMG ), '' );
 		$this->assertSame( '<img alt="" src="' . self::IMG . '">', $r['text'] );

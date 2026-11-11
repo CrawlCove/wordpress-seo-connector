@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Security: an image alt push leaves shortcode attributes alone.** An
+  `<img>` written inside a shortcode's opening tag, such as a `[caption]`'s
+  `caption="..."`, is an attribute value, but it reads as a real tag to the
+  HTML tokenizer, so the 0.11.3 guard let the push patch it. The inserted
+  quotes closed the shortcode's attribute: the page lost its caption figure,
+  and the alt text could add attributes to a shortcode an administrator
+  wrote. Images inside any registered shortcode's opening tag are now
+  skipped; the real images in the page still get the alt.
+- **The IndexNow key check refuses a trailing newline.** A key sent as
+  `"key\n"` was accepted and stored, and its file could then never be
+  served.
 - **The Tools page shows the IndexNow key while one is set**, with the URL it
   is served at and a Remove button, so a site owner can see and stop the key
   file without the desktop app.

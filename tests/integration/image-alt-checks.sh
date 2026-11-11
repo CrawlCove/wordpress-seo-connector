@@ -8,7 +8,8 @@
 # front end serves it there and in an Elementor image widget (which reads the
 # attachment); an empty alt is written as alt=""; dry-run writes nothing; an
 # Author cannot touch an editor's page; revert restores both places exactly,
-# and refuses after a hand edit.
+# and refuses after a hand edit; <img> text inside another tag's attribute, a
+# script or a shortcode's opening tag ([caption caption="..."]) is never patched.
 #
 # Self-contained (own site dir and port). Run: bash tests/integration/image-alt-checks.sh
 
@@ -223,5 +224,20 @@ has "fixture: the tooltip page holds both fake tags" "$P3_BEFORE" "data-tip=\"<i
 req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P3\",\"src\":\"$MEDIUM\",\"alt\":\"onmouseover=alert(1) x\"}]}"
 check "fake tags: no inline change" 200 "$RESP_HTTP" '.[0].inline' '0' "$RESP_BODY"
 same "fake tags: page content byte-identical" "$P3_BEFORE" "$(content "$P3")"
+
+
+echo "-- an <img> inside a shortcode's attribute is never patched (review #354) --"
+P4="$("${WP[@]}" post create --post_type=page --post_title="Caption page" --post_status=publish --post_author=1 --porcelain)"
+put_content "$P4" "'[caption id=\"c1\" width=\"300\" caption=\"Logo <img src=$MEDIUM>\"]<img src=\"$MEDIUM\">[/caption]'"
+P4_BEFORE="$(content "$P4")"
+has "fixture: the caption attribute holds an <img>" "$P4_BEFORE" "caption=\"Logo <img src=$MEDIUM>\"]"
+req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P4\",\"src\":\"$MEDIUM\",\"alt\":\"x id=pwn width=9999 y\"}]}"
+check "caption: only the real image changes" 200 "$RESP_HTTP" '.[0].inline' '1' "$RESP_BODY"
+same "caption: the shortcode attribute is untouched, the real <img> gains the alt" \
+  "[caption id=\"c1\" width=\"300\" caption=\"Logo <img src=$MEDIUM>\"]<img alt=\"x id=pwn width=9999 y\" src=\"$MEDIUM\">[/caption]" "$(content "$P4")"
+P4_HTML="$(curl -s "$URL/?page_id=$P4")"
+has "caption: the front end still renders the figure and its caption" "$P4_HTML" 'wp-caption-text">Logo'
+has "caption: the pushed words stay inside the alt" "$P4_HTML" 'alt="x id=pwn width=9999 y"'
+hasnt "caption: the pushed width never reaches the figure" "$P4_HTML" '9999px'
 
 summary

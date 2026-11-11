@@ -34,12 +34,14 @@ class CCC_IndexNow {
 
 	/**
 	 * IndexNow's key format: 8 to 128 characters of a-z, A-Z, 0-9 and '-'.
+	 * The D modifier stops '$' accepting a trailing newline (review #354),
+	 * which would store a key whose file can never be served.
 	 *
 	 * @param mixed $key Candidate key.
 	 * @return bool
 	 */
 	public static function valid( $key ) {
-		return is_string( $key ) && 1 === preg_match( '/^[a-zA-Z0-9-]{8,128}$/', $key );
+		return is_string( $key ) && 1 === preg_match( '/^[a-zA-Z0-9-]{8,128}$/D', $key );
 	}
 
 	/**

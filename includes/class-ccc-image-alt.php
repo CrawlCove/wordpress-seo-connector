@@ -92,9 +92,13 @@ class CCC_Image_Alt {
 	 * @return array CCC_Url_Replacer::splice() result.
 	 */
 	public static function rewrite( $text, array $forms, $alt ) {
-		$edits = array();
+		$edits  = array();
+		$inside = self::shortcode_openers( (string) $text );
 		if ( preg_match_all( '/<img\b[^<>]*>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $tags[0] as $tag ) {
+				if ( self::in_spans( $tag[1], $inside ) ) {
+					continue;
+				}
 				// Attributes read in order, so an "alt=" inside another
 				// attribute's value is never taken for the real one.
 				$attrs = CCC_Url_Replacer::attributes( $tag[0] );
@@ -131,6 +135,49 @@ class CCC_Image_Alt {
 			return CCC_Url_Replacer::splice( (string) $text, array(), 0 );
 		}
 		return $result;
+	}
+
+	/**
+	 * Byte spans of every registered shortcode's opening tag, nested ones
+	 * included. "<img ...>" text there is an attribute value (a [caption]'s
+	 * caption="..."), and core's tokenizer cannot tell: it reads it as a real
+	 * tag, so the guard below would pass an alt whose quotes close the
+	 * shortcode's attribute (review #354).
+	 *
+	 * @param string $text Content.
+	 * @param int    $base Offset of $text in the full content.
+	 * @return array List of [ start, end ) pairs.
+	 */
+	private static function shortcode_openers( $text, $base = 0 ) {
+		if ( empty( $GLOBALS['shortcode_tags'] ) || false === strpos( $text, '[' ) ) {
+			return array();
+		}
+		$spans = array();
+		if ( preg_match_all( '/' . get_shortcode_regex() . '/', $text, $all, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
+			foreach ( $all as $m ) {
+				$spans[] = array( $base + $m[0][1], $base + $m[3][1] + strlen( $m[3][0] ) );
+				if ( isset( $m[5] ) && -1 !== $m[5][1] && '' !== $m[5][0] ) {
+					$spans = array_merge( $spans, self::shortcode_openers( $m[5][0], $base + $m[5][1] ) );
+				}
+			}
+		}
+		return $spans;
+	}
+
+	/**
+	 * Whether an offset falls inside any span.
+	 *
+	 * @param int   $offset Byte offset.
+	 * @param array $spans  [ start, end ) pairs.
+	 * @return bool
+	 */
+	private static function in_spans( $offset, array $spans ) {
+		foreach ( $spans as $span ) {
+			if ( $offset >= $span[0] && $offset < $span[1] ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

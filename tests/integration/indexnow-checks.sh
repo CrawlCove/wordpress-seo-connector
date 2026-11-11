@@ -132,6 +132,8 @@ for bad in 'short1' 'has_underscore_1' '../../wp-config' 'dot.ted.key.1'; do
   req POST /indexnow-key "$ADMIN" "{\"key\":\"$bad\"}"
   check "bad key [$bad]: refused" 400 "$RESP_HTTP" '.code' 'ccc_bad_indexnow_key' "$RESP_BODY"
 done
+req POST /indexnow-key "$ADMIN" "{\"key\":\"$KEY\\n\"}"
+check "bad key [trailing newline]: refused (review #354)" 400 "$RESP_HTTP" '.code' 'ccc_bad_indexnow_key' "$RESP_BODY"
 req POST /indexnow-key "$ADMIN" '{}'
 check_http "missing key: refused" 400 "$RESP_HTTP" "$RESP_BODY"
 

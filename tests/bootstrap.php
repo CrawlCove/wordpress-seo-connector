@@ -37,6 +37,7 @@ function cc_reset_wp() {
 	$GLOBALS['cc_pll_languages']    = array(); // active Polylang language slugs; empty = Polylang not active
 	$GLOBALS['cc_pll_default_lang'] = ''; // pll_default_language() stub
 	$GLOBALS['cc_pll_strings']      = array(); // lang slug => original string => translation (PLL_MO stub's persisted store)
+	$GLOBALS['shortcode_tags']      = array(); // registered shortcode tag => callback (core's global)
 }
 
 /**
@@ -245,6 +246,15 @@ function wp_strip_all_tags( $text, $remove_breaks = false ) {
 	return trim( $text );
 }
 
+// Core's get_shortcode_regex() (wp-includes/shortcodes.php), verbatim apart
+// from the filter-free tag list.
+function get_shortcode_regex( $tagnames = null ) {
+	if ( empty( $tagnames ) ) {
+		$tagnames = array_keys( $GLOBALS['shortcode_tags'] );
+	}
+	$tagregexp = implode( '|', array_map( 'preg_quote', $tagnames ) );
+	return '\\[(\\[?)(' . $tagregexp . ')(?![\\w-])([^\\]\\/]*(?:\\/(?!\\])[^\\]\\/]*)*?)(?:(\\/)\\]|\\](?:([^\\[]*+(?:\\[(?!\\/\\2\\])[^\\[]*+)*+)\\[\\/\\2\\])?)(\\]?)';
+}
 function apply_filters( $tag, $value ) { return $value; }
 function do_action( $tag ) { $GLOBALS['cc_actions'][] = $tag; }
 
