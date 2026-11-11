@@ -451,6 +451,10 @@ Reply per item:
 page is still patched). `inline` is the number of `<img>` tags changed;
 `post_id` is 0 when `url` is a homepage or archive (attachment only). An
 image found in neither place answers `ok: false`, `ccc_image_not_found`.
+One that is not in the media library and appears in the page only where it
+is not a real tag (inside a shortcode's opening tag, another tag's
+attribute, a script or a comment) answers `ok: false`,
+`ccc_image_not_editable`, and nothing is written.
 `change_id` appears only after a real write; one entry (`kind:
 "image_alt"`) covers both places, and `/revert` restores both: the
 attachment alt to `from` and the page to its exact previous bytes. If the

@@ -10,6 +10,11 @@
   and the alt text could add attributes to a shortcode an administrator
   wrote. Images inside any registered shortcode's opening tag are now
   skipped; the real images in the page still get the alt.
+- **An image the plugin cannot safely edit is refused by name.** When an
+  image is not in the media library and the page only holds it inside a
+  shortcode, an attribute, a script or a comment, the push used to answer
+  ok with nothing changed, which the app showed as "not found". It now
+  answers `ccc_image_not_editable` and says where the image is.
 - **The IndexNow key check refuses a trailing newline.** A key sent as
   `"key\n"` was accepted and stored, and its file could then never be
   served.

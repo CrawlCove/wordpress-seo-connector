@@ -122,6 +122,24 @@ class ImageAltTest extends TestCase {
 		$GLOBALS['cc_deny'] = array( 7 );
 		$got = CCC_Image_Alt::run( array( $this->item( 'x' ) ), false, 'bloo' );
 		$this->assertSame( 'ccc_forbidden', $got[0]['error'] );
+		$GLOBALS['cc_deny'] = array();
+
+		// Review #354 minor: found only where it cannot be safely edited.
+		$GLOBALS['shortcode_tags']         = array( 'caption' => '__return_empty_string' );
+		$GLOBALS['cc_posts'][7]['content'] = '[caption caption="Logo <img src=\'https://example.com/x.jpg\'>"]Logo[/caption]';
+		$got = CCC_Image_Alt::run( array( array( 'url' => 'https://example.com/hello/', 'src' => 'https://example.com/x.jpg', 'alt' => 'x' ) ), false, 'bloo' );
+		$this->assertSame( 'ccc_image_not_editable', $got[0]['error'] );
+		$this->assertSame( array(), $GLOBALS['cc_db_writes'] );
+
+		// Already carrying the alt is still a plain ok, not a refusal.
+		$GLOBALS['cc_posts'][7]['content'] = '<img src="https://example.com/x.jpg" alt="x">';
+		$got = CCC_Image_Alt::run( array( array( 'url' => 'https://example.com/hello/', 'src' => 'https://example.com/x.jpg', 'alt' => 'x' ) ), false, 'bloo' );
+		$this->assertTrue( $got[0]['ok'] );
+		$this->assertSame( 0, $got[0]['inline'] );
+
+		$GLOBALS['cc_deny'] = array( 7 );
+		$got = CCC_Image_Alt::run( array( $this->item( 'x' ) ), false, 'bloo' );
+		$this->assertSame( 'ccc_forbidden', $got[0]['error'] );
 		$this->assertSame( '', get_post_meta( 40, '_wp_attachment_image_alt', true ) );
 	}
 }

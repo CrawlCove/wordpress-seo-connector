@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-10T14:53:00+00:00\n"
+"POT-Creation-Date: 2026-11-11T14:07:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -416,8 +416,8 @@ msgid "That change was made for a language this site no longer serves through a 
 msgstr ""
 
 #: includes/class-ccc-change-log.php:304
-#: includes/class-ccc-image-alt.php:380
-#: includes/class-ccc-image-alt.php:394
+#: includes/class-ccc-image-alt.php:435
+#: includes/class-ccc-image-alt.php:449
 #: includes/class-ccc-site-settings.php:285
 msgid "The value has changed since this change was made, so reverting it would overwrite the newer value. Nothing was written."
 msgstr ""
@@ -446,48 +446,52 @@ msgstr ""
 msgid "A change needs the url of the page that shows the image."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:218
+#: includes/class-ccc-image-alt.php:270
 #: includes/class-ccc-service.php:584
 #: includes/class-ccc-url-replacer.php:567
 msgid "changes must be a non-empty array."
 msgstr ""
 
 #. translators: %d: maximum number of changes allowed per request
-#: includes/class-ccc-image-alt.php:222
+#: includes/class-ccc-image-alt.php:274
 #: includes/class-ccc-service.php:590
 #: includes/class-ccc-url-replacer.php:571
 #, php-format
 msgid "At most %d changes per request."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:249
+#: includes/class-ccc-image-alt.php:301
 msgid "This user may not edit that media library image."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:264
+#: includes/class-ccc-image-alt.php:316
 #: includes/class-ccc-rest.php:416
 #: includes/class-ccc-service.php:647
 #: includes/class-ccc-url-replacer.php:113
 msgid "This user may not edit that target."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:272
+#: includes/class-ccc-image-alt.php:324
 msgid "That image is neither in the media library nor in this page's content, so there is nothing to set."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:376
+#: includes/class-ccc-image-alt.php:327
+msgid "That image appears in this page only inside a shortcode, an attribute, a script or a comment, where the plugin cannot safely set its alt. Edit it in WordPress."
+msgstr ""
+
+#: includes/class-ccc-image-alt.php:431
 msgid "The page has been edited since this change, so the old alt text cannot be put back into it safely. Nothing was written."
 msgstr ""
 
-#: includes/class-ccc-indexnow.php:117
+#: includes/class-ccc-indexnow.php:119
 msgid "No IndexNow key is set on this site."
 msgstr ""
 
-#: includes/class-ccc-indexnow.php:134
+#: includes/class-ccc-indexnow.php:136
 msgid "The key must be 8 to 128 characters of letters, digits and hyphens."
 msgstr ""
 
-#: includes/class-ccc-indexnow.php:160
+#: includes/class-ccc-indexnow.php:162
 msgid "Only an administrator can change the IndexNow key."
 msgstr ""
 

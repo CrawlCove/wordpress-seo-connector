@@ -89,16 +89,15 @@ class CCC_Image_Alt {
 	 * @param string $text  post_content.
 	 * @param array  $forms The image URL's matching forms.
 	 * @param string $alt   New alt (plain text).
-	 * @return array CCC_Url_Replacer::splice() result.
+	 * @return array CCC_Url_Replacer::splice() result, plus `held`: matching
+	 *               images left alone because they are not real tags.
 	 */
 	public static function rewrite( $text, array $forms, $alt ) {
 		$edits  = array();
+		$held   = 0;
 		$inside = self::shortcode_openers( (string) $text );
 		if ( preg_match_all( '/<img\b[^<>]*>/i', (string) $text, $tags, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $tags[0] as $tag ) {
-				if ( self::in_spans( $tag[1], $inside ) ) {
-					continue;
-				}
 				// Attributes read in order, so an "alt=" inside another
 				// attribute's value is never taken for the real one.
 				$attrs = CCC_Url_Replacer::attributes( $tag[0] );
@@ -118,6 +117,10 @@ class CCC_Image_Alt {
 				if ( null === $src || ! in_array( $src, $forms, true ) ) {
 					continue;
 				}
+				if ( self::in_spans( $tag[1], $inside ) ) {
+					++$held;
+					continue;
+				}
 				$attr = ' alt="' . esc_attr( $alt ) . '"';
 				if ( $old ) {
 					if ( -1 !== $old['vstart'] && esc_attr( $alt ) === $old['value'] ) {
@@ -132,8 +135,10 @@ class CCC_Image_Alt {
 		}
 		$result = CCC_Url_Replacer::splice( (string) $text, $edits, 0 );
 		if ( $result['count'] && ! self::only_real_images_changed( (string) $text, $result['text'], $forms, $alt, $result['count'] ) ) {
-			return CCC_Url_Replacer::splice( (string) $text, array(), 0 );
+			$held  += $result['count'];
+			$result = CCC_Url_Replacer::splice( (string) $text, array(), 0 );
 		}
+		$result['held'] = $held;
 		return $result;
 	}
 
@@ -317,6 +322,9 @@ class CCC_Image_Alt {
 		$found_inline = $op['post_id'] && preg_match( '/<img\b[^<>]*\ssrc\s*=\s*("|\')' . self::any_form( $op['forms'] ) . '\1/i', (string) CCC_Url_Replacer::read( $op['post_id'], 'content' ) );
 		if ( ! $attachment_id && ! $found_inline ) {
 			return self::refusal( self::error( 'ccc_image_not_found', __( 'That image is neither in the media library nor in this page\'s content, so there is nothing to set.', 'crawl-cove-connector' ), 404 ) );
+		}
+		if ( ! $attachment_id && $inline && 0 === $inline['count'] && $inline['held'] > 0 ) {
+			return self::refusal( self::error( 'ccc_image_not_editable', __( 'That image appears in this page only inside a shortcode, an attribute, a script or a comment, where the plugin cannot safely set its alt. Edit it in WordPress.', 'crawl-cove-connector' ), 409 ) );
 		}
 
 		$result           = array(

@@ -224,6 +224,13 @@ has "fixture: the tooltip page holds both fake tags" "$P3_BEFORE" "data-tip=\"<i
 req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P3\",\"src\":\"$MEDIUM\",\"alt\":\"onmouseover=alert(1) x\"}]}"
 check "fake tags: no inline change" 200 "$RESP_HTTP" '.[0].inline' '0' "$RESP_BODY"
 same "fake tags: page content byte-identical" "$P3_BEFORE" "$(content "$P3")"
+EXT="https://cdn.example.org/badge.png"
+P5="$("${WP[@]}" post create --post_type=page --post_title="Badge page" --post_status=publish --post_author=1 --porcelain)"
+put_content "$P5" "'<div data-tip=\"<img src=\'$EXT\'>\">tip</div>'"
+P5_BEFORE="$(content "$P5")"
+req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P5\",\"src\":\"$EXT\",\"alt\":\"Badge\"}]}"
+check "only a fake tag, no media library image: refused as not editable, not as not found" 200 "$RESP_HTTP" '.[0].error' 'ccc_image_not_editable' "$RESP_BODY"
+same "not editable: page content byte-identical" "$P5_BEFORE" "$(content "$P5")"
 
 
 echo "-- an <img> inside a shortcode's attribute is never patched (review #354) --"
