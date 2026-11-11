@@ -661,3 +661,25 @@ flooder's own history (ChangeLogTest, red on the old evict()).
   method (11 today), so a route added later is swept without editing the
   script. Mutation-checked: opening DELETE /indexnow-key's permission makes
   it fail.
+
+## Addendum, 11 Nov 2026 (0.11.4: two holes an adversarial review found in 0.11.3)
+
+- **The `/image-alt` guard missed shortcode attributes.** An `<img>` written
+  inside a shortcode's opening tag (`[caption caption="Logo <img src=X>"]`)
+  is an attribute value to WordPress, but core's HTML tokenizer cannot see
+  shortcodes and reads it as a real tag, so the 9 Nov guard let the push
+  patch it. The inserted quotes closed the shortcode's `caption="..."`: the
+  live page lost the figure and its caption, and an alt like
+  `x id=pwn width=9999 y` added attributes to a shortcode an administrator
+  wrote. Present since 0.11.0. Fixed by skipping any `<img>` that starts
+  inside a registered shortcode's opening tag (`get_shortcode_regex()`,
+  nested shortcodes included); the page's real images still get the alt.
+  When the image is only in such places and not in the media library, the
+  reply is now `ccc_image_not_editable` rather than ok with nothing done.
+  image-alt-checks.sh runs the review's exact page and fails on 0.11.3.
+- **`/indexnow-key` accepted a trailing newline.** `$` without the `D`
+  modifier matches before a final `\n`, so `"key\n"` was stored, and the key
+  file could then never be served (a working key replaced by a dead one;
+  `manage_options` only). The pattern is now `/^[a-zA-Z0-9-]{8,128}$/D`.
+  The other `$`-anchored patterns in the plugin allow a newline anyway; this
+  only one.
