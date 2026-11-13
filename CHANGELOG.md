@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **readme.txt lists IndexNow.** Crawl Cove desktop v1.3.16 shipped the
+  IndexNow switch that uses the 0.11.3 key route, so the listing now says so.
+
 ## 0.11.4 (2026-11-11)
 
 - **Fix: a `>` inside a quoted attribute value no longer hides an image or

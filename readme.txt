@@ -23,6 +23,7 @@ The plugin is free. The Crawl Cove desktop app it works with has a Free plan tha
 * **Links that point at a redirect**, repointed to the final URL or unlinked, across posts, Elementor layouts and menus.
 * **Image alt text**, on the image and in the page that shows it.
 * **Four hardening switches** for administrators: XML-RPC off, WordPress version hidden, security headers, no upload folder listing.
+* **Faster recrawls through IndexNow.** With Crawl Cove desktop v1.3.16 or newer, an administrator can switch on IndexNow for the site. The plugin serves the key file, and the app tells Bing and other IndexNow search engines when a fix is verified. The plugin itself contacts no one.
 
 = You stay in control =
 

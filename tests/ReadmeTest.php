@@ -94,6 +94,16 @@ class ReadmeTest extends TestCase {
 		$this->assertStringContainsString( 'switch_to_blog( $ccc_site_id );', $uninstall );
 	}
 
+	/**
+	 * The IndexNow bullet names the first desktop release with the switch
+	 * (CA-36 shipped in v1.3.16, app ticket #365) and keeps the plugin's own
+	 * no-external-requests promise next to it.
+	 */
+	public function test_readme_ties_indexnow_to_the_app_release_that_uses_it() {
+		$readme = $this->file( 'readme.txt' );
+		$this->assertMatchesRegularExpression( '/^\* \*\*[^*]*IndexNow[^*]*\*\*.*Crawl Cove desktop v1\.3\.16 or newer.*The plugin itself contacts no one\./m', $readme );
+	}
+
 	public function test_readme_never_says_pushed_posts_are_re_saved() {
 		// Since 0.10.8 a push writes meta only and purges caches; the post is
 		// never re-saved (that ran the body through kses and could strip embeds).
