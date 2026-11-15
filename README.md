@@ -1,3 +1,5 @@
+<a href="https://crawlcove.com/download?utm_source=github&utm_medium=readme&utm_campaign=wordpress-seo-connector"><img src="https://raw.githubusercontent.com/CrawlCove/.github/main/banners/wordpress-seo-connector.svg" width="1200" alt="wordpress-seo-connector: Bulk-apply fixes from the Crawl Cove desktop crawler to Yoast SEO, Rank Math, SEOPress or AIOSEO, with a change log and one-click revert." /></a>
+
 # Crawl Cove Connector: WordPress SEO Plugin for Bulk Title & Meta Description Fixes
 
 [![tests](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml/badge.svg)](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml) [![Latest release](https://img.shields.io/github/v/release/CrawlCove/wordpress-seo-connector)](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest) [![License: GPL v2+](https://img.shields.io/badge/license-GPLv2%2B-blue)](LICENSE)
