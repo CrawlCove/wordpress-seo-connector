@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.0.0 (2026-11-16)
+
+- **First release on the WordPress.org plugin directory.** Same code as
+  0.11.4, renumbered to 1.0.0 for the directory listing. The desktop app
+  compares versions numerically, so 1.0.0 satisfies every 0.10.x and 0.11.x
+  minimum.
+
 - **readme.txt lists IndexNow.** Crawl Cove desktop v1.3.16 shipped the
   IndexNow switch that uses the 0.11.3 key route, so the listing now says so.
 

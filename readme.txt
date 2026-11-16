@@ -4,7 +4,7 @@ Tags: seo, meta description, bulk edit, yoast, rank math
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.11.4
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,9 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 == Changelog ==
 
+= 1.0.0 =
+* First WordPress.org release (0.11.4).
+
 = 0.11.3 and 0.11.4 =
 * Security: an image alt push only edits real image tags, never tag-like text in a shortcode, attribute or script. One user can no longer flood other users' changes out of the log.
 * Feature: an administrator's app connection can set an IndexNow key, served at /<key>.txt and shown on the Tools page with a Remove button. The plugin contacts no one.
@@ -96,4 +99,4 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 * Fix: deleting the plugin removes its data from every site of a network, and the uploads .htaccess block it added.
 
 = 0.1.0 to 0.10.8 =
-* Released on GitHub only. Highlights: a push writes only the SEO fields; Revert refuses to overwrite a newer value unless you choose Revert anyway; Contributors and Authors see only their own posts and changes; adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang, TranslatePress and WooCommerce support; cache purge after a change; Tools page status for Application Passwords and the app connection. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).
+* GitHub only: a push writes only the SEO fields; Revert refuses to overwrite a newer value unless you choose Revert anyway; Contributors and Authors see only their own posts and changes; adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang, TranslatePress and WooCommerce support; cache purge after a change; Tools page status for Application Passwords and the app connection. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).
