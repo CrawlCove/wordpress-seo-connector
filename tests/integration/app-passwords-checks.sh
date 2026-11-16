@@ -17,7 +17,7 @@ WPCLI=(php "$CCC_CACHE/wp-cli.phar")
 wp() { "${WPCLI[@]}" "$@" --path="$CCC_SITE"; }
 MU="$CCC_SITE/wp-content/mu-plugins/ccc-test-harness.php"
 
-page() { wp eval 'require_once CCC_PLUGIN_DIR . "admin/class-ccc-admin.php"; CCC_Admin::render();' --user=1 2>&1 | tr '\n\t' '  ' | sed 's/<[^>]*>//g; s/  */ /g'; }
+page() { wp eval 'require_once CRAWLCOVE_PLUGIN_DIR . "admin/class-ccc-admin.php"; CrawlCove_Admin::render();' --user=1 2>&1 | tr '\n\t' '  ' | sed 's/<[^>]*>//g; s/  */ /g'; }
 
 if [[ ! -f "$MU" ]]; then
   echo "  FAIL harness mu-plugin $MU is missing; cannot toggle Application Passwords" >&2
@@ -55,7 +55,7 @@ if grep -q 'HTTP_X_FORWARDED_PROTO' <<<"$PAGE"; then PASS=$((PASS+1)); echo "  o
 if grep -q 'wp_is_application_passwords_available' <<<"$PAGE"; then PASS=$((PASS+1)); echo "  ok   Tools page names the last-resort filter"; else FAIL=$((FAIL+1)); echo "  FAIL Tools page missing the filter name"; fi
 # A logged-in admin's own cookie session must not be blocked by the guard:
 # wp eval --user=1 is exactly that (current user set, no app password).
-GUARD="$(wp eval 'var_export( CCC_App_Passwords::guard() );' --user=1 2>/dev/null)"
+GUARD="$(wp eval 'var_export( CrawlCove_App_Passwords::guard() );' --user=1 2>/dev/null)"
 if [[ "$GUARD" == "true" ]]; then PASS=$((PASS+1)); echo "  ok   guard lets a logged-in user through while passwords are off"; else FAIL=$((FAIL+1)); echo "  FAIL guard for a logged-in user: $GUARD"; fi
 
 echo "-- Application Passwords off by a plugin on an HTTPS site (Wordfence's default, review #220) --"

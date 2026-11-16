@@ -18,9 +18,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * IndexNow key storage and the key file.
  */
-class CCC_IndexNow {
+class CrawlCove_IndexNow {
 
-	const OPTION = 'ccc_indexnow_key';
+	const OPTION = 'crawlcove_indexnow_key';
 
 	/**
 	 * The stored key, or '' when none is set.

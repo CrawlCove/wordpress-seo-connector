@@ -5,7 +5,7 @@
  * see — it only ever returns a match when WP_Query::is_singular is true.
  *
  * Not required by tests/bootstrap.php (real $wp_rewrite/WP_Query behaviour
- * cannot be stubbed meaningfully); CCC_Service calls through this class by
+ * cannot be stubbed meaningfully); CrawlCove_Service calls through this class by
  * name, so unit tests define their own minimal stand-in the same way they
  * already stand in for WPSEO_Options. Real behaviour is proven against a
  * live WordPress install in tests/integration/taxonomy-checks.sh.
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * mechanism, GPL-compatible, only the "what did we get" check at the end
  * differs (term-archive query instead of a singular one).
  */
-class CCC_Term_Resolver {
+class CrawlCove_Term_Resolver {
 
 	/**
 	 * "Plain" permalinks (and any structure) address a term archive by
@@ -34,7 +34,7 @@ class CCC_Term_Resolver {
 	 * (`category_name` for categories, `tag` for post tags, custom
 	 * taxonomies' own registered query_var).
 	 *
-	 * CCC_Service calls this BEFORE url_to_postid(), not after: on a site
+	 * CrawlCove_Service calls this BEFORE url_to_postid(), not after: on a site
 	 * with a static front page, url_to_postid() has its own quirk where
 	 * *any* query string at the site root (e.g. "?cat=2", nothing to do
 	 * with the homepage) collapses to the front page's post id, because its
@@ -77,7 +77,7 @@ class CCC_Term_Resolver {
 	 * url_to_postid() runs (match the path against $wp_rewrite's compiled
 	 * rules, turn the matched query vars into a real WP_Query), except the
 	 * final check looks for a resolved taxonomy-archive query
-	 * (is_tax/is_category/is_tag) instead of is_singular. CCC_Service calls
+	 * (is_tax/is_category/is_tag) instead of is_singular. CrawlCove_Service calls
 	 * this only after both resolve_plain_query_vars() and url_to_postid()
 	 * have already missed.
 	 *

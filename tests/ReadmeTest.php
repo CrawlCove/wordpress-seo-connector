@@ -15,7 +15,7 @@ class ReadmeTest extends TestCase {
 	public function test_stable_tag_matches_plugin_version() {
 		$main = $this->file( 'crawl-cove-connector.php' );
 		preg_match( '/^\s*\*\s*Version:\s*(\S+)/m', $main, $header );
-		preg_match( "/define\(\s*'CCC_VERSION',\s*'([^']+)'/", $main, $constant );
+		preg_match( "/define\(\s*'CRAWLCOVE_VERSION',\s*'([^']+)'/", $main, $constant );
 		preg_match( '/^Stable tag:\s*(\S+)/m', $this->file( 'readme.txt' ), $stable );
 
 		$this->assertNotEmpty( $header );
@@ -89,9 +89,9 @@ class ReadmeTest extends TestCase {
 		// The FAQ is only true while uninstall.php really deletes the log, on
 		// every site of a network too (multisite-checks.sh runs it for real).
 		$uninstall = $this->file( 'uninstall.php' );
-		$this->assertStringContainsString( "'ccc_change_log'", $uninstall );
-		$this->assertStringContainsString( 'delete_option( $ccc_option );', $uninstall );
-		$this->assertStringContainsString( 'switch_to_blog( $ccc_site_id );', $uninstall );
+		$this->assertStringContainsString( "'crawlcove_change_log'", $uninstall );
+		$this->assertStringContainsString( 'delete_option( $crawlcove_option );', $uninstall );
+		$this->assertStringContainsString( 'switch_to_blog( $crawlcove_site_id );', $uninstall );
 	}
 
 	/**

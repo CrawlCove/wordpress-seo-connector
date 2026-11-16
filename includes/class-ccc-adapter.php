@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One SEO-plugin adapter instance: which post-meta keys to read/write.
  */
-class CCC_Adapter {
+class CrawlCove_Adapter {
 
 	/**
 	 * 'yoast', 'rankmath', 'seopress' or 'aioseo'.
@@ -65,7 +65,7 @@ class CCC_Adapter {
 	 * over SEOPress, which wins over AIOSEO, if more than one is somehow
 	 * active — matching the order the crawler reports.
 	 *
-	 * @return CCC_Adapter|null Null when no supported SEO plugin is active.
+	 * @return CrawlCove_Adapter|null Null when no supported SEO plugin is active.
 	 */
 	public static function detect() {
 		if ( defined( 'WPSEO_VERSION' ) ) {
@@ -102,7 +102,7 @@ class CCC_Adapter {
 	/**
 	 * Currently stored SEO title override ('' = plugin default template).
 	 *
-	 * @param int    $post_id Post id, or CCC_Service::HOME_ID for the homepage.
+	 * @param int    $post_id Post id, or CrawlCove_Service::HOME_ID for the homepage.
 	 * @param string $lang    Non-default Polylang language slug, homepage only
 	 *                        (see get_home_field()); '' for the ordinary target.
 	 * @return string
@@ -123,7 +123,7 @@ class CCC_Adapter {
 	/**
 	 * Currently stored meta description ('' = none set).
 	 *
-	 * @param int    $post_id Post id, or CCC_Service::HOME_ID for the homepage.
+	 * @param int    $post_id Post id, or CrawlCove_Service::HOME_ID for the homepage.
 	 * @param string $lang    Non-default Polylang language slug, homepage only
 	 *                        (see get_home_field()); '' for the ordinary target.
 	 * @return string
@@ -144,7 +144,7 @@ class CCC_Adapter {
 	/**
 	 * Write a new title override.
 	 *
-	 * @param int    $post_id Post id, or CCC_Service::HOME_ID for the homepage.
+	 * @param int    $post_id Post id, or CrawlCove_Service::HOME_ID for the homepage.
 	 * @param string $value   New title override; '' removes it.
 	 * @param string $lang    Non-default Polylang language slug, homepage only
 	 *                        (see set_home_field()); '' for the ordinary target.
@@ -168,7 +168,7 @@ class CCC_Adapter {
 	/**
 	 * Write a new meta description.
 	 *
-	 * @param int    $post_id Post id, or CCC_Service::HOME_ID for the homepage.
+	 * @param int    $post_id Post id, or CrawlCove_Service::HOME_ID for the homepage.
 	 * @param string $value   New meta description; '' removes it.
 	 * @param string $lang    Non-default Polylang language slug, homepage only
 	 *                        (see set_home_field()); '' for the ordinary target.
@@ -717,7 +717,7 @@ class CCC_Adapter {
 	 *
 	 * @param string $field   'title' or 'description'.
 	 * @param int    $term_id Term id (positive — the caller strips the
-	 *                        CCC_Service negative-sentinel sign first).
+	 *                        CrawlCove_Service negative-sentinel sign first).
 	 * @return string
 	 */
 	private function get_term_field( $field, $term_id ) {

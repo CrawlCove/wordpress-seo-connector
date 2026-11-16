@@ -170,7 +170,7 @@ has "decorative: the img keeps alt=\"\"" "$(img_tags "$P1")" 'alt=""'
 "${WP[@]}" post meta update "$IMG_ID" _wp_attachment_image_alt "Typed later" >/dev/null
 req POST /revert "$EDITOR" "{\"change_id\":$CID}"
 check "drift: refused with the current value" 409 "$RESP_HTTP" '[.code, .data.current]' '["ccc_value_changed","Typed later"]' "$RESP_BODY"
-notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*</form>\|notice-warning[^/]*</p>'; }
+notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*</form>\|notice-warning[^/]*</p>'; }
 N="$(notice "$CID")"
 has   "tools notice: the alt text drift is explained" "$N" "alt text has changed since that push and now reads &quot;Typed later&quot;"
 has   "tools notice: offers Revert anyway" "$N" "Revert anyway to &quot;Old&quot;"
@@ -208,7 +208,7 @@ G1="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
 req POST /image-alt "$EDITOR" "{\"changes\":[{\"url\":\"$URL/?page_id=$P1\",\"src\":\"$MEDIUM\",\"alt\":\"Yellow door\"}]}"
 G2="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
 # Alt rows as "after|action".
-ALT_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); foreach ( explode( "</tr>", $h ) as $row ) { if ( preg_match( "#<td>Image alt text</td>\s*<td>[^<]*</td>\s*<td>([^<]*)</td>#", $row, $m ) ) { $act = false !== strpos( $row, "replaced by a later change" ) ? "replaced" : ( false !== strpos( $row, "<em>reverted</em>" ) ? "reverted" : ( false !== strpos( $row, "name=\"change_id\"" ) ? "Revert" : "?" ) ); echo $m[1], "|", $act, "\n"; } }')"
+ALT_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); foreach ( explode( "</tr>", $h ) as $row ) { if ( preg_match( "#<td>Image alt text</td>\s*<td>[^<]*</td>\s*<td>([^<]*)</td>#", $row, $m ) ) { $act = false !== strpos( $row, "replaced by a later change" ) ? "replaced" : ( false !== strpos( $row, "<em>reverted</em>" ) ? "reverted" : ( false !== strpos( $row, "name=\"change_id\"" ) ? "Revert" : "?" ) ); echo $m[1], "|", $act, "\n"; } }')"
 has "tools: the earlier alt push reads replaced by a later change" "$ALT_ROWS" "Green door|replaced"
 has "tools: the later alt push keeps its Revert" "$ALT_ROWS" "Yellow door|Revert"
 req POST /revert "$EDITOR" "{\"change_id\":$G2}"

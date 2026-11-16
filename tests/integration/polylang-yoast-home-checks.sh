@@ -19,7 +19,7 @@
 # nothing per-language to target no matter what CCC does; CCC now says so
 # explicitly (ccc_language_unsupported) instead of staying silent.
 #
-# The write mechanism (CCC_Adapter::set_home_field()'s lang branch) is NOT
+# The write mechanism (CrawlCove_Adapter::set_home_field()'s lang branch) is NOT
 # Polylang's own `@api`-tagged surface — there is no public
 # "set this string's translation for language X" function — it is the exact
 # internal mechanism Polylang's OWN "Strings translation" admin screen uses
@@ -30,7 +30,7 @@
 # investigation). Proven here end-to-end across SEPARATE HTTP requests
 # (write via one REST call, read back via a later one) — not just read from
 # source — because this mechanism has no unit-testable real behaviour
-# (tests/bootstrap.php's PLL_MO stand-in proves CCC_Service/CCC_Adapter's
+# (tests/bootstrap.php's PLL_MO stand-in proves CrawlCove_Service/CrawlCove_Adapter's
 # OWN logic, not that Polylang's real class behaves the way the stub
 # assumes).
 #

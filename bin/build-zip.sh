@@ -58,26 +58,26 @@ log() { echo "[build-zip] $*"; }
 
 # --- version consistency: header, constant and readme.txt must agree -------
 HEADER_VERSION="$(sed -nE 's/^ \* Version:[[:space:]]+([0-9][0-9A-Za-z.-]*).*/\1/p' "$PLUGIN_ROOT/$SLUG.php" | head -1)"
-CONST_VERSION="$(sed -nE "s/^define\( 'CCC_VERSION', '([^']+)' \);.*/\1/p" "$PLUGIN_ROOT/$SLUG.php" | head -1)"
+CONST_VERSION="$(sed -nE "s/^define\( 'CRAWLCOVE_VERSION', '([^']+)' \);.*/\1/p" "$PLUGIN_ROOT/$SLUG.php" | head -1)"
 STABLE_TAG="$(sed -nE 's/^Stable tag:[[:space:]]+([0-9][0-9A-Za-z.-]*).*/\1/p' "$PLUGIN_ROOT/readme.txt" | head -1)"
 
 if [[ -z "$HEADER_VERSION" || -z "$CONST_VERSION" || -z "$STABLE_TAG" ]]; then
-  echo "could not read the version from the plugin header, CCC_VERSION or readme.txt Stable tag" >&2
+  echo "could not read the version from the plugin header, CRAWLCOVE_VERSION or readme.txt Stable tag" >&2
   exit 1
 fi
 if [[ "$HEADER_VERSION" != "$CONST_VERSION" || "$HEADER_VERSION" != "$STABLE_TAG" ]]; then
-  echo "version mismatch: header $HEADER_VERSION, CCC_VERSION $CONST_VERSION, Stable tag $STABLE_TAG" >&2
+  echo "version mismatch: header $HEADER_VERSION, CRAWLCOVE_VERSION $CONST_VERSION, Stable tag $STABLE_TAG" >&2
   exit 1
 fi
 if [[ -n "$EXPECT_VERSION" && "$EXPECT_VERSION" != "$HEADER_VERSION" ]]; then
-  echo "expected version $EXPECT_VERSION but the plugin says $HEADER_VERSION — bump header, CCC_VERSION, Stable tag and CHANGELOG first" >&2
+  echo "expected version $EXPECT_VERSION but the plugin says $HEADER_VERSION — bump header, CRAWLCOVE_VERSION, Stable tag and CHANGELOG first" >&2
   exit 1
 fi
 if ! grep -q "^## $HEADER_VERSION " "$PLUGIN_ROOT/CHANGELOG.md"; then
   echo "CHANGELOG.md has no '## $HEADER_VERSION' entry" >&2
   exit 1
 fi
-log "version $HEADER_VERSION (header, CCC_VERSION, Stable tag and CHANGELOG agree)"
+log "version $HEADER_VERSION (header, CRAWLCOVE_VERSION, Stable tag and CHANGELOG agree)"
 
 # --- stage: everything in git minus dev tooling ---------------------------
 # ONE exclude list. plugin-check.sh checks this staged set; the release zips

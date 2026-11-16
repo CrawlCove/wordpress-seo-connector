@@ -31,3 +31,5 @@ tests/integration/.site-image-alt/
 tests/integration/.server-image-alt.log
 tests/integration/.site-indexnow/
 tests/integration/.server-indexnow.log
+tests/integration/.site-migrate/
+tests/integration/.server-migrate.log

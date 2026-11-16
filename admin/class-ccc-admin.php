@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Admin page controller: Tools → Crawl Cove.
  */
-class CCC_Admin {
+class CrawlCove_Admin {
 
 	/**
 	 * Where the "get the desktop app" step on the Tools page sends people.
@@ -26,7 +26,7 @@ class CCC_Admin {
 
 	/**
 	 * Change-log rows per Tools page. Each row costs a post (or term) lookup
-	 * for its link and title; with CCC_Change_Log::MAX_ENTRIES at 1,000 an
+	 * for its link and title; with CrawlCove_Change_Log::MAX_ENTRIES at 1,000 an
 	 * unpaginated table would be a thousand of them on one admin request.
 	 */
 	const PER_PAGE = 100;
@@ -61,14 +61,14 @@ class CCC_Admin {
 			wp_die( esc_html__( 'Not allowed.', 'crawl-cove-connector' ) );
 		}
 		$change_id = isset( $_POST['change_id'] ) ? (int) $_POST['change_id'] : 0;
-		check_admin_referer( 'ccc_revert_' . $change_id );
+		check_admin_referer( 'crawlcove_revert_' . $change_id );
 		$paged = isset( $_POST['paged'] ) ? max( 1, (int) $_POST['paged'] ) : 1;
 		$force = ! empty( $_POST['force'] );
 
-		$adapter = CCC_Adapter::detect();
+		$adapter = CrawlCove_Adapter::detect();
 		$notice  = 'error';
-		$entry   = CCC_Change_Log::find( $change_id );
-		$done    = ( $adapter || ( $entry && isset( $entry['kind'] ) ) ) ? CCC_Change_Log::revert( $change_id, $adapter, $force ) : null;
+		$entry   = CrawlCove_Change_Log::find( $change_id );
+		$done    = ( $adapter || ( $entry && isset( $entry['kind'] ) ) ) ? CrawlCove_Change_Log::revert( $change_id, $adapter, $force ) : null;
 		if ( true === $done ) {
 			$notice = 'reverted';
 		} elseif ( is_wp_error( $done ) && 'ccc_value_changed' === $done->get_error_code() ) {
@@ -96,8 +96,8 @@ class CCC_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'crawl-cove-connector' ) );
 		}
-		check_admin_referer( 'ccc_indexnow_remove' );
-		$done = CCC_IndexNow::remove();
+		check_admin_referer( 'crawlcove_indexnow_remove' );
+		$done = CrawlCove_IndexNow::remove();
 		wp_safe_redirect(
 			add_query_arg(
 				array(
@@ -234,18 +234,18 @@ class CCC_Admin {
 	 * Render the Tools → Crawl Cove page: status, setup steps, change log.
 	 */
 	public static function render() {
-		$adapter  = CCC_Adapter::detect();
-		$log      = CCC_Change_Log::all();
-		$conn     = CCC_Connection::last();
-		$indexnow = CCC_IndexNow::get_key();
+		$adapter  = CrawlCove_Adapter::detect();
+		$log      = CrawlCove_Change_Log::all();
+		$conn     = CrawlCove_Connection::last();
+		$indexnow = CrawlCove_IndexNow::get_key();
 		// Read-only display flags from our own redirect / pagination links
 		// (handle_revert() already nonce-checked the action that set the
 		// notice); nothing here changes state.
 		$notice = isset( $_GET['ccc_notice'] ) ? sanitize_key( wp_unslash( $_GET['ccc_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$paged  = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$failed = isset( $_GET['change_id'] ) ? CCC_Change_Log::find( (int) $_GET['change_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$failed = isset( $_GET['change_id'] ) ? CrawlCove_Change_Log::find( (int) $_GET['change_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		$superseded = CCC_Change_Log::superseded( $log );
+		$superseded = CrawlCove_Change_Log::superseded( $log );
 
 		$total = count( $log );
 		$pages = max( 1, (int) ceil( $total / self::PER_PAGE ) );
@@ -270,7 +270,7 @@ class CCC_Admin {
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'IndexNow key removed. The key file is no longer served.', 'crawl-cove-connector' ); ?></p></div>
 			<?php elseif ( 'reverted' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Change reverted.', 'crawl-cove-connector' ); ?></p></div>
-			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'replace_urls' === $failed['kind'] && empty( $failed['reverted'] ) && ! CCC_Url_Replacer::can_force( $failed ) ) : ?>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'replace_urls' === $failed['kind'] && empty( $failed['reverted'] ) && ! CrawlCove_Url_Replacer::can_force( $failed ) ) : ?>
 				<div class="notice notice-warning">
 					<p><?php esc_html_e( 'Not reverted: the content holding these links has been edited since that change, and a removed link or nofollow, or a link that already pointed at the new URL, cannot be put back safely. Nothing was written.', 'crawl-cove-connector' ); ?></p>
 				</div>
@@ -278,46 +278,46 @@ class CCC_Admin {
 				<div class="notice notice-warning">
 					<p><?php esc_html_e( 'Not reverted: the content holding these links has been edited since that change. Reverting anyway changes the new URL back to the old one wherever it now appears.', 'crawl-cove-connector' ); ?></p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
-						<input type="hidden" name="action" value="ccc_revert" />
+						<input type="hidden" name="action" value="crawlcove_revert" />
 						<input type="hidden" name="change_id" value="<?php echo (int) $failed['id']; ?>" />
 						<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
 						<input type="hidden" name="force" value="1" />
-						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
+						<?php wp_nonce_field( 'crawlcove_revert_' . (int) $failed['id'] ); ?>
 						<button type="submit" class="button button-small"><?php esc_html_e( 'Revert anyway', 'crawl-cove-connector' ); ?></button>
 					</form>
 				</div>
-			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'image_alt' === $failed['kind'] && empty( $failed['reverted'] ) && 'page' === CCC_Image_Alt::conflict( $failed ) ) : ?>
+			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'image_alt' === $failed['kind'] && empty( $failed['reverted'] ) && 'page' === CrawlCove_Image_Alt::conflict( $failed ) ) : ?>
 				<div class="notice notice-warning">
 					<p><?php esc_html_e( 'Not reverted: the page showing this image has been edited since that push, so its old alt text cannot be put back into it safely. Nothing was written.', 'crawl-cove-connector' ); ?></p>
 				</div>
 			<?php elseif ( 'changed' === $notice && $failed && isset( $failed['kind'] ) && 'image_alt' === $failed['kind'] && empty( $failed['reverted'] ) ) : ?>
 				<div class="notice notice-warning">
 					<p>
-					<?php echo esc_html( self::changed_notice( 'alt', (string) get_post_meta( (int) $failed['attachment'], CCC_Image_Alt::META_KEY, true ) ) ); ?>
+					<?php echo esc_html( self::changed_notice( 'alt', (string) get_post_meta( (int) $failed['attachment'], CrawlCove_Image_Alt::META_KEY, true ) ) ); ?>
 					</p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
-						<input type="hidden" name="action" value="ccc_revert" />
+						<input type="hidden" name="action" value="crawlcove_revert" />
 						<input type="hidden" name="change_id" value="<?php echo (int) $failed['id']; ?>" />
 						<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
 						<input type="hidden" name="force" value="1" />
-						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
+						<?php wp_nonce_field( 'crawlcove_revert_' . (int) $failed['id'] ); ?>
 						<button type="submit" class="button button-small">
 						<?php echo esc_html( self::revert_anyway_label( $failed['from'] ) ); ?>
 						</button>
 					</form>
 				</div>
 			<?php elseif ( 'changed' === $notice && $failed && $adapter && ! isset( $failed['kind'] ) && empty( $failed['reverted'] ) ) : ?>
-				<?php $now = CCC_Change_Log::current_value( $failed, $adapter ); ?>
+				<?php $now = CrawlCove_Change_Log::current_value( $failed, $adapter ); ?>
 				<div class="notice notice-warning">
 					<p>
 					<?php echo esc_html( self::changed_notice( $failed['field'], $now ) ); ?>
 					</p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 8px">
-						<input type="hidden" name="action" value="ccc_revert" />
+						<input type="hidden" name="action" value="crawlcove_revert" />
 						<input type="hidden" name="change_id" value="<?php echo (int) $failed['id']; ?>" />
 						<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
 						<input type="hidden" name="force" value="1" />
-						<?php wp_nonce_field( 'ccc_revert_' . (int) $failed['id'] ); ?>
+						<?php wp_nonce_field( 'crawlcove_revert_' . (int) $failed['id'] ); ?>
 						<button type="submit" class="button button-small">
 						<?php echo esc_html( self::revert_anyway_label( $failed['from'] ) ); ?>
 						</button>
@@ -345,11 +345,11 @@ class CCC_Admin {
 					<tr>
 						<td><?php esc_html_e( 'Application Passwords', 'crawl-cove-connector' ); ?></td>
 						<td>
-							<?php if ( CCC_App_Passwords::available() ) : ?>
+							<?php if ( CrawlCove_App_Passwords::available() ) : ?>
 								<strong><?php esc_html_e( 'On', 'crawl-cove-connector' ); ?></strong>
 							<?php else : ?>
 								<strong><?php esc_html_e( 'Off', 'crawl-cove-connector' ); ?></strong>
-								<?php if ( CCC_App_Passwords::off_by_filter() ) : ?>
+								<?php if ( CrawlCove_App_Passwords::off_by_filter() ) : ?>
 									<?php esc_html_e( 'The desktop app cannot log in until they are on. WordPress itself allows them on this site, so a plugin or theme has switched them off.', 'crawl-cove-connector' ); ?>
 									<br>
 									<?php esc_html_e( 'Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. On another security plugin, look for a setting with a similar name.', 'crawl-cove-connector' ); ?>
@@ -367,7 +367,7 @@ class CCC_Admin {
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'REST endpoint', 'crawl-cove-connector' ); ?></td>
-						<td><code><?php echo esc_html( rest_url( CCC_Rest::NS ) ); ?></code></td>
+						<td><code><?php echo esc_html( rest_url( CrawlCove_Rest::NS ) ); ?></code></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'Desktop app', 'crawl-cove-connector' ); ?></td>
@@ -395,12 +395,12 @@ class CCC_Admin {
 								printf(
 									/* translators: %s: URL of the IndexNow key file */
 									esc_html__( 'Served at %s, so the desktop app can ask Bing and other IndexNow search engines to recrawl a page once its fix is verified. This plugin contacts no one itself.', 'crawl-cove-connector' ),
-									'<a href="' . esc_url( CCC_IndexNow::key_location( $indexnow ) ) . '"><code>' . esc_html( CCC_IndexNow::key_location( $indexnow ) ) . '</code></a>'
+									'<a href="' . esc_url( CrawlCove_IndexNow::key_location( $indexnow ) ) . '"><code>' . esc_html( CrawlCove_IndexNow::key_location( $indexnow ) ) . '</code></a>'
 								);
 								?>
 								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:6px">
-									<input type="hidden" name="action" value="ccc_indexnow_remove">
-									<?php wp_nonce_field( 'ccc_indexnow_remove' ); ?>
+									<input type="hidden" name="action" value="crawlcove_indexnow_remove">
+									<?php wp_nonce_field( 'crawlcove_indexnow_remove' ); ?>
 									<button type="submit" class="button"><?php esc_html_e( 'Remove the key', 'crawl-cove-connector' ); ?></button>
 								</form>
 							</td>
@@ -434,13 +434,13 @@ class CCC_Admin {
 			</ol>
 
 			<h2><?php esc_html_e( 'Change log', 'crawl-cove-connector' ); ?></h2>
-			<?php if ( count( $log ) >= CCC_Change_Log::MAX_ENTRIES ) : ?>
+			<?php if ( count( $log ) >= CrawlCove_Change_Log::MAX_ENTRIES ) : ?>
 				<p>
 				<?php
 					printf(
 						/* translators: %s: number of entries the change log keeps */
 						esc_html__( 'The log keeps the most recent %s changes. It is full, so each new push drops the oldest entries (already-reverted ones first); dropped entries can no longer be reverted from here.', 'crawl-cove-connector' ),
-						esc_html( number_format_i18n( CCC_Change_Log::MAX_ENTRIES ) )
+						esc_html( number_format_i18n( CrawlCove_Change_Log::MAX_ENTRIES ) )
 					);
 				?>
 				</p>
@@ -504,11 +504,11 @@ class CCC_Admin {
 									<?php self::post_link( (int) $e['post_id'] ); ?>
 								<?php elseif ( isset( $e['kind'] ) ) : ?>
 									<?php
-									$ccc_places = isset( $e['targets'] ) && is_array( $e['targets'] ) ? count( $e['targets'] ) : 0;
+									$crawlcove_places = isset( $e['targets'] ) && is_array( $e['targets'] ) ? count( $e['targets'] ) : 0;
 									/* translators: %d: number of posts, Elementor layouts and menu items the change edited */
-									echo esc_html( sprintf( _n( 'Links in %d place', 'Links in %d places', $ccc_places, 'crawl-cove-connector' ), $ccc_places ) );
+									echo esc_html( sprintf( _n( 'Links in %d place', 'Links in %d places', $crawlcove_places, 'crawl-cove-connector' ), $crawlcove_places ) );
 									?>
-								<?php elseif ( CCC_Service::HOME_ID === (int) $e['post_id'] ) : ?>
+								<?php elseif ( CrawlCove_Service::HOME_ID === (int) $e['post_id'] ) : ?>
 									<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Homepage', 'crawl-cove-connector' ); ?></a>
 								<?php elseif ( (int) $e['post_id'] < 0 ) : ?>
 									<?php
@@ -535,10 +535,10 @@ class CCC_Admin {
 									<em><?php esc_html_e( 'replaced by a later change', 'crawl-cove-connector' ); ?></em>
 								<?php elseif ( empty( $e['reverted'] ) ) : ?>
 									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-										<input type="hidden" name="action" value="ccc_revert" />
+										<input type="hidden" name="action" value="crawlcove_revert" />
 										<input type="hidden" name="change_id" value="<?php echo (int) $e['id']; ?>" />
 										<input type="hidden" name="paged" value="<?php echo (int) $paged; ?>" />
-										<?php wp_nonce_field( 'ccc_revert_' . (int) $e['id'] ); ?>
+										<?php wp_nonce_field( 'crawlcove_revert_' . (int) $e['id'] ); ?>
 										<button type="submit" class="button button-small"><?php esc_html_e( 'Revert', 'crawl-cove-connector' ); ?></button>
 									</form>
 								<?php else : ?>

@@ -37,7 +37,7 @@ if [[ -n "${SVN_USERNAME:-}" ]]; then
   AUTH+=(--username "$SVN_USERNAME" --password "${SVN_PASSWORD:-}")
 fi
 
-# The build checks header, CCC_VERSION, Stable tag and CHANGELOG all say VERSION.
+# The build checks header, CRAWLCOVE_VERSION, Stable tag and CHANGELOG all say VERSION.
 bash "$PLUGIN_ROOT/bin/build-zip.sh" --expect-version "$VERSION" --stage-to "$WORK/stage" --wporg
 
 log "checking out $SVN_URL"

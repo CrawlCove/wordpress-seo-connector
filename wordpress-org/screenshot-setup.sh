@@ -28,7 +28,7 @@ ids=$("${W[@]}" post list --post_type=any --post_status=any --format=ids)
 [ -n "$ids" ] && "${W[@]}" post delete $ids --force
 ids=$("${W[@]}" post list --post_type=attachment --post_status=any --format=ids)
 [ -n "$ids" ] && "${W[@]}" post delete $ids --force
-for o in ccc_change_log ccc_change_seq ccc_last_connection ccc_site_settings; do "${W[@]}" option delete $o || true; done
+for o in crawlcove_change_log crawlcove_change_seq crawlcove_last_connection crawlcove_site_settings; do "${W[@]}" option delete $o || true; done
 php -r '$i=imagecreatetruecolor(600,400);imagefill($i,0,0,imagecolorallocate($i,180,190,200));imagefilledellipse($i,300,180,120,120,imagecolorallocate($i,120,130,140));imagepng($i,$argv[1]);' "$OUT/leaky-kitchen-tap.png"
 aid=$("${W[@]}" media import $OUT/leaky-kitchen-tap.png --porcelain)
 [ -n "$aid" ] || { echo "image import failed" >&2; exit 1; }

@@ -26,9 +26,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Site-wide hardening switches.
  */
-class CCC_Site_Settings {
+class CrawlCove_Site_Settings {
 
-	const OPTION = 'ccc_site_settings';
+	const OPTION = 'crawlcove_site_settings';
 	const NAMES  = array( 'disable_xmlrpc', 'hide_generator', 'security_headers', 'uploads_no_index' );
 	const MARKER = 'Crawl Cove Connector';
 
@@ -232,10 +232,10 @@ class CCC_Site_Settings {
 					$out[ $name ] = self::refusal( $done );
 					continue;
 				}
-				$entry             = CCC_Change_Log::record_entry(
+				$entry             = CrawlCove_Change_Log::record_entry(
 					array(
 						'kind'    => 'site_setting',
-						'post_id' => CCC_Service::HOME_ID,
+						'post_id' => CrawlCove_Service::HOME_ID,
 						'field'   => $name,
 						'from'    => $from ? 'on' : 'off',
 						'to'      => $value ? 'on' : 'off',

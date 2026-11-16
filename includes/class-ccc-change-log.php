@@ -14,14 +14,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Applied-change log, capped, with revert support.
  */
-class CCC_Change_Log {
+class CrawlCove_Change_Log {
 
-	const OPTION     = 'ccc_change_log';
-	const SEQ_OPTION = 'ccc_change_seq';
+	const OPTION     = 'crawlcove_change_log';
+	const SEQ_OPTION = 'crawlcove_change_seq';
 
 	/**
 	 * Entries kept. A title and a description on one post are two entries,
-	 * and the app sends up to CCC_Service::MAX_BATCH changes per request, so
+	 * and the app sends up to CrawlCove_Service::MAX_BATCH changes per request, so
 	 * 200 (the cap until 0.10.2) was one medium push: the oldest entries of
 	 * that same push were already gone — unrevertable — when it finished.
 	 * Worst case at the input caps (512 + 1024 chars per entry) is ~2MB in a
@@ -87,7 +87,7 @@ class CCC_Change_Log {
 	 * @param string      $to      New stored value ('' = override removed).
 	 * @param string      $source  Who applied it (REST user login).
 	 * @param string      $lang    Non-default Polylang language slug, HOME_ID
-	 *                             changes only (see CCC_Adapter::
+	 *                             changes only (see CrawlCove_Adapter::
 	 *                             supports_language_home()); '' otherwise.
 	 * @param string|null $after   What the SEO plugin reads back right after
 	 *                             the write, when that differs from $to: a
@@ -168,15 +168,15 @@ class CCC_Change_Log {
 	 */
 	public static function can_edit_entry( array $entry ) {
 		if ( isset( $entry['kind'] ) && 'replace_urls' === $entry['kind'] ) {
-			return CCC_Url_Replacer::can_edit_entry( $entry );
+			return CrawlCove_Url_Replacer::can_edit_entry( $entry );
 		}
 		if ( isset( $entry['kind'] ) && 'site_setting' === $entry['kind'] ) {
 			return current_user_can( 'manage_options' );
 		}
 		if ( isset( $entry['kind'] ) && 'image_alt' === $entry['kind'] ) {
-			return CCC_Image_Alt::can_edit_entry( $entry );
+			return CrawlCove_Image_Alt::can_edit_entry( $entry );
 		}
-		return isset( $entry['post_id'] ) && CCC_Service::can_edit_target( (int) $entry['post_id'] );
+		return isset( $entry['post_id'] ) && CrawlCove_Service::can_edit_target( (int) $entry['post_id'] );
 	}
 
 	/**
@@ -240,9 +240,9 @@ class CCC_Change_Log {
 	 * image alt (image_alt) needs no SEO plugin and goes through its own
 	 * class's revert() instead.
 	 *
-	 * @param int              $change_id Change id.
-	 * @param CCC_Adapter|null $adapter   Active SEO adapter to write the reverted value through.
-	 * @param bool             $force     Revert even if the value changed since.
+	 * @param int                    $change_id Change id.
+	 * @param CrawlCove_Adapter|null $adapter   Active SEO adapter to write the reverted value through.
+	 * @param bool                   $force     Revert even if the value changed since.
 	 * @return true|WP_Error
 	 */
 	public static function revert( $change_id, $adapter, $force = false ) {
@@ -255,23 +255,23 @@ class CCC_Change_Log {
 		}
 		if ( isset( $entry['kind'] ) ) {
 			if ( 'site_setting' === $entry['kind'] ) {
-				$done = CCC_Site_Settings::revert( $entry, (bool) $force );
+				$done = CrawlCove_Site_Settings::revert( $entry, (bool) $force );
 			} elseif ( 'image_alt' === $entry['kind'] ) {
-				$done = CCC_Image_Alt::revert( $entry, (bool) $force );
+				$done = CrawlCove_Image_Alt::revert( $entry, (bool) $force );
 			} else {
-				$done = CCC_Url_Replacer::revert( $entry, (bool) $force );
+				$done = CrawlCove_Url_Replacer::revert( $entry, (bool) $force );
 			}
 			if ( true === $done ) {
 				self::mark_reverted( $change_id );
 			}
 			return $done;
 		}
-		if ( ! $adapter instanceof CCC_Adapter ) {
+		if ( ! $adapter instanceof CrawlCove_Adapter ) {
 			return new WP_Error( 'ccc_no_seo_plugin', __( 'No supported SEO plugin is active (Yoast SEO, Rank Math, SEOPress or AIOSEO), so there is nothing to write to.', 'crawl-cove-connector' ), array( 'status' => 409 ) );
 		}
 		// The homepage (post_id 0) always "exists" — it has no post to check.
 		$target_id = (int) $entry['post_id'];
-		if ( CCC_Service::HOME_ID !== $target_id ) {
+		if ( CrawlCove_Service::HOME_ID !== $target_id ) {
 			if ( $target_id < 0 ) {
 				$term = get_term( -$target_id );
 				if ( ! $term || is_wp_error( $term ) ) {
@@ -313,8 +313,8 @@ class CCC_Change_Log {
 		$adapter->set_value( (int) $entry['post_id'], $entry['field'], $entry['from'], $lang );
 		// Same cache invalidation apply() runs after a real write: without
 		// this a revert silently leaves stale cached HTML exactly like an
-		// un-invalidated apply would. See CCC_Service::invalidate_caches_for().
-		CCC_Service::invalidate_caches_for( (int) $entry['post_id'] );
+		// un-invalidated apply would. See CrawlCove_Service::invalidate_caches_for().
+		CrawlCove_Service::invalidate_caches_for( (int) $entry['post_id'] );
 		self::mark_reverted( $change_id );
 
 		return true;
@@ -338,11 +338,11 @@ class CCC_Change_Log {
 	/**
 	 * The value a logged change's field holds right now.
 	 *
-	 * @param array       $entry   Log entry.
-	 * @param CCC_Adapter $adapter Active SEO adapter.
+	 * @param array             $entry   Log entry.
+	 * @param CrawlCove_Adapter $adapter Active SEO adapter.
 	 * @return string
 	 */
-	public static function current_value( array $entry, CCC_Adapter $adapter ) {
+	public static function current_value( array $entry, CrawlCove_Adapter $adapter ) {
 		$lang = isset( $entry['lang'] ) ? $entry['lang'] : '';
 		return (string) $adapter->get_value( (int) $entry['post_id'], $entry['field'], $lang );
 	}

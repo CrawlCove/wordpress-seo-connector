@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for the crawlcove/v1 namespace.
  */
-class CCC_Rest {
+class CrawlCove_Rest {
 
 	const NS = 'crawlcove/v1';
 
@@ -197,7 +197,7 @@ class CCC_Rest {
 	 *                       Application Passwords switched off.
 	 */
 	public static function can_use( $request = null ) {
-		$guard = CCC_App_Passwords::guard();
+		$guard = CrawlCove_App_Passwords::guard();
 		if ( is_wp_error( $guard ) ) {
 			return $guard;
 		}
@@ -207,7 +207,7 @@ class CCC_Rest {
 		// Only an authorised call reaches here, so the Tools page's
 		// "last connected" row can never be moved by an anonymous request.
 		$route = $request instanceof WP_REST_Request ? $request->get_route() : '';
-		CCC_Connection::touch( wp_get_current_user()->user_login, $route, time() );
+		CrawlCove_Connection::touch( wp_get_current_user()->user_login, $route, time() );
 		return true;
 	}
 
@@ -217,17 +217,17 @@ class CCC_Rest {
 	 * @return WP_REST_Response
 	 */
 	public static function status() {
-		$adapter = CCC_Adapter::detect();
+		$adapter = CrawlCove_Adapter::detect();
 		return rest_ensure_response(
 			array(
-				'plugin_version' => CCC_VERSION,
+				'plugin_version' => CRAWLCOVE_VERSION,
 				'wp_version'     => get_bloginfo( 'version' ),
 				'site_url'       => home_url(),
 				'seo_plugin'     => $adapter ? $adapter->id : 'none',
 				'seo_version'    => $adapter ? $adapter->plugin_version : '',
 				'can_apply'      => (bool) $adapter,
 				'capabilities'   => self::capabilities( $adapter ),
-				'site_settings'  => CCC_Site_Settings::get(),
+				'site_settings'  => CrawlCove_Site_Settings::get(),
 			)
 		);
 	}
@@ -237,7 +237,7 @@ class CCC_Rest {
 	 * those. title and description need a supported SEO plugin; replace_urls,
 	 * site_settings, image_alt and indexnow work on any site.
 	 *
-	 * @param CCC_Adapter|null $adapter Detected SEO adapter.
+	 * @param CrawlCove_Adapter|null $adapter Detected SEO adapter.
 	 * @return string[]
 	 */
 	public static function capabilities( $adapter ) {
@@ -272,7 +272,7 @@ class CCC_Rest {
 		$out = array();
 		foreach ( $urls as $url ) {
 			$url     = is_string( $url ) ? esc_url_raw( $url ) : '';
-			$post_id = CCC_Service::resolve_url( $url, $lang );
+			$post_id = CrawlCove_Service::resolve_url( $url, $lang );
 			if ( is_wp_error( $post_id ) ) {
 				$out[] = array(
 					'url'     => $url,
@@ -287,7 +287,7 @@ class CCC_Rest {
 					'url' => $url,
 					'ok'  => true,
 				),
-				CCC_Service::describe( $post_id, $adapter, $lang )
+				CrawlCove_Service::describe( $post_id, $adapter, $lang )
 			);
 		}
 		return rest_ensure_response( $out );
@@ -306,7 +306,7 @@ class CCC_Rest {
 		}
 
 		$user    = wp_get_current_user();
-		$results = CCC_Service::apply(
+		$results = CrawlCove_Service::apply(
 			$request->get_param( 'changes' ),
 			(bool) $request->get_param( 'dry_run' ),
 			$adapter,
@@ -324,7 +324,7 @@ class CCC_Rest {
 	 */
 	public static function replace_urls( $request ) {
 		$user    = wp_get_current_user();
-		$results = CCC_Url_Replacer::run(
+		$results = CrawlCove_Url_Replacer::run(
 			$request->get_param( 'changes' ),
 			(bool) $request->get_param( 'dry_run' ),
 			$user ? $user->user_login : 'unknown'
@@ -341,7 +341,7 @@ class CCC_Rest {
 	 */
 	public static function image_alt( $request ) {
 		$user    = wp_get_current_user();
-		$results = CCC_Image_Alt::run(
+		$results = CrawlCove_Image_Alt::run(
 			$request->get_param( 'changes' ),
 			(bool) $request->get_param( 'dry_run' ),
 			$user ? $user->user_login : 'unknown'
@@ -358,7 +358,7 @@ class CCC_Rest {
 	 */
 	public static function site_settings( $request ) {
 		$user   = wp_get_current_user();
-		$result = CCC_Site_Settings::run(
+		$result = CrawlCove_Site_Settings::run(
 			$request->get_param( 'settings' ),
 			(bool) $request->get_param( 'dry_run' ),
 			$user ? $user->user_login : 'unknown'
@@ -376,13 +376,13 @@ class CCC_Rest {
 	public static function indexnow_key( $request ) {
 		switch ( $request->get_method() ) {
 			case 'POST':
-				$result = CCC_IndexNow::store( $request->get_param( 'key' ) );
+				$result = CrawlCove_IndexNow::store( $request->get_param( 'key' ) );
 				break;
 			case 'DELETE':
-				$result = CCC_IndexNow::remove();
+				$result = CrawlCove_IndexNow::remove();
 				break;
 			default:
-				$result = CCC_IndexNow::read();
+				$result = CrawlCove_IndexNow::read();
 		}
 		return is_wp_error( $result ) ? $result : rest_ensure_response( $result );
 	}
@@ -393,7 +393,7 @@ class CCC_Rest {
 	 * @return WP_REST_Response
 	 */
 	public static function changes() {
-		return rest_ensure_response( CCC_Change_Log::visible() );
+		return rest_ensure_response( CrawlCove_Change_Log::visible() );
 	}
 
 	/**
@@ -406,17 +406,17 @@ class CCC_Rest {
 	 */
 	public static function revert( $request ) {
 		$change_id = (int) $request->get_param( 'change_id' );
-		$entry     = CCC_Change_Log::find( $change_id );
+		$entry     = CrawlCove_Change_Log::find( $change_id );
 		// A URL replace needs no SEO plugin, so only other kinds require one.
 		$adapter = ( $entry && isset( $entry['kind'] ) ) ? null : self::require_adapter();
 		if ( is_wp_error( $adapter ) ) {
 			return $adapter;
 		}
-		if ( $entry && ! CCC_Change_Log::can_edit_entry( $entry ) ) {
+		if ( $entry && ! CrawlCove_Change_Log::can_edit_entry( $entry ) ) {
 			return new WP_Error( 'ccc_forbidden', __( 'This user may not edit that target.', 'crawl-cove-connector' ), array( 'status' => 403 ) );
 		}
 
-		$done = CCC_Change_Log::revert( $change_id, $adapter, (bool) $request->get_param( 'force' ) );
+		$done = CrawlCove_Change_Log::revert( $change_id, $adapter, (bool) $request->get_param( 'force' ) );
 		return is_wp_error( $done ) ? $done : rest_ensure_response(
 			array(
 				'ok'        => true,
@@ -428,10 +428,10 @@ class CCC_Rest {
 	/**
 	 * The active SEO adapter, or a WP_Error if no supported SEO plugin is active.
 	 *
-	 * @return CCC_Adapter|WP_Error
+	 * @return CrawlCove_Adapter|WP_Error
 	 */
 	private static function require_adapter() {
-		$adapter = CCC_Adapter::detect();
+		$adapter = CrawlCove_Adapter::detect();
 		if ( ! $adapter ) {
 			return new WP_Error(
 				'ccc_no_seo_plugin',

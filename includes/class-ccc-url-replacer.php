@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * URL search-and-replace in content, Elementor data and menus, with revert.
  */
-class CCC_Url_Replacer {
+class CrawlCove_Url_Replacer {
 
 	const MAX_URL_LEN = 2048;
 
@@ -99,7 +99,7 @@ class CCC_Url_Replacer {
 					return self::error( 'ccc_no_post', __( 'No post with that id.', 'crawl-cove-connector' ), 404 );
 				}
 			} elseif ( isset( $item['url'] ) ) {
-				$post_id = CCC_Service::resolve_url( $item['url'] );
+				$post_id = CrawlCove_Service::resolve_url( $item['url'] );
 				if ( is_wp_error( $post_id ) ) {
 					return $post_id;
 				}
@@ -571,9 +571,9 @@ class CCC_Url_Replacer {
 		if ( ! is_array( $changes ) || ! $changes ) {
 			return self::error( 'ccc_empty_batch', __( 'changes must be a non-empty array.', 'crawl-cove-connector' ) );
 		}
-		if ( count( $changes ) > CCC_Service::MAX_BATCH ) {
+		if ( count( $changes ) > CrawlCove_Service::MAX_BATCH ) {
 			/* translators: %d: maximum number of changes allowed per request */
-			return self::error( 'ccc_batch_too_big', sprintf( __( 'At most %d changes per request.', 'crawl-cove-connector' ), CCC_Service::MAX_BATCH ) );
+			return self::error( 'ccc_batch_too_big', sprintf( __( 'At most %d changes per request.', 'crawl-cove-connector' ), CrawlCove_Service::MAX_BATCH ) );
 		}
 
 		$results = array();
@@ -665,7 +665,7 @@ class CCC_Url_Replacer {
 					);
 				}
 				self::purge( $stored );
-				$entry               = CCC_Change_Log::record_entry(
+				$entry               = CrawlCove_Change_Log::record_entry(
 					array(
 						'kind'      => 'replace_urls',
 						'post_id'   => $op['post_id'],
@@ -903,11 +903,11 @@ class CCC_Url_Replacer {
 			}
 			if ( ! isset( $seen[ $t['post_id'] ] ) ) {
 				$seen[ $t['post_id'] ] = true;
-				CCC_Service::invalidate_caches_for( (int) $t['post_id'] );
+				CrawlCove_Service::invalidate_caches_for( (int) $t['post_id'] );
 			}
 		}
 		if ( $full ) {
-			CCC_Service::invalidate_caches_for( CCC_Service::HOME_ID );
+			CrawlCove_Service::invalidate_caches_for( CrawlCove_Service::HOME_ID );
 		}
 	}
 

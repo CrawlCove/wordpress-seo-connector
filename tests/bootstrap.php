@@ -29,8 +29,8 @@ function cc_reset_wp() {
 	$GLOBALS['cc_app_passwords'] = true;  // wp_is_application_passwords_available() stub
 	$GLOBALS['cc_app_passwords_supported'] = true; // wp_is_application_passwords_supported() stub (HTTPS or local)
 	$GLOBALS['cc_terms']            = array(); // term_id => ['taxonomy' => ..., 'name' => ..., 'link' => ...]
-	$GLOBALS['cc_term_urls']        = array(); // url => term_id (CCC_Term_Resolver::resolve_pretty_permalink() stub)
-	$GLOBALS['cc_term_plain_urls']  = array(); // url => term_id (CCC_Term_Resolver::resolve_plain_query_vars() stub)
+	$GLOBALS['cc_term_urls']        = array(); // url => term_id (CrawlCove_Term_Resolver::resolve_pretty_permalink() stub)
+	$GLOBALS['cc_term_plain_urls']  = array(); // url => term_id (CrawlCove_Term_Resolver::resolve_plain_query_vars() stub)
 	$GLOBALS['cc_term_meta']        = array(); // term_id => key => value
 	$GLOBALS['cc_deny_terms']       = array(); // term_ids current user may NOT edit
 	$GLOBALS['cc_taxonomy_public']  = array(); // taxonomy => bool (get_taxonomy() stub; default true)
@@ -58,7 +58,7 @@ function cc_enable_polylang( $languages, $default_lang ) {
  * language and non-default-language => URL-slug map — mirrors saving
  * `trp_settings` via `TRP_Settings::sanitize_settings()` on a real install.
  * Leaving this uncalled (the cc_reset_wp() default, no `trp_settings`
- * option) means CCC_Service::strip_translatepress_language_prefix()
+ * option) means CrawlCove_Service::strip_translatepress_language_prefix()
  * returns every URL unchanged, same as a real site with TranslatePress not
  * installed or not yet configured.
  */
@@ -146,7 +146,7 @@ function attachment_url_to_postid( $url ) {
 function esc_url_raw( $url ) { return preg_replace( '|[^a-z0-9-~+_.?#=!&;,/:%@$\|*\'()\[\]\x80-\xff]|i', '', $url ); }
 function wp_json_encode( $data, $flags = 0 ) { return json_encode( $data, $flags ); }
 function wp_list_pluck( $list, $field ) { return array_map( function ( $row ) use ( $field ) { return $row[ $field ]; }, $list ); }
-/** Stub $wpdb: only the post_content write CCC_Url_Replacer makes. */
+/** Stub $wpdb: only the post_content write CrawlCove_Url_Replacer makes. */
 class CC_Test_Wpdb {
 	public $posts = 'wp_posts';
 	public function update( $table, $data, $where ) {
@@ -328,17 +328,17 @@ function delete_term_meta( $term_id, $key ) {
 }
 
 /**
- * CCC_Term_Resolver's real implementation drives $wp_rewrite/WP_Query rewrite
+ * CrawlCove_Term_Resolver's real implementation drives $wp_rewrite/WP_Query rewrite
  * matching (and get_taxonomies()/get_term_by() query-var matching) that
  * cannot be meaningfully stubbed — real behaviour, including the
  * plain-query-vars-must-run-before-url_to_postid() ordering fix, is proven
  * against a live WordPress install in tests/integration/taxonomy-checks.sh,
  * same split as WPSEO_Options/WPSEO_Taxonomy_Meta below. This stand-in lets
- * CCC_Service::resolve_url()'s own logic (calling both in the right order,
+ * CrawlCove_Service::resolve_url()'s own logic (calling both in the right order,
  * building the negative sentinel, re-verifying via get_term()) be
  * unit-tested without the real URL-matching mechanism.
  */
-class CCC_Term_Resolver {
+class CrawlCove_Term_Resolver {
 	public static function resolve_plain_query_vars( $url ) {
 		return isset( $GLOBALS['cc_term_plain_urls'][ $url ] ) ? $GLOBALS['cc_term_plain_urls'][ $url ] : 0;
 	}
@@ -351,7 +351,7 @@ class CCC_Term_Resolver {
  * Minimal stand-in for Yoast's \WPSEO_Taxonomy_Meta, shaped like the real
  * get_term_meta()/set_value() (read-modify-write onto the
  * 'wpseo_taxonomy_meta' option, shaped [taxonomy][term_id][wpseo_*], via the
- * same get_option()/update_option() stubs above) so CCC_Adapter's term-title
+ * same get_option()/update_option() stubs above) so CrawlCove_Adapter's term-title
  * code path is unit-testable without the real plugin installed.
  */
 class WPSEO_Taxonomy_Meta {
@@ -362,7 +362,7 @@ class WPSEO_Taxonomy_Meta {
 
 	// Real signature is ( $term, $taxonomy, $meta = null ) — omitting $meta
 	// returns the full per-term array (every key, defaults merged in), the
-	// same "no true single-field patch" shape CCC_Adapter's Yoast term-write
+	// same "no true single-field patch" shape CrawlCove_Adapter's Yoast term-write
 	// path depends on (see includes/class-ccc-adapter.php's set_term_field()
 	// for why that distinction matters).
 	public static function get_term_meta( $term_id, $taxonomy, $meta = null ) {
@@ -394,7 +394,7 @@ class WPSEO_Taxonomy_Meta {
 /**
  * Minimal stand-in for AIOSEO's own \AIOSEO\Plugin\Common\Models\Post,
  * shaped like the real getPost()/savePost() (patch-style: savePost() only
- * overwrites keys present in $data) so CCC_Adapter's aioseo branch is
+ * overwrites keys present in $data) so CrawlCove_Adapter's aioseo branch is
  * unit-testable without the real plugin installed. Real-plugin behaviour
  * (defaults on first save, the 38 other columns, empty-string-falls-back-
  * to-template rendering) is proven in tests/integration/, not here.
@@ -462,7 +462,7 @@ function YoastSEO() {
 /**
  * Minimal stand-in for Yoast's \WPSEO_Options, shaped like the real
  * get()/save_option() (read-modify-write onto the named option array, via
- * the same get_option()/update_option() stubs above) so CCC_Adapter's
+ * the same get_option()/update_option() stubs above) so CrawlCove_Adapter's
  * homepage-title code path is unit-testable without the real plugin
  * installed. Real-plugin behaviour (indexable rebuild watcher, the
  * empty-falls-back-to-template render) is proven in tests/integration/.
@@ -489,7 +489,7 @@ class WPSEO_Options {
  * modes — is proven against a real Polylang(+Yoast) install in
  * tests/integration/, same split as WPSEO_Options/WPSEO_Taxonomy_Meta
  * above. This stand-in only needs to be faithful to the ONE behaviour
- * CCC_Adapter/CCC_Service actually depend on: an untranslated string falls
+ * CrawlCove_Adapter/CrawlCove_Service actually depend on: an untranslated string falls
  * back to itself (real gettext semantics, confirmed against a real
  * Yoast+Polylang install — see SECURITY-NOTES.md's 26 Sept addendum),
  * never to ''.
@@ -535,7 +535,7 @@ function PLL() {
 
 /**
  * Minimal stand-in for Polylang's PLL_MO — the same import/add_entry/
- * export_to_db round trip CCC_Adapter::set_home_field() drives, verified
+ * export_to_db round trip CrawlCove_Adapter::set_home_field() drives, verified
  * against the real class end-to-end (write via one REST request, read back
  * via pll_translate_string() in a separate one) in SECURITY-NOTES.md's 26
  * Sept addendum.
@@ -570,4 +570,5 @@ require __DIR__ . '/../includes/class-ccc-url-replacer.php';
 require __DIR__ . '/../includes/class-ccc-site-settings.php';
 require __DIR__ . '/../includes/class-ccc-image-alt.php';
 require __DIR__ . '/../includes/class-ccc-indexnow.php';
+require __DIR__ . '/../includes/class-ccc-migrate.php';
 require __DIR__ . '/../admin/class-ccc-admin.php';

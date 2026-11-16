@@ -13,9 +13,9 @@ defined( 'ABSPATH' ) || exit;
  * Last-seen record, one small non-autoloaded option, written at most once a
  * minute so a push of many batches does not turn into a write per request.
  */
-class CCC_Connection {
+class CrawlCove_Connection {
 
-	const OPTION   = 'ccc_last_connection';
+	const OPTION   = 'crawlcove_last_connection';
 	const INTERVAL = 60;
 
 	/**

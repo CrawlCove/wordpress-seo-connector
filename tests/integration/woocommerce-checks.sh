@@ -4,7 +4,7 @@
 # WooCommerce + real Rank Math, exercising CCC's REST routes against a
 # WooCommerce PRODUCT (post_type=product) and a PRODUCT_CAT term.
 #
-# WHY THIS EXISTS: nothing in CCC_Service/CCC_Adapter/CCC_Term_Resolver
+# WHY THIS EXISTS: nothing in CrawlCove_Service/CrawlCove_Adapter/CrawlCove_Term_Resolver
 # special-cases a post type or a taxonomy — the code is generic (grep for
 # post_type across includes/ finds nothing). That strongly implies
 # WooCommerce products/categories already work with zero extra code, since

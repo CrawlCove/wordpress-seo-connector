@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Core service: URL resolution, validation and applying changes.
  */
-class CCC_Service {
+class CrawlCove_Service {
 
 	const MAX_TITLE_LEN       = 512;
 	const MAX_DESCRIPTION_LEN = 1024;
@@ -91,7 +91,7 @@ class CCC_Service {
 		// its own "is what's left the home URL?" check runs before rewrite
 		// matching. A named taxonomy query var is confirmed against real
 		// WordPress to be a far more precise signal than that coarse check.
-		$term_id = CCC_Term_Resolver::resolve_plain_query_vars( $url );
+		$term_id = CrawlCove_Term_Resolver::resolve_plain_query_vars( $url );
 		if ( $term_id ) {
 			$term = get_term( $term_id );
 			if ( $term && ! is_wp_error( $term ) ) {
@@ -119,7 +119,7 @@ class CCC_Service {
 		// url_to_postid() only ever matches a *singular* query — a taxonomy
 		// archive under pretty permalinks (e.g. /category/news/) never
 		// resolves there. Try rewrite-rule term resolution before giving up.
-		$term_id = CCC_Term_Resolver::resolve_pretty_permalink( $url );
+		$term_id = CrawlCove_Term_Resolver::resolve_pretty_permalink( $url );
 		if ( $term_id ) {
 			$term = get_term( $term_id );
 			if ( $term && ! is_wp_error( $term ) ) {
@@ -306,12 +306,12 @@ class CCC_Service {
 	 * Describe one target's current SEO values for the desktop app's diff
 	 * view — a real post, or the homepage (HOME_ID).
 	 *
-	 * @param int         $post_id Post id, or HOME_ID.
-	 * @param CCC_Adapter $adapter Active SEO adapter to read current values from.
-	 * @param string      $lang    Non-default Polylang language slug, HOME_ID only; '' otherwise.
+	 * @param int               $post_id Post id, or HOME_ID.
+	 * @param CrawlCove_Adapter $adapter Active SEO adapter to read current values from.
+	 * @param string            $lang    Non-default Polylang language slug, HOME_ID only; '' otherwise.
 	 * @return array
 	 */
-	public static function describe( $post_id, CCC_Adapter $adapter, $lang = '' ) {
+	public static function describe( $post_id, CrawlCove_Adapter $adapter, $lang = '' ) {
 		if ( self::HOME_ID === $post_id ) {
 			return array(
 				'post_id'    => self::HOME_ID,
@@ -363,7 +363,7 @@ class CCC_Service {
 	 * least one of url/post_id, at least one of title/description. `lang` is
 	 * only meaningful alongside post_id 0/a URL that resolves to it (the
 	 * homepage) on a Polylang site — see resolve_polylang_home_language()'s
-	 * docblock and CCC_Adapter::supports_language_home().
+	 * docblock and CrawlCove_Adapter::supports_language_home().
 	 *
 	 * @param mixed $item One raw change item from the request body.
 	 * @return array|WP_Error { post_id, lang, fields: { title?: string, description?: string } }
@@ -390,7 +390,7 @@ class CCC_Service {
 					return new WP_Error( 'ccc_no_term', __( 'No term with that id.', 'crawl-cove-connector' ), array( 'status' => 404 ) );
 				}
 				// resolve_url() never hands out a term whose taxonomy isn't
-				// public (CCC_Term_Resolver checks this too, see its
+				// public (CrawlCove_Term_Resolver checks this too, see its
 				// docblock) — a caller passing a raw negative post_id
 				// straight to /apply or /revert must be held to the same
 				// rule, not just discovery via URL. Real example: Polylang's
@@ -508,7 +508,7 @@ class CCC_Service {
 	 */
 	private static function validate_extra_fields( array $item ) {
 		$out = array();
-		foreach ( CCC_Adapter::EXTRA_FIELDS as $field ) {
+		foreach ( CrawlCove_Adapter::EXTRA_FIELDS as $field ) {
 			if ( ! array_key_exists( $field, $item ) ) {
 				continue;
 			}
@@ -527,7 +527,7 @@ class CCC_Service {
 			if ( 'canonical' === $field || 'og_image' === $field ) {
 				$value  = trim( $value );
 				$scheme = strtolower( (string) wp_parse_url( $value, PHP_URL_SCHEME ) );
-				if ( '' !== $value && ( strlen( $value ) > CCC_Url_Replacer::MAX_URL_LEN || ( 'http' !== $scheme && 'https' !== $scheme ) || esc_url_raw( $value ) !== $value ) ) {
+				if ( '' !== $value && ( strlen( $value ) > CrawlCove_Url_Replacer::MAX_URL_LEN || ( 'http' !== $scheme && 'https' !== $scheme ) || esc_url_raw( $value ) !== $value ) ) {
 					/* translators: %s: field name */
 					return new WP_Error( 'ccc_bad_url', sprintf( __( '%s must be an absolute http or https URL, or empty to clear it.', 'crawl-cove-connector' ), $field ), array( 'status' => 400 ) );
 				}
@@ -573,13 +573,13 @@ class CCC_Service {
 	 * Apply a batch of changes. Per-item results; one bad item never blocks
 	 * the rest. Dry-run validates and diffs without writing anything.
 	 *
-	 * @param array       $changes Raw items from the request body.
-	 * @param bool        $dry_run Validate and diff without writing anything.
-	 * @param CCC_Adapter $adapter Active SEO adapter to write through.
-	 * @param string      $source  Actor recorded in the change log.
+	 * @param array             $changes Raw items from the request body.
+	 * @param bool              $dry_run Validate and diff without writing anything.
+	 * @param CrawlCove_Adapter $adapter Active SEO adapter to write through.
+	 * @param string            $source  Actor recorded in the change log.
 	 * @return array|WP_Error Per-item results, or WP_Error for a bad batch.
 	 */
-	public static function apply( $changes, $dry_run, CCC_Adapter $adapter, $source ) {
+	public static function apply( $changes, $dry_run, CrawlCove_Adapter $adapter, $source ) {
 		if ( ! is_array( $changes ) || ! $changes ) {
 			return new WP_Error( 'ccc_empty_batch', __( 'changes must be a non-empty array.', 'crawl-cove-connector' ), array( 'status' => 400 ) );
 		}
@@ -678,7 +678,7 @@ class CCC_Service {
 					// checks against: a cleared value can read back as a
 					// fallback, and some savers rewrite the text.
 					$after                       = $adapter->get_value( $post_id, $field, $lang );
-					$entry                       = CCC_Change_Log::record( $post_id, $field, $from, $to, $source, $lang, $after );
+					$entry                       = CrawlCove_Change_Log::record( $post_id, $field, $from, $to, $source, $lang, $after );
 					$step['change_id']           = $entry['id'];
 					$touched_targets[ $post_id ] = true;
 				}
@@ -717,7 +717,7 @@ class CCC_Service {
 	 * cache, LiteSpeed Cache and WP Fastest Cache only purged on the re-save's
 	 * save_post/transition_post_status, so their own per-post purge APIs are
 	 * called directly (each verified against the plugin's source). Filterable
-	 * off via ccc_touch_post_after_apply.
+	 * off via crawlcove_touch_post_after_apply.
 	 *
 	 * HOME_ID (0) and a negative term-id sentinel have no post row, and
 	 * neither target's write fires clean_post_cache by any other path, so a
@@ -730,12 +730,12 @@ class CCC_Service {
 	 */
 	public static function invalidate_caches_for( $post_id ) {
 		if ( $post_id > 0 ) {
-			if ( apply_filters( 'ccc_touch_post_after_apply', true ) ) {
+			if ( apply_filters( 'crawlcove_touch_post_after_apply', true ) ) {
 				self::clear_post_page_cache( $post_id );
 			}
 			return;
 		}
-		if ( apply_filters( 'ccc_clear_full_cache_after_write', true ) ) {
+		if ( apply_filters( 'crawlcove_clear_full_cache_after_write', true ) ) {
 			self::clear_full_page_cache();
 		}
 	}
@@ -750,9 +750,9 @@ class CCC_Service {
 		if ( function_exists( 'w3tc_flush_post' ) ) { // W3 Total Cache page cache.
 			w3tc_flush_post( $post_id );
 		}
-		do_action( 'litespeed_purge_post', $post_id ); // LiteSpeed Cache's documented API hook.
-		do_action( 'wpfc_clear_post_cache_by_id', false, $post_id ); // WP Fastest Cache (comment id, post id).
-		do_action( 'ccc_after_post_write', $post_id );
+		do_action( 'litespeed_purge_post', $post_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- LiteSpeed Cache's documented API hook.
+		do_action( 'wpfc_clear_post_cache_by_id', false, $post_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WP Fastest Cache's purge hook (comment id, post id).
+		do_action( 'crawlcove_after_post_write', $post_id );
 	}
 
 	/**
@@ -777,8 +777,8 @@ class CCC_Service {
 		// real source (wpFastestCache.php: `add_action( 'wpfc_clear_all_cache',
 		// array( $this, 'deleteCache' ), 10, 1 )`), so function_exists() would
 		// always be false for either and silently never fire.
-		do_action( 'wpfc_clear_all_cache' );
-		do_action( 'litespeed_purge_all' ); // LiteSpeed Cache's own documented purge-all hook.
-		do_action( 'ccc_after_uncached_write' );
+		do_action( 'wpfc_clear_all_cache' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WP Fastest Cache's purge-all hook.
+		do_action( 'litespeed_purge_all' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- LiteSpeed Cache's documented purge-all hook.
+		do_action( 'crawlcove_after_uncached_write' );
 	}
 }

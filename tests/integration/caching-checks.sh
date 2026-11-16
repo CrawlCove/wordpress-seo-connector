@@ -20,7 +20,7 @@
 # verifies, a caching plugin never learned those pages had changed, and a
 # desktop-app "push to WordPress" for a homepage/category-archive title
 # could sit behind a stale cache for as long as the cache's TTL. Same gap
-# existed for EVERY revert(), including on an ordinary post: CCC_Change_Log
+# existed for EVERY revert(), including on an ordinary post: CrawlCove_Change_Log
 # ::revert() wrote the reverted value directly and never called
 # wp_update_post() at all, for any target.
 #
@@ -128,8 +128,8 @@ add_action( 'save_post', function ( \$post_id ) {
 	ccc_probe_log( "save_post:\$post_id" );
 } );
 
-add_action( 'ccc_after_uncached_write', function () {
-	ccc_probe_log( 'ccc_after_uncached_write' );
+add_action( 'crawlcove_after_uncached_write', function () {
+	ccc_probe_log( 'crawlcove_after_uncached_write' );
 } );
 PHP
 
@@ -222,27 +222,27 @@ CHANGE_ID_HOME="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 expect_contains "apply(home): WP Super Cache's wp_cache_clear_cache() called" "wp_cache_clear_cache"
 expect_contains "apply(home): LiteSpeed's litespeed_purge_all fired" "litespeed_purge_all"
 expect_contains "apply(home): WP Fastest Cache's wpfc_clear_all_cache fired" "wpfc_clear_all_cache"
-expect_contains "apply(home): plugin-agnostic ccc_after_uncached_write fired" "ccc_after_uncached_write"
+expect_contains "apply(home): plugin-agnostic crawlcove_after_uncached_write fired" "crawlcove_after_uncached_write"
 expect_absent "apply(home): clean_post_cache never fires for post_id 0 (would be core's INSERT signal)" "clean_post_cache:0"
 
 echo "-- homepage: revert ALSO triggers the full-cache purge (previously nothing fired) --"
 reset_log
 req POST /revert "{\"change_id\":$CHANGE_ID_HOME}"
 expect_contains "revert(home): wp_cache_clear_cache() called" "wp_cache_clear_cache"
-expect_contains "revert(home): ccc_after_uncached_write fired" "ccc_after_uncached_write"
+expect_contains "revert(home): crawlcove_after_uncached_write fired" "crawlcove_after_uncached_write"
 
 echo "-- taxonomy term: apply triggers a full-cache purge --"
 reset_log
 req POST /apply "{\"changes\":[{\"post_id\":-$TERM_ID,\"title\":\"Term Title v1\"}]}"
 CHANGE_ID_TERM="$(echo "$RESP_BODY" | jq -r '.[0].applied.title.change_id')"
 expect_contains "apply(term): wp_cache_clear_cache() called" "wp_cache_clear_cache"
-expect_contains "apply(term): ccc_after_uncached_write fired" "ccc_after_uncached_write"
+expect_contains "apply(term): crawlcove_after_uncached_write fired" "crawlcove_after_uncached_write"
 
 echo "-- taxonomy term: revert ALSO triggers the full-cache purge (previously nothing fired) --"
 reset_log
 req POST /revert "{\"change_id\":$CHANGE_ID_TERM}"
 expect_contains "revert(term): wp_cache_clear_cache() called" "wp_cache_clear_cache"
-expect_contains "revert(term): ccc_after_uncached_write fired" "ccc_after_uncached_write"
+expect_contains "revert(term): crawlcove_after_uncached_write fired" "crawlcove_after_uncached_write"
 
 echo
 echo "== $PASS passed, $FAIL failed =="

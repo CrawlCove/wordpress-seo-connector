@@ -9,7 +9,7 @@
  * for every image inserted before the change). An empty alt marks the image
  * decorative and is written as alt="", never dropped.
  *
- * The content patch goes through CCC_Url_Replacer's splices, so a revert
+ * The content patch goes through CrawlCove_Url_Replacer's splices, so a revert
  * restores the page's exact bytes or refuses once the content was edited.
  *
  * @package crawl-cove-connector
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Image alt text fixes, with revert.
  */
-class CCC_Image_Alt {
+class CrawlCove_Image_Alt {
 
 	const MAX_ALT_LEN = 250;
 	const META_KEY    = '_wp_attachment_image_alt';
@@ -37,7 +37,7 @@ class CCC_Image_Alt {
 		}
 		$src = isset( $item['src'] ) && is_string( $item['src'] ) ? trim( $item['src'] ) : '';
 		$sch = strtolower( (string) wp_parse_url( $src, PHP_URL_SCHEME ) );
-		if ( '' === $src || strlen( $src ) > CCC_Url_Replacer::MAX_URL_LEN || ( 'http' !== $sch && 'https' !== $sch ) ) {
+		if ( '' === $src || strlen( $src ) > CrawlCove_Url_Replacer::MAX_URL_LEN || ( 'http' !== $sch && 'https' !== $sch ) ) {
 			return self::error( 'ccc_bad_url', __( 'src must be the absolute http or https URL of the image.', 'crawl-cove-connector' ) );
 		}
 		if ( ! isset( $item['alt'] ) || ! is_string( $item['alt'] ) ) {
@@ -51,14 +51,14 @@ class CCC_Image_Alt {
 		if ( ! isset( $item['url'] ) ) {
 			return self::error( 'ccc_no_target', __( 'A change needs the url of the page that shows the image.', 'crawl-cove-connector' ) );
 		}
-		$post_id = CCC_Service::resolve_url( $item['url'] );
+		$post_id = CrawlCove_Service::resolve_url( $item['url'] );
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
 		}
 		return array(
 			'post_id' => $post_id > 0 ? (int) $post_id : 0,
 			'src'     => $src,
-			'forms'   => CCC_Url_Replacer::forms( $src ),
+			'forms'   => CrawlCove_Url_Replacer::forms( $src ),
 			'alt'     => $alt,
 		);
 	}
@@ -89,7 +89,7 @@ class CCC_Image_Alt {
 	 * @param string $text  post_content.
 	 * @param array  $forms The image URL's matching forms.
 	 * @param string $alt   New alt (plain text).
-	 * @return array CCC_Url_Replacer::splice() result, plus `found`: images
+	 * @return array CrawlCove_Url_Replacer::splice() result, plus `found`: images
 	 *               with this src, and `held`: those left alone because they
 	 *               are not real tags.
 	 */
@@ -105,7 +105,7 @@ class CCC_Image_Alt {
 			foreach ( $tags[0] as $tag ) {
 				// Attributes read in order, so an "alt=" inside another
 				// attribute's value is never taken for the real one.
-				$attrs = CCC_Url_Replacer::attributes( $tag[0] );
+				$attrs = CrawlCove_Url_Replacer::attributes( $tag[0] );
 				if ( ! $attrs ) {
 					continue;
 				}
@@ -139,10 +139,10 @@ class CCC_Image_Alt {
 				$edits[] = array( $tag[1], strlen( $tag[0] ), $new, 1 );
 			}
 		}
-		$result = CCC_Url_Replacer::splice( (string) $text, $edits, 0 );
+		$result = CrawlCove_Url_Replacer::splice( (string) $text, $edits, 0 );
 		if ( $result['count'] && ! self::only_real_images_changed( (string) $text, $result['text'], $forms, $alt, $result['count'] ) ) {
 			$held  += $result['count'];
-			$result = CCC_Url_Replacer::splice( (string) $text, array(), 0 );
+			$result = CrawlCove_Url_Replacer::splice( (string) $text, array(), 0 );
 		}
 		$result['held']  = $held;
 		$result['found'] = $found;
@@ -276,9 +276,9 @@ class CCC_Image_Alt {
 		if ( ! is_array( $changes ) || ! $changes ) {
 			return self::error( 'ccc_empty_batch', __( 'changes must be a non-empty array.', 'crawl-cove-connector' ) );
 		}
-		if ( count( $changes ) > CCC_Service::MAX_BATCH ) {
+		if ( count( $changes ) > CrawlCove_Service::MAX_BATCH ) {
 			/* translators: %d: maximum number of changes allowed per request */
-			return self::error( 'ccc_batch_too_big', sprintf( __( 'At most %d changes per request.', 'crawl-cove-connector' ), CCC_Service::MAX_BATCH ) );
+			return self::error( 'ccc_batch_too_big', sprintf( __( 'At most %d changes per request.', 'crawl-cove-connector' ), CrawlCove_Service::MAX_BATCH ) );
 		}
 		$results = array();
 		foreach ( array_values( $changes ) as $i => $item ) {
@@ -322,7 +322,7 @@ class CCC_Image_Alt {
 			if ( ! current_user_can( 'edit_post', $op['post_id'] ) ) {
 				return self::refusal( self::error( 'ccc_forbidden', __( 'This user may not edit that target.', 'crawl-cove-connector' ), 403 ) );
 			}
-			$content = CCC_Url_Replacer::read( $op['post_id'], 'content' );
+			$content = CrawlCove_Url_Replacer::read( $op['post_id'], 'content' );
 			$inline  = self::rewrite( (string) $content, $op['forms'], $op['alt'] );
 		}
 
@@ -355,10 +355,10 @@ class CCC_Image_Alt {
 		if ( $op['post_id'] ) {
 			// The page the finding was on shows the image even when only the
 			// attachment changed (a page builder reads the attachment's alt).
-			CCC_Service::invalidate_caches_for( $op['post_id'] );
+			CrawlCove_Service::invalidate_caches_for( $op['post_id'] );
 		}
 		if ( $write_inline ) {
-			CCC_Url_Replacer::write( $op['post_id'], 'content', $inline['text'] );
+			CrawlCove_Url_Replacer::write( $op['post_id'], 'content', $inline['text'] );
 			$target = array(
 				'post_id' => $op['post_id'],
 				'where'   => 'content',
@@ -367,7 +367,7 @@ class CCC_Image_Alt {
 				'splices' => $inline['splices'],
 			);
 		}
-		$entry               = CCC_Change_Log::record_entry(
+		$entry               = CrawlCove_Change_Log::record_entry(
 			array(
 				'kind'       => 'image_alt',
 				'post_id'    => $op['post_id'],
@@ -416,7 +416,7 @@ class CCC_Image_Alt {
 		$inline     = $entry['inline'];
 		$content    = null;
 		if ( $inline ) {
-			$value = CCC_Url_Replacer::read( (int) $inline['post_id'], 'content' );
+			$value = CrawlCove_Url_Replacer::read( (int) $inline['post_id'], 'content' );
 			if ( null === $value || md5( $value ) !== $inline['hash'] ) {
 				if ( $force ) {
 					return self::error( 'ccc_content_changed', __( 'The page has been edited since this change, so the old alt text cannot be put back into it safely. Nothing was written.', 'crawl-cove-connector' ), 409 );
@@ -430,7 +430,7 @@ class CCC_Image_Alt {
 					)
 				);
 			}
-			$content = CCC_Url_Replacer::unsplice( $value, $inline['splices'] );
+			$content = CrawlCove_Url_Replacer::unsplice( $value, $inline['splices'] );
 		}
 		if ( $attachment ) {
 			$now = (string) get_post_meta( $attachment, self::META_KEY, true );
@@ -449,10 +449,10 @@ class CCC_Image_Alt {
 			self::attachment_changed( $attachment );
 		}
 		if ( null !== $content ) {
-			CCC_Url_Replacer::write( (int) $inline['post_id'], 'content', $content );
+			CrawlCove_Url_Replacer::write( (int) $inline['post_id'], 'content', $content );
 		}
 		if ( ! empty( $entry['post_id'] ) ) {
-			CCC_Service::invalidate_caches_for( (int) $entry['post_id'] );
+			CrawlCove_Service::invalidate_caches_for( (int) $entry['post_id'] );
 		}
 		return true;
 	}
@@ -469,7 +469,7 @@ class CCC_Image_Alt {
 	public static function conflict( array $entry ) {
 		$inline = isset( $entry['inline'] ) ? $entry['inline'] : null;
 		if ( $inline ) {
-			$value = CCC_Url_Replacer::read( (int) $inline['post_id'], 'content' );
+			$value = CrawlCove_Url_Replacer::read( (int) $inline['post_id'], 'content' );
 			if ( null === $value || md5( $value ) !== $inline['hash'] ) {
 				return 'page';
 			}
@@ -489,7 +489,7 @@ class CCC_Image_Alt {
 	 * @param int $attachment_id Attachment id.
 	 */
 	private static function attachment_changed( $attachment_id ) {
-		CCC_Service::invalidate_caches_for( $attachment_id );
+		CrawlCove_Service::invalidate_caches_for( $attachment_id );
 		if ( defined( 'ELEMENTOR_VERSION' ) ) {
 			delete_post_meta_by_key( '_elementor_element_cache' );
 		}

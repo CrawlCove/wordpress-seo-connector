@@ -216,7 +216,7 @@ same "rel_strip: nofollow gone, noopener and the other link kept, href stays rel
 RS_ID="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
 
 echo "-- Tools page: Revert anyway only where a forced revert can work --"
-notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*Change log'; }
+notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*Change log'; }
 put_content "$P4" "get_post( $P4 )->post_content . '<p>edited</p>'"
 N="$(notice "$RS_ID")"
 has   "notice: an edited nofollow strip says it cannot be put back" "$N" "cannot be put back safely"
@@ -232,7 +232,7 @@ hasnt "notice: an edited plain replace is not called unrecoverable" "$N" "cannot
 
 echo "-- Tools page change log --"
 # Each row as "field|post|before|after", rendered by the real admin page.
-TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( $m[2][ $i ] ), "|", trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( $c ) ) ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
+TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( $m[2][ $i ] ), "|", trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( $c ) ) ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
 has "tools: a page-scope links row names its page" "$TOOLS_ROWS" "Link|Links page"
 has "tools: a site-wide links row counts its places" "$TOOLS_ROWS" "Link|Links in "
 has "tools: the nofollow-strip row says what changed" "$TOOLS_ROWS" "|$OLD|(nofollow removed)"

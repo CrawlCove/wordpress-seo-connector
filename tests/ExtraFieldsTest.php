@@ -16,7 +16,7 @@ class ExtraFieldsTest extends TestCase {
 			'seopress' => array( '_seopress_titles_title', '_seopress_titles_desc' ),
 			'aioseo'   => array( '_aioseo_title', '_aioseo_description' ),
 		);
-		return new CCC_Adapter( $id, $keys[ $id ][0], $keys[ $id ][1] );
+		return new CrawlCove_Adapter( $id, $keys[ $id ][0], $keys[ $id ][1] );
 	}
 
 	public function test_every_adapter_round_trips_every_extra_field() {
@@ -94,7 +94,7 @@ class ExtraFieldsTest extends TestCase {
 
 	public function test_apply_validates_logs_and_reverts_extra_fields() {
 		$a   = $this->adapter( 'yoast' );
-		$bad = CCC_Service::apply(
+		$bad = CrawlCove_Service::apply(
 			array(
 				array( 'post_id' => 7, 'canonical' => 'javascript:alert(1)' ),
 				array( 'post_id' => 7, 'robots_index' => 'noindex' ),
@@ -107,15 +107,15 @@ class ExtraFieldsTest extends TestCase {
 		);
 		$this->assertSame( array( 'ccc_bad_url', 'ccc_bad_value', 'ccc_field_unsupported', 'ccc_too_long' ), array_column( $bad, 'error' ) );
 
-		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'canonical' => 'https://example.com/c/', 'robots_index' => false, 'og_title' => '<b>Shared</b>' ) ), false, $a, 'bloo' );
+		$res = CrawlCove_Service::apply( array( array( 'post_id' => 7, 'canonical' => 'https://example.com/c/', 'robots_index' => false, 'og_title' => '<b>Shared</b>' ) ), false, $a, 'bloo' );
 		$this->assertSame( 'Shared', get_post_meta( 7, '_yoast_wpseo_opengraph-title', true ) );
 		$this->assertSame( '1', get_post_meta( 7, '_yoast_wpseo_meta-robots-noindex', true ) );
 		$this->assertSame( 'noindex', $res[0]['applied']['robots_index']['to'] );
 
-		$this->assertTrue( CCC_Change_Log::revert( $res[0]['applied']['robots_index']['change_id'], $a ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $res[0]['applied']['robots_index']['change_id'], $a ) );
 		$this->assertSame( '', $a->get_value( 7, 'robots_index' ) );
 		update_post_meta( 7, '_yoast_wpseo_canonical', 'https://example.com/typed/' );
-		$err = CCC_Change_Log::revert( $res[0]['applied']['canonical']['change_id'], $a );
+		$err = CrawlCove_Change_Log::revert( $res[0]['applied']['canonical']['change_id'], $a );
 		$this->assertSame( 'https://example.com/typed/', $err->get_error_data()['current'] );
 	}
 }

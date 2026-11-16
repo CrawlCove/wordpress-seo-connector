@@ -129,7 +129,7 @@ echo "-- admin page --"
 # esc_url() (which rewrites & as &#038; — a browser decodes that back, so the
 # check looks for each parameter on its own rather than the literal URL).
 # wp-cli is not is_admin(), so the admin class is required explicitly.
-ADMIN_HTML="$(php "$CCC_CACHE/wp-cli.phar" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CCC_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
+ADMIN_HTML="$(php "$CCC_CACHE/wp-cli.phar" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CrawlCove_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
 # Substring tests, not `echo | grep -q`: under `set -o pipefail` grep -q
 # exits on the first match, echo takes SIGPIPE, and the pipeline reads as
 # failed — a timing flake that passed on one adapter and failed on three.
@@ -167,9 +167,9 @@ check "apply: $CCC_ADAPTER template variables in the description stored verbatim
 # Pagination: 100 rows a page, page 2 reachable, revert forms carry the page.
 # Seeds enough entries to need two pages (the log already holds this run's
 # earlier applies, so the total is asserted by shape, not by number).
-php "$CCC_CACHE/wp-cli.phar" eval "for (\$i = 0; \$i < 101; \$i++) { CCC_Change_Log::record( $CCC_POST_EDITOR, 'title', 'seed-old-' . \$i, 'seed-new-' . \$i, 'harness' ); }" --path="$CCC_SITE" >/dev/null 2>&1
-PAGE1="$(php "$CCC_CACHE/wp-cli.phar" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CCC_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
-PAGE2="$(php "$CCC_CACHE/wp-cli.phar" eval '$_GET["paged"] = "2"; require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CCC_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
+php "$CCC_CACHE/wp-cli.phar" eval "for (\$i = 0; \$i < 101; \$i++) { CrawlCove_Change_Log::record( $CCC_POST_EDITOR, 'title', 'seed-old-' . \$i, 'seed-new-' . \$i, 'harness' ); }" --path="$CCC_SITE" >/dev/null 2>&1
+PAGE1="$(php "$CCC_CACHE/wp-cli.phar" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CrawlCove_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
+PAGE2="$(php "$CCC_CACHE/wp-cli.phar" eval '$_GET["paged"] = "2"; require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); CrawlCove_Admin::render();' --path="$CCC_SITE" 2>/dev/null)"
 # A row ends in a Revert form, "reverted" or (review #248) "replaced by a
 # later change"; the seeds all hit one title, so most are the last kind.
 ROW_MARK='name="change_id"\|<em>reverted</em>\|replaced by a later change'
@@ -195,8 +195,8 @@ if [[ "$P1_SUPERSEDED" -ge 99 ]]; then
 else
   FAIL=$((FAIL+1)); echo "  FAIL admin: expected >=99 replaced rows on page 1, got $P1_SUPERSEDED"
 fi
-OLD_SEED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval 'foreach ( CCC_Change_Log::all() as $e ) { if ( "seed-new-0" === $e["to"] ) { echo (int) $e["id"]; break; } }' --path="$CCC_SITE" 2>/dev/null)"
-CHANGED_HTML="$(php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$OLD_SEED_ID'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" --path="$CCC_SITE" 2>/dev/null)"
+OLD_SEED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval 'foreach ( CrawlCove_Change_Log::all() as $e ) { if ( "seed-new-0" === $e["to"] ) { echo (int) $e["id"]; break; } }' --path="$CCC_SITE" 2>/dev/null)"
+CHANGED_HTML="$(php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$OLD_SEED_ID'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" --path="$CCC_SITE" 2>/dev/null)"
 # The seeds go through record() only, so the post's stored title is empty.
 if [[ -n "$OLD_SEED_ID" && "$CHANGED_HTML" == *'Not reverted: this title has been emptied since that push.'* \
    && "$CHANGED_HTML" == *'name="force" value="1"'* && "$CHANGED_HTML" == *'Revert anyway to &quot;seed-old-0&quot;'* ]]; then
@@ -207,16 +207,16 @@ fi
 
 # The Tools page form handler itself: refused without force (notice=changed,
 # nothing written), reverted with it.
-TITLE_BEFORE="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CCC_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
+TITLE_BEFORE="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CrawlCove_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
 HR_LOC="$(CCC_HR_ID="$OLD_SEED_ID" php "$CCC_CACHE/wp-cli.phar" eval-file "$HERE/admin-revert.php" --path="$CCC_SITE" 2>/dev/null)"
-TITLE_AFTER="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CCC_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
+TITLE_AFTER="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CrawlCove_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
 if [[ "$HR_LOC" == *'ccc_notice=changed'* && "$HR_LOC" == *"change_id=$OLD_SEED_ID"* && "$TITLE_AFTER" == "$TITLE_BEFORE" ]]; then
   PASS=$((PASS+1)); echo "  ok   admin: Revert on a changed value redirects with notice=changed and writes nothing"
 else
   FAIL=$((FAIL+1)); echo "  FAIL admin: refused Revert wrong (redirect '$HR_LOC', title '$TITLE_BEFORE' -> '$TITLE_AFTER')"
 fi
 HR_LOC="$(CCC_HR_ID="$OLD_SEED_ID" CCC_HR_FORCE=1 php "$CCC_CACHE/wp-cli.phar" eval-file "$HERE/admin-revert.php" --path="$CCC_SITE" 2>/dev/null)"
-TITLE_AFTER="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CCC_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
+TITLE_AFTER="$(php "$CCC_CACHE/wp-cli.phar" eval "echo CrawlCove_Adapter::detect()->get_title( $CCC_POST_EDITOR );" --path="$CCC_SITE" 2>/dev/null)"
 if [[ "$HR_LOC" == *'ccc_notice=reverted'* && "$TITLE_AFTER" == 'seed-old-0' ]]; then
   PASS=$((PASS+1)); echo "  ok   admin: Revert anyway restores the entry's previous value"
 else
@@ -227,16 +227,16 @@ fi
 # notice and on the button. A push onto an empty title says Revert anyway
 # leaves it empty; a title emptied since a push says so in words.
 render_changed() {
-  php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CCC_Admin::render();" --path="$CCC_SITE" 2>/dev/null
+  php "$CCC_CACHE/wp-cli.phar" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" --path="$CCC_SITE" 2>/dev/null
 }
-EMPTY_FROM_ID="$(php "$CCC_CACHE/wp-cli.phar" eval "\$e = CCC_Change_Log::record( $CCC_POST_EDITOR, 'title', '', 'pushed-onto-empty', 'harness' ); echo (int) \$e['id'];" --path="$CCC_SITE" 2>/dev/null)"
+EMPTY_FROM_ID="$(php "$CCC_CACHE/wp-cli.phar" eval "\$e = CrawlCove_Change_Log::record( $CCC_POST_EDITOR, 'title', '', 'pushed-onto-empty', 'harness' ); echo (int) \$e['id'];" --path="$CCC_SITE" 2>/dev/null)"
 N="$(render_changed "$EMPTY_FROM_ID")"
 if [[ "$N" == *'Revert anyway (leaves it empty)'* && "$N" != *'&quot;—&quot;'* && "$N" == *'now reads &quot;seed-old-0&quot;'* ]]; then
   PASS=$((PASS+1)); echo "  ok   admin: Revert anyway to an empty old title says it leaves it empty"
 else
   FAIL=$((FAIL+1)); echo "  FAIL admin: empty-from notice wrong"; echo "$N" | grep -o 'Not reverted[^<]*\|Revert anyway[^<]*' | head -3
 fi
-EMPTIED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval "\$e = CCC_Change_Log::record( $CCC_POST_EDITOR, 'title', 'before-emptied', 'pushed-then-emptied', 'harness' ); CCC_Adapter::detect()->set_title( $CCC_POST_EDITOR, '' ); echo (int) \$e['id'];" --path="$CCC_SITE" 2>/dev/null)"
+EMPTIED_ID="$(php "$CCC_CACHE/wp-cli.phar" eval "\$e = CrawlCove_Change_Log::record( $CCC_POST_EDITOR, 'title', 'before-emptied', 'pushed-then-emptied', 'harness' ); CrawlCove_Adapter::detect()->set_title( $CCC_POST_EDITOR, '' ); echo (int) \$e['id'];" --path="$CCC_SITE" 2>/dev/null)"
 N="$(render_changed "$EMPTIED_ID")"
 if [[ "$N" == *'Not reverted: this title has been emptied since that push.'* && "$N" != *'&quot;—&quot;'* && "$N" == *'Revert anyway to &quot;before-emptied&quot;'* ]]; then
   PASS=$((PASS+1)); echo "  ok   admin: a title emptied since the push is described in words"

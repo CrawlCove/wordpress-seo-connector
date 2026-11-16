@@ -28,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * Names the "core has Application Passwords switched off" state for the
  * Tools page and the REST permission callback.
  */
-class CCC_App_Passwords {
+class CrawlCove_App_Passwords {
 
 	const ERROR_CODE = 'ccc_app_passwords_unavailable';
 

@@ -583,7 +583,7 @@ authenticated user (one that passes the shared `edit_posts` check) calls any
 `crawlcove/v1` route, then "Last connected <date> by <user>". It is written
 from the routes' permission callback, so anonymous, wrong-password and
 under-privileged requests never move it. One small non-autoloaded option
-(`ccc_last_connection`: time, user, route), written at most once a minute per
+(`crawlcove_last_connection`: time, user, route), written at most once a minute per
 user and deleted on uninstall. No REST contract change; the app needs to do
 nothing, and a successful `GET /status` is enough to flip it.
 
@@ -607,12 +607,13 @@ caching plugins) that the affected page is stale:
   active, and fires WP Fastest Cache's and LiteSpeed Cache's own
   documented `wpfc_clear_all_cache`/`litespeed_purge_all` action hooks.
 
-For anything else, hook the plugin-agnostic `ccc_after_post_write` action
-(fires after every post write, with the post id) or `ccc_after_uncached_write`
+For anything else, hook the plugin-agnostic `crawlcove_after_post_write` action
+(fires after every post write, with the post id) or `crawlcove_after_uncached_write`
 (fires after every homepage/taxonomy write), or filter
-`ccc_touch_post_after_apply`/`ccc_clear_full_cache_after_write` (both
+`crawlcove_touch_post_after_apply`/`crawlcove_clear_full_cache_after_write` (both
 default `true`; return `false` to opt out of the automatic per-post or
-full-site purge).
+full-site purge). Before 1.0.0 these four hooks were named `ccc_*`; the old names
+no longer fire.
 
 ## Installation
 
@@ -645,7 +646,7 @@ composer phpcompat  # PHP 7.4 compatibility
 composer phpcs     # WordPress coding standards
 ```
 
-The core logic (`CCC_Service`, `CCC_Adapter`, `CCC_Change_Log`) is deliberately free of `WP_REST_*` types so it unit-tests without a WordPress install. Integration smoke-testing against a real WordPress (all four adapters, plus a security check suite) runs before each release: see `tests/integration/`.
+The core logic (`CrawlCove_Service`, `CrawlCove_Adapter`, `CrawlCove_Change_Log`) is deliberately free of `WP_REST_*` types so it unit-tests without a WordPress install. Integration smoke-testing against a real WordPress (all four adapters, plus a security check suite) runs before each release: see `tests/integration/`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full setup and the rules the code follows, and [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 

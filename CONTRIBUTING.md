@@ -24,9 +24,9 @@ All four must pass before a pull request is merged. GitHub Actions runs them on 
 
 ## How the code is laid out
 
-- `includes/`: the REST routes, the service layer and `CCC_Adapter`, which maps each SEO plugin (Yoast SEO, Rank Math, SEOPress, AIOSEO) to its own fields.
+- `includes/`: the REST routes, the service layer and `CrawlCove_Adapter`, which maps each SEO plugin (Yoast SEO, Rank Math, SEOPress, AIOSEO) to its own fields.
 - `admin/`: the Tools → Crawl Cove page.
-- `tests/`: unit tests. The core classes (`CCC_Service`, `CCC_Adapter`, `CCC_Change_Log`) avoid `WP_REST_*` types so they test without WordPress.
+- `tests/`: unit tests. The core classes (`CrawlCove_Service`, `CrawlCove_Adapter`, `CrawlCove_Change_Log`) avoid `WP_REST_*` types so they test without WordPress.
 - `tests/integration/`: shell harnesses that build a real WordPress site (SQLite, `php -S`) and push fixes over HTTP. Run one adapter with `tests/integration/run.sh --adapter=yoast` (or `rankmath`, `seopress`, `aioseo`), or everything with `tests/integration/all.sh`. They never download anything themselves, so fetch these into `tests/integration/.cache/` first:
 
 ```

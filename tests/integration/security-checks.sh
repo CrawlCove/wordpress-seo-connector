@@ -97,8 +97,8 @@ check "editor: /changes includes the author's entries (edit_others_posts)" 200 "
 echo "-- /resolve fuzz --"
 # WP's REST arg layer does NOT 400 a scalar against a declared type=>'array'
 # param — it silently (array)-casts it to a single-element array instead
-# (confirmed against real WordPress). CCC_Rest::resolve() has no further
-# is_array() guard of its own, so a scalar 'urls' reaches CCC_Service as a
+# (confirmed against real WordPress). CrawlCove_Rest::resolve() has no further
+# is_array() guard of its own, so a scalar 'urls' reaches CrawlCove_Service as a
 # one-item array and is handled per-item like any other bad url — safe, just
 # worth knowing REST's own validation isn't the backstop here.
 req POST /resolve "$EDITOR" '{"urls":"not-an-array"}'
@@ -129,7 +129,7 @@ check_http "resolve: 10k-char url doesn't crash/timeout" 200 "$RESP_HTTP" "$RESP
 
 echo "-- /apply fuzz: types and nesting --"
 # Same WP REST coercion as /resolve above: a scalar 'changes' becomes a
-# 1-item array, and CCC_Service::validate_change()'s own is_array() check on
+# 1-item array, and CrawlCove_Service::validate_change()'s own is_array() check on
 # each item is what actually catches it (ccc_bad_change), not the REST layer.
 req POST /apply "$EDITOR" '{"changes":"not-an-array"}'
 check "apply: changes as a string is coerced to a 1-item array and caught per-item" 200 "$RESP_HTTP" '.[0].error' 'ccc_bad_change' "$RESP_BODY"

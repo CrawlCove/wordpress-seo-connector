@@ -13,7 +13,7 @@
 # Run by run.sh for every adapter: yoast/rankmath/seopress must resolve,
 # apply, revert and round-trip through the real plugin's own option storage;
 # aioseo (its "homepage" title/description is the SAME global template used
-# site-wide, not a dedicated field — see CCC_Adapter::supports_home()) must
+# site-wide, not a dedicated field — see CrawlCove_Adapter::supports_home()) must
 # fail cleanly with ccc_home_unsupported instead of silently doing nothing or,
 # worse, silently rewriting the site-wide template. Also proves the
 # manage_options capability gate (not edit_post — there is no post to check

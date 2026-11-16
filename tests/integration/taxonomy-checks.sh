@@ -2,11 +2,11 @@
 #
 # Taxonomy term (category/tag archive) REST checks — the negative post_id
 # sentinel (post_id = -$term_id). Unit stubs cannot see any of this: real
-# rewrite-rule matching (CCC_Term_Resolver, adapted from WordPress core's own
+# rewrite-rule matching (CrawlCove_Term_Resolver, adapted from WordPress core's own
 # url_to_postid()), Yoast's wpseo_taxonomy_meta option shape, and Rank Math's
 # real term meta all need a live WordPress.
 #
-# Two permalink structures are exercised because CCC_Term_Resolver has two
+# Two permalink structures are exercised because CrawlCove_Term_Resolver has two
 # separate code paths: "Plain" permalinks (WP core's own default — this
 # harness never sets a structure) resolve via query-string vars (?cat=N,
 # ?category_name=slug, ?tag=slug); pretty permalinks resolve via
@@ -15,7 +15,7 @@
 # Run by run.sh for every adapter: yoast/rankmath/seopress must resolve,
 # apply, revert and round-trip through the real plugin's own term storage;
 # aioseo (its free/Lite tier has no term SEO storage at all, confirmed
-# against its own source — see CCC_Adapter::supports_term()) must fail
+# against its own source — see CrawlCove_Adapter::supports_term()) must fail
 # cleanly with ccc_term_unsupported.
 
 set -uo pipefail

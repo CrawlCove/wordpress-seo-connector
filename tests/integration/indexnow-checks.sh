@@ -98,9 +98,9 @@ not_served() {
 }
 
 # The Tools page Status table as text, rendered by the real admin page.
-tools_status() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $s = strpos( $h, "SEO plugin detected" ); echo trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( substr( $h, $s, strpos( $h, "</table>", $s ) - $s ) ) ) );'; }
+tools_status() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $s = strpos( $h, "SEO plugin detected" ); echo trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( substr( $h, $s, strpos( $h, "</table>", $s ) - $s ) ) ) );'; }
 # Press the row's Remove button as the form would: admin, real nonce, redirect captured.
-press_remove() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); $_POST = array( "action" => "ccc_indexnow_remove", "_wpnonce" => wp_create_nonce( "ccc_indexnow_remove" ) ); $_REQUEST = $_POST; add_filter( "wp_redirect", function ( $l ) { throw new Exception( $l ); } ); try { CCC_Admin::handle_indexnow_remove(); } catch ( Exception $e ) { echo $e->getMessage(); }'; }
+press_remove() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); $_POST = array( "action" => "crawlcove_indexnow_remove", "_wpnonce" => wp_create_nonce( "crawlcove_indexnow_remove" ) ); $_REQUEST = $_POST; add_filter( "wp_redirect", function ( $l ) { throw new Exception( $l ); } ); try { CrawlCove_Admin::handle_indexnow_remove(); } catch ( Exception $e ) { echo $e->getMessage(); }'; }
 
 KEY="ccc0a1b2c3d4e5f6-test"
 KEY2="second-key-0123456789"
@@ -185,15 +185,15 @@ LOC="$(press_remove)"
 has "tools: Remove redirects back with the notice" "$LOC" "ccc_notice=indexnow_removed"
 not_served "tools: after Remove the key file is gone" "$KEY"
 hasnt "tools: the row is gone after Remove" "$(tools_status)" "IndexNow key"
-NONCELESS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); update_option( "ccc_indexnow_key", "nonce-test-key-1" ); $_POST = $_REQUEST = array( "action" => "ccc_indexnow_remove" ); add_filter( "wp_die_handler", function () { return function () { echo "died"; exit; }; } ); CCC_Admin::handle_indexnow_remove();' 2>&1)"
+NONCELESS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); update_option( "crawlcove_indexnow_key", "nonce-test-key-1" ); $_POST = $_REQUEST = array( "action" => "crawlcove_indexnow_remove" ); add_filter( "wp_die_handler", function () { return function () { echo "died"; exit; }; } ); CrawlCove_Admin::handle_indexnow_remove();' 2>&1)"
 has "tools: Remove without a nonce dies" "$NONCELESS" "died"
-has "tools: and the key stays" "$("${WP[@]}" option get ccc_indexnow_key 2>&1)" "nonce-test-key-1"
+has "tools: and the key stays" "$("${WP[@]}" option get crawlcove_indexnow_key 2>&1)" "nonce-test-key-1"
 
 echo "-- uninstall removes the key --"
 req POST /indexnow-key "$ADMIN" "{\"key\":\"$KEY\"}"
 "${WP[@]}" plugin deactivate crawl-cove-connector --quiet
 not_served "deactivated: key file not served" "$KEY"
 "${WP[@]}" plugin uninstall crawl-cove-connector --quiet
-if "${WP[@]}" option get ccc_indexnow_key >/dev/null 2>&1; then fail "uninstall: ccc_indexnow_key still stored"; else ok "uninstall: ccc_indexnow_key deleted"; fi
+if "${WP[@]}" option get crawlcove_indexnow_key >/dev/null 2>&1; then fail "uninstall: crawlcove_indexnow_key still stored"; else ok "uninstall: crawlcove_indexnow_key deleted"; fi
 
 summary

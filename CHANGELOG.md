@@ -4,10 +4,19 @@
 
 ## 1.0.0 (2026-11-16)
 
-- **First release on the WordPress.org plugin directory.** Same code as
+- **First release on the WordPress.org plugin directory.** Same features as
   0.11.4, renumbered to 1.0.0 for the directory listing. The desktop app
   compares versions numerically, so 1.0.0 satisfies every 0.10.x and 0.11.x
   minimum.
+- **Internal names carry a `crawlcove_` prefix** (WordPress.org asks for at
+  least four letters): classes `CCC_*` are `CrawlCove_*`, constants
+  `CRAWLCOVE_*`, options, the cache hooks (`crawlcove_after_post_write`,
+  `crawlcove_after_uncached_write`, `crawlcove_touch_post_after_apply`,
+  `crawlcove_clear_full_cache_after_write`) and the admin-post actions
+  `crawlcove_*`. Options saved by an earlier version (change log, IndexNow
+  key, site settings, last connection) move to the new names on the first
+  load after the update, and uninstall removes both. The REST API, its
+  error codes and the app contract are unchanged.
 
 - **readme.txt lists IndexNow.** Crawl Cove desktop v1.3.16 shipped the
   IndexNow switch that uses the 0.11.3 key route, so the listing now says so.

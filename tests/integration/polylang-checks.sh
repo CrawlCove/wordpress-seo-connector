@@ -4,7 +4,7 @@
 # real Rank Math + real Polylang, directory-based URL mode (the default:
 # default language at the root, other languages under /xx/).
 #
-# WHY THIS EXISTS: CCC_Term_Resolver::resolve_pretty_permalink() matches a
+# WHY THIS EXISTS: CrawlCove_Term_Resolver::resolve_pretty_permalink() matches a
 # URL against $wp_rewrite's compiled rules and accepts ANY resulting
 # taxonomy-archive query (is_tax/is_category/is_tag), with no filter on
 # whether that taxonomy is actually public — unlike its sibling

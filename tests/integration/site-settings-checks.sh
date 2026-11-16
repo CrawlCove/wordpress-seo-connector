@@ -100,7 +100,7 @@ check "status: site_settings all off" 200 "$RESP_HTTP" '[.site_settings[]] | any
 check "status: capabilities list site_settings" 200 "$RESP_HTTP" '.capabilities | index("site_settings") != null' 'true' "$RESP_BODY"
 # The Tools page Status row on a site with no SEO plugin (review #341): it must
 # not deny the fixes /status just advertised.
-TOOLS_STATUS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $s = strpos( $h, "SEO plugin detected" ); echo trim( preg_replace( "/\\s+/", " ", wp_strip_all_tags( substr( $h, $s, strpos( $h, "</tr>", $s ) - $s ) ) ) );')"
+TOOLS_STATUS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $s = strpos( $h, "SEO plugin detected" ); echo trim( preg_replace( "/\\s+/", " ", wp_strip_all_tags( substr( $h, $s, strpos( $h, "</tr>", $s ) - $s ) ) ) );')"
 has   "tools: Status row says None" "$TOOLS_STATUS" "SEO plugin detected None"
 has   "tools: Status row says which fixes work without one" "$TOOLS_STATUS" "link, image alt text and site hardening fixes work without one"
 hasnt "tools: Status row no longer says fixes cannot be applied" "$TOOLS_STATUS" "cannot be applied"
@@ -139,7 +139,7 @@ check "status: reports the switches" 200 "$RESP_HTTP" '.site_settings | [.disabl
 
 echo "-- Tools page change log --"
 # Each row as "post|field|before|after", rendered by the real admin page.
-TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( wp_strip_all_tags( $c ) ), "|", trim( $m[2][ $i ] ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
+TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( wp_strip_all_tags( $c ) ), "|", trim( $m[2][ $i ] ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
 has "tools: XML-RPC row in words" "$TOOLS_ROWS" "Site setting|XML-RPC off|off|on"
 has "tools: generator row in words" "$TOOLS_ROWS" "Site setting|WordPress version hidden|off|on"
 has "tools: headers row in words" "$TOOLS_ROWS" "Site setting|Security headers|off|on"
@@ -157,7 +157,7 @@ check "revert: refused after a later change" 409 "$RESP_HTTP" '[.code, .data.cur
 has "revert: xmlrpc.php serves its marker again once off" "$(xmlrpc)" "$MARKER"
 # The Tools page XML-RPC rows as "before|after|action": the earlier flip is superseded, so it
 # must not offer a Revert that can only fail.
-XML_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CCC_Admin::render(); $h = ob_get_clean(); foreach ( explode( "</tr>", $h ) as $row ) { if ( preg_match( "#<td>XML-RPC off</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#", $row, $m ) ) { $act = false !== strpos( $row, "replaced by a later change" ) ? "replaced" : ( false !== strpos( $row, "<em>reverted</em>" ) ? "reverted" : ( false !== strpos( $row, "name=\"change_id\"" ) ? "Revert" : "?" ) ); echo $m[1], "|", $m[2], "|", $act, "\n"; } }')"
+XML_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); foreach ( explode( "</tr>", $h ) as $row ) { if ( preg_match( "#<td>XML-RPC off</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#", $row, $m ) ) { $act = false !== strpos( $row, "replaced by a later change" ) ? "replaced" : ( false !== strpos( $row, "<em>reverted</em>" ) ? "reverted" : ( false !== strpos( $row, "name=\"change_id\"" ) ? "Revert" : "?" ) ); echo $m[1], "|", $m[2], "|", $act, "\n"; } }')"
 has   "tools: the earlier XML-RPC flip reads replaced by a later change" "$XML_ROWS" "off|on|replaced"
 has   "tools: the later XML-RPC flip keeps its Revert" "$XML_ROWS" "on|off|Revert"
 hasnt "tools: no XML-RPC row offers a Revert that must fail" "$XML_ROWS" "off|on|Revert"
@@ -198,6 +198,6 @@ has "uninstall: block written again first" "$(cat "$UPLOADS_HT")" "Options -Inde
 HT="$(cat "$UPLOADS_HT")"
 hasnt "uninstall: the directive is gone" "$HT" "Options -Indexes"
 has   "uninstall: the existing line is still kept" "$HT" 'Header set X-Test "keep me"'
-if "${WP[@]}" option get ccc_site_settings >/dev/null 2>&1; then fail "uninstall: ccc_site_settings still stored"; else ok "uninstall: ccc_site_settings deleted"; fi
+if "${WP[@]}" option get crawlcove_site_settings >/dev/null 2>&1; then fail "uninstall: crawlcove_site_settings still stored"; else ok "uninstall: crawlcove_site_settings deleted"; fi
 
 summary

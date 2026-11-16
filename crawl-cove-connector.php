@@ -18,30 +18,32 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CCC_VERSION', '1.0.0' );
-define( 'CCC_PLUGIN_FILE', __FILE__ );
-define( 'CCC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'CRAWLCOVE_VERSION', '1.0.0' );
+define( 'CRAWLCOVE_PLUGIN_FILE', __FILE__ );
+define( 'CRAWLCOVE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-app-passwords.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-adapter.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-change-log.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-connection.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-term-resolver.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-service.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-url-replacer.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-site-settings.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-image-alt.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-indexnow.php';
-require_once CCC_PLUGIN_DIR . 'includes/class-ccc-rest.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-migrate.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-app-passwords.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-adapter.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-change-log.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-connection.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-term-resolver.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-service.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-url-replacer.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-site-settings.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-image-alt.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-indexnow.php';
+require_once CRAWLCOVE_PLUGIN_DIR . 'includes/class-ccc-rest.php';
 
 if ( is_admin() ) {
-	require_once CCC_PLUGIN_DIR . 'admin/class-ccc-admin.php';
-	add_action( 'plugins_loaded', array( 'CCC_Admin', 'init' ) );
+	require_once CRAWLCOVE_PLUGIN_DIR . 'admin/class-ccc-admin.php';
+	add_action( 'plugins_loaded', array( 'CrawlCove_Admin', 'init' ) );
 }
 
-add_action( 'rest_api_init', array( 'CCC_Rest', 'register_routes' ) );
-add_action( 'plugins_loaded', array( 'CCC_Site_Settings', 'enforce' ) );
-add_action( 'plugins_loaded', array( 'CCC_IndexNow', 'enforce' ) );
+add_action( 'plugins_loaded', array( 'CrawlCove_Migrate', 'run' ), 0 );
+add_action( 'rest_api_init', array( 'CrawlCove_Rest', 'register_routes' ) );
+add_action( 'plugins_loaded', array( 'CrawlCove_Site_Settings', 'enforce' ) );
+add_action( 'plugins_loaded', array( 'CrawlCove_IndexNow', 'enforce' ) );
 
 // No load_plugin_textdomain() call: since WP 4.6, translations for a
 // wordpress.org-hosted plugin whose Text Domain matches its slug are loaded

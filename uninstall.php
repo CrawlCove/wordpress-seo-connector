@@ -15,13 +15,25 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-$ccc_options = array( 'ccc_change_log', 'ccc_change_seq', 'ccc_last_connection', 'ccc_site_settings', 'ccc_indexnow_key' );
+// 1.0.0 and earlier used the ccc_ names (includes/class-ccc-migrate.php).
+$crawlcove_options = array(
+	'crawlcove_change_log',
+	'crawlcove_change_seq',
+	'crawlcove_last_connection',
+	'crawlcove_site_settings',
+	'crawlcove_indexnow_key',
+	'ccc_change_log',
+	'ccc_change_seq',
+	'ccc_last_connection',
+	'ccc_site_settings',
+	'ccc_indexnow_key',
+);
 
 /**
  * Remove the current site's uploads/.htaccess block, if its setting is on.
  */
-function ccc_uninstall_uploads_block() {
-	$settings = get_option( 'ccc_site_settings', array() );
+function crawlcove_uninstall_uploads_block() {
+	$settings = get_option( 'crawlcove_site_settings', get_option( 'ccc_site_settings', array() ) );
 	if ( ! is_array( $settings ) || empty( $settings['uploads_no_index'] ) ) {
 		return;
 	}
@@ -34,29 +46,29 @@ function ccc_uninstall_uploads_block() {
 }
 
 if ( is_multisite() ) {
-	$ccc_offset = 0;
+	$crawlcove_offset = 0;
 	do {
-		$ccc_site_ids = get_sites(
+		$crawlcove_site_ids = get_sites(
 			array(
 				'fields' => 'ids',
 				'number' => 100,
-				'offset' => $ccc_offset,
+				'offset' => $crawlcove_offset,
 			)
 		);
-		foreach ( $ccc_site_ids as $ccc_site_id ) {
-			switch_to_blog( $ccc_site_id );
-			ccc_uninstall_uploads_block();
-			foreach ( $ccc_options as $ccc_option ) {
-				delete_option( $ccc_option );
+		foreach ( $crawlcove_site_ids as $crawlcove_site_id ) {
+			switch_to_blog( $crawlcove_site_id );
+			crawlcove_uninstall_uploads_block();
+			foreach ( $crawlcove_options as $crawlcove_option ) {
+				delete_option( $crawlcove_option );
 			}
 			restore_current_blog();
 		}
-		$ccc_offset += 100;
-		$ccc_more    = 100 === count( $ccc_site_ids );
-	} while ( $ccc_more );
+		$crawlcove_offset += 100;
+		$crawlcove_more    = 100 === count( $crawlcove_site_ids );
+	} while ( $crawlcove_more );
 } else {
-	ccc_uninstall_uploads_block();
-	foreach ( $ccc_options as $ccc_option ) {
-		delete_option( $ccc_option );
+	crawlcove_uninstall_uploads_block();
+	foreach ( $crawlcove_options as $crawlcove_option ) {
+		delete_option( $crawlcove_option );
 	}
 }

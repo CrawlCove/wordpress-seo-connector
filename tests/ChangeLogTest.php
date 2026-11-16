@@ -4,74 +4,74 @@ use PHPUnit\Framework\TestCase;
 
 class ChangeLogTest extends TestCase {
 
-	private CCC_Adapter $adapter;
+	private CrawlCove_Adapter $adapter;
 
 	protected function setUp(): void {
 		cc_reset_wp();
-		$this->adapter = new CCC_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
+		$this->adapter = new CrawlCove_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
 		cc_add_post( 7, 'https://example.com/hello' );
 	}
 
 	public function test_record_assigns_incrementing_ids_newest_first() {
-		$a = CCC_Change_Log::record( 7, 'title', 'Old', 'New', 'bloo' );
-		$b = CCC_Change_Log::record( 7, 'description', '', 'Desc', 'bloo' );
+		$a = CrawlCove_Change_Log::record( 7, 'title', 'Old', 'New', 'bloo' );
+		$b = CrawlCove_Change_Log::record( 7, 'description', '', 'Desc', 'bloo' );
 		$this->assertSame( 1, $a['id'] );
 		$this->assertSame( 2, $b['id'] );
-		$log = CCC_Change_Log::all();
+		$log = CrawlCove_Change_Log::all();
 		$this->assertCount( 2, $log );
 		$this->assertSame( 2, $log[0]['id'] );
 	}
 
 	public function test_visible_hides_other_users_targets_from_a_non_admin() {
 		cc_add_post( 8, 'https://example.com/theirs' );
-		CCC_Change_Log::record( 7, 'title', 'Old', 'Mine', 'author' );
-		CCC_Change_Log::record( 8, 'title', 'Secret', 'Theirs', 'editor' );
-		CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'Home', 'New home', 'admin' );
+		CrawlCove_Change_Log::record( 7, 'title', 'Old', 'Mine', 'author' );
+		CrawlCove_Change_Log::record( 8, 'title', 'Secret', 'Theirs', 'editor' );
+		CrawlCove_Change_Log::record( CrawlCove_Service::HOME_ID, 'title', 'Home', 'New home', 'admin' );
 		$GLOBALS['cc_deny_manage_options'] = true;
 		$GLOBALS['cc_deny']                = array( 8 );
 
-		$visible = CCC_Change_Log::visible();
+		$visible = CrawlCove_Change_Log::visible();
 		$this->assertCount( 1, $visible );
 		$this->assertSame( 7, $visible[0]['post_id'] );
-		$this->assertCount( 3, CCC_Change_Log::all() );
+		$this->assertCount( 3, CrawlCove_Change_Log::all() );
 	}
 
 	public function test_visible_is_the_full_log_for_an_admin() {
-		CCC_Change_Log::record( 7, 'title', 'Old', 'New', 'bloo' );
-		CCC_Change_Log::record( 999, 'title', 'Gone', 'Post', 'bloo' ); // deleted post: admin still sees it.
+		CrawlCove_Change_Log::record( 7, 'title', 'Old', 'New', 'bloo' );
+		CrawlCove_Change_Log::record( 999, 'title', 'Gone', 'Post', 'bloo' ); // deleted post: admin still sees it.
 		$GLOBALS['cc_deny'] = array( 999 );
-		$this->assertCount( 2, CCC_Change_Log::visible() );
+		$this->assertCount( 2, CrawlCove_Change_Log::visible() );
 	}
 
 	public function test_log_is_capped_and_drops_oldest() {
-		for ( $i = 1; $i <= CCC_Change_Log::MAX_ENTRIES + 5; $i++ ) {
-			CCC_Change_Log::record( 7, 'title', "old$i", "new$i", 'bloo' );
+		for ( $i = 1; $i <= CrawlCove_Change_Log::MAX_ENTRIES + 5; $i++ ) {
+			CrawlCove_Change_Log::record( 7, 'title', "old$i", "new$i", 'bloo' );
 		}
-		$log = CCC_Change_Log::all();
-		$this->assertCount( CCC_Change_Log::MAX_ENTRIES, $log );
-		$this->assertSame( CCC_Change_Log::MAX_ENTRIES + 5, $log[0]['id'] );
-		$this->assertNull( CCC_Change_Log::find( 1 ) );
+		$log = CrawlCove_Change_Log::all();
+		$this->assertCount( CrawlCove_Change_Log::MAX_ENTRIES, $log );
+		$this->assertSame( CrawlCove_Change_Log::MAX_ENTRIES + 5, $log[0]['id'] );
+		$this->assertNull( CrawlCove_Change_Log::find( 1 ) );
 	}
 
 	public function test_cap_evicts_reverted_entries_before_live_ones() {
 		// Fill to the cap, revert two of the NEWER entries, then push one more:
 		// the oldest live entry must survive and a reverted newer one must go.
-		for ( $i = 1; $i <= CCC_Change_Log::MAX_ENTRIES; $i++ ) {
-			CCC_Change_Log::record( 7, 'title', "old$i", "new$i", 'bloo' );
+		for ( $i = 1; $i <= CrawlCove_Change_Log::MAX_ENTRIES; $i++ ) {
+			CrawlCove_Change_Log::record( 7, 'title', "old$i", "new$i", 'bloo' );
 		}
 		// force: these entries never touched the stored value; the test is
 		// about eviction order, not the value-changed guard.
-		CCC_Change_Log::revert( CCC_Change_Log::MAX_ENTRIES - 3, $this->adapter, true );
-		CCC_Change_Log::revert( CCC_Change_Log::MAX_ENTRIES - 8, $this->adapter, true );
+		CrawlCove_Change_Log::revert( CrawlCove_Change_Log::MAX_ENTRIES - 3, $this->adapter, true );
+		CrawlCove_Change_Log::revert( CrawlCove_Change_Log::MAX_ENTRIES - 8, $this->adapter, true );
 
-		CCC_Change_Log::record( 7, 'title', 'oldX', 'newX', 'bloo' );
+		CrawlCove_Change_Log::record( 7, 'title', 'oldX', 'newX', 'bloo' );
 
-		$log = CCC_Change_Log::all();
-		$this->assertCount( CCC_Change_Log::MAX_ENTRIES, $log );
-		$this->assertNotNull( CCC_Change_Log::find( 1 ), 'oldest live entry kept' );
-		$this->assertNotNull( CCC_Change_Log::find( CCC_Change_Log::MAX_ENTRIES - 3 ), 'the newer reverted entry stays until needed' );
-		$this->assertNull( CCC_Change_Log::find( CCC_Change_Log::MAX_ENTRIES - 8 ), 'the OLDEST reverted entry is the one evicted' );
-		$this->assertSame( CCC_Change_Log::MAX_ENTRIES + 1, $log[0]['id'], 'newest first is preserved' );
+		$log = CrawlCove_Change_Log::all();
+		$this->assertCount( CrawlCove_Change_Log::MAX_ENTRIES, $log );
+		$this->assertNotNull( CrawlCove_Change_Log::find( 1 ), 'oldest live entry kept' );
+		$this->assertNotNull( CrawlCove_Change_Log::find( CrawlCove_Change_Log::MAX_ENTRIES - 3 ), 'the newer reverted entry stays until needed' );
+		$this->assertNull( CrawlCove_Change_Log::find( CrawlCove_Change_Log::MAX_ENTRIES - 8 ), 'the OLDEST reverted entry is the one evicted' );
+		$this->assertSame( CrawlCove_Change_Log::MAX_ENTRIES + 1, $log[0]['id'], 'newest first is preserved' );
 		$ids = array_column( $log, 'id' );
 		$this->assertSame( $ids, array_values( array_unique( $ids ) ) );
 		$sorted = $ids;
@@ -81,17 +81,17 @@ class ChangeLogTest extends TestCase {
 
 	public function test_evict_falls_back_to_oldest_live_when_no_reverted_entries_suffice() {
 		$log = array();
-		for ( $i = CCC_Change_Log::MAX_ENTRIES + 3; $i >= 1; $i-- ) {
+		for ( $i = CrawlCove_Change_Log::MAX_ENTRIES + 3; $i >= 1; $i-- ) {
 			$log[] = array( 'id' => $i, 'reverted' => ( 2 === $i ) );
 		}
-		$out = CCC_Change_Log::evict( $log );
-		$this->assertCount( CCC_Change_Log::MAX_ENTRIES, $out );
+		$out = CrawlCove_Change_Log::evict( $log );
+		$this->assertCount( CrawlCove_Change_Log::MAX_ENTRIES, $out );
 		$ids = array_column( $out, 'id' );
 		$this->assertNotContains( 2, $ids, 'the one reverted entry goes first' );
 		$this->assertNotContains( 1, $ids, 'then the oldest live ones' );
 		$this->assertNotContains( 3, $ids );
 		$this->assertContains( 4, $ids );
-		$this->assertSame( CCC_Change_Log::MAX_ENTRIES + 3, $ids[0] );
+		$this->assertSame( CrawlCove_Change_Log::MAX_ENTRIES + 3, $ids[0] );
 	}
 
 	public function test_one_user_filling_the_log_evicts_only_their_own_entries() {
@@ -99,26 +99,26 @@ class ChangeLogTest extends TestCase {
 		// and evict an administrator's live entries, so they could no longer
 		// be reverted. Over the cap, the user holding the most entries pays.
 		for ( $i = 1; $i <= 10; $i++ ) {
-			CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', "old$i", "new$i", 'admin' );
+			CrawlCove_Change_Log::record( CrawlCove_Service::HOME_ID, 'title', "old$i", "new$i", 'admin' );
 		}
-		for ( $i = 1; $i <= CCC_Change_Log::MAX_ENTRIES; $i++ ) {
-			CCC_Change_Log::record( 7, 'title', "old$i", "new$i", 'author' );
+		for ( $i = 1; $i <= CrawlCove_Change_Log::MAX_ENTRIES; $i++ ) {
+			CrawlCove_Change_Log::record( 7, 'title', "old$i", "new$i", 'author' );
 		}
-		$log = CCC_Change_Log::all();
-		$this->assertCount( CCC_Change_Log::MAX_ENTRIES, $log );
+		$log = CrawlCove_Change_Log::all();
+		$this->assertCount( CrawlCove_Change_Log::MAX_ENTRIES, $log );
 		for ( $id = 1; $id <= 10; $id++ ) {
-			$this->assertNotNull( CCC_Change_Log::find( $id ), "admin entry $id survives the flood" );
+			$this->assertNotNull( CrawlCove_Change_Log::find( $id ), "admin entry $id survives the flood" );
 		}
-		$this->assertNull( CCC_Change_Log::find( 11 ), "the author's oldest entry is the one evicted" );
-		$this->assertSame( CCC_Change_Log::MAX_ENTRIES + 10, $log[0]['id'] );
+		$this->assertNull( CrawlCove_Change_Log::find( 11 ), "the author's oldest entry is the one evicted" );
+		$this->assertSame( CrawlCove_Change_Log::MAX_ENTRIES + 10, $log[0]['id'] );
 	}
 
 	public function test_evict_takes_the_oldest_entry_when_users_hold_equal_shares() {
 		$log = array();
-		for ( $i = CCC_Change_Log::MAX_ENTRIES + 2; $i >= 1; $i-- ) {
+		for ( $i = CrawlCove_Change_Log::MAX_ENTRIES + 2; $i >= 1; $i-- ) {
 			$log[] = array( 'id' => $i, 'source' => ( $i % 2 ) ? 'a' : 'b' );
 		}
-		$ids = array_column( CCC_Change_Log::evict( $log ), 'id' );
+		$ids = array_column( CrawlCove_Change_Log::evict( $log ), 'id' );
 		$this->assertNotContains( 1, $ids );
 		$this->assertNotContains( 2, $ids );
 		$this->assertContains( 3, $ids );
@@ -129,37 +129,37 @@ class ChangeLogTest extends TestCase {
 
 	public function test_revert_restores_previous_value_and_marks_entry() {
 		$this->adapter->set_title( 7, 'Original' );
-		$entry = CCC_Change_Log::record( 7, 'title', 'Original', 'Pushed', 'bloo' );
+		$entry = CrawlCove_Change_Log::record( 7, 'title', 'Original', 'Pushed', 'bloo' );
 		$this->adapter->set_title( 7, 'Pushed' );
 
-		$this->assertTrue( CCC_Change_Log::revert( $entry['id'], $this->adapter ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $entry['id'], $this->adapter ) );
 		$this->assertSame( 'Original', $this->adapter->get_title( 7 ) );
-		$this->assertTrue( CCC_Change_Log::find( $entry['id'] )['reverted'] );
+		$this->assertTrue( CrawlCove_Change_Log::find( $entry['id'] )['reverted'] );
 	}
 
 	public function test_revert_of_unset_previous_value_deletes_override() {
-		$entry = CCC_Change_Log::record( 7, 'description', '', 'Pushed desc', 'bloo' );
+		$entry = CrawlCove_Change_Log::record( 7, 'description', '', 'Pushed desc', 'bloo' );
 		$this->adapter->set_description( 7, 'Pushed desc' );
 
-		CCC_Change_Log::revert( $entry['id'], $this->adapter );
+		CrawlCove_Change_Log::revert( $entry['id'], $this->adapter );
 		$this->assertArrayNotHasKey( '_yoast_wpseo_metadesc', $GLOBALS['cc_meta'][7] ?? array() );
 	}
 
 	public function test_double_revert_is_refused() {
-		$entry = CCC_Change_Log::record( 7, 'title', 'A', 'B', 'bloo' );
+		$entry = CrawlCove_Change_Log::record( 7, 'title', 'A', 'B', 'bloo' );
 		$this->adapter->set_title( 7, 'B' );
-		$this->assertTrue( CCC_Change_Log::revert( $entry['id'], $this->adapter ) );
-		$err = CCC_Change_Log::revert( $entry['id'], $this->adapter );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $entry['id'], $this->adapter ) );
+		$err = CrawlCove_Change_Log::revert( $entry['id'], $this->adapter );
 		$this->assertTrue( is_wp_error( $err ) );
 		$this->assertSame( 'ccc_already_reverted', $err->get_error_code() );
 	}
 
 	public function test_revert_unknown_id_and_deleted_post() {
-		$err = CCC_Change_Log::revert( 999, $this->adapter );
+		$err = CrawlCove_Change_Log::revert( 999, $this->adapter );
 		$this->assertSame( 'ccc_not_found', $err->get_error_code() );
 
-		$entry = CCC_Change_Log::record( 42, 'title', 'A', 'B', 'bloo' ); // post 42 never registered
-		$err   = CCC_Change_Log::revert( $entry['id'], $this->adapter );
+		$entry = CrawlCove_Change_Log::record( 42, 'title', 'A', 'B', 'bloo' ); // post 42 never registered
+		$err   = CrawlCove_Change_Log::revert( $entry['id'], $this->adapter );
 		$this->assertSame( 'ccc_post_gone', $err->get_error_code() );
 	}
 
@@ -167,16 +167,16 @@ class ChangeLogTest extends TestCase {
 		// post_id 0 (the homepage) has no post row — must not be treated
 		// as "the post this change belongs to no longer exists".
 		$this->adapter->set_title( 0, 'Pushed home title' );
-		$entry = CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'Original home title', 'Pushed home title', 'bloo' );
+		$entry = CrawlCove_Change_Log::record( CrawlCove_Service::HOME_ID, 'title', 'Original home title', 'Pushed home title', 'bloo' );
 
-		$this->assertTrue( CCC_Change_Log::revert( $entry['id'], $this->adapter ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $entry['id'], $this->adapter ) );
 		$this->assertSame( 'Original home title', $this->adapter->get_title( 0 ) );
 	}
 
 	// ── value changed since (review #248) ──────────────────────────
 
 	private function push_title( $title ) {
-		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => $title ) ), false, $this->adapter, 'bloo' );
+		$res = CrawlCove_Service::apply( array( array( 'post_id' => 7, 'title' => $title ) ), false, $this->adapter, 'bloo' );
 		return $res[0]['applied']['title']['change_id'];
 	}
 
@@ -185,7 +185,7 @@ class ChangeLogTest extends TestCase {
 		$first  = $this->push_title( 'First push' );
 		$second = $this->push_title( 'Second push' );
 
-		$err = CCC_Change_Log::revert( $first, $this->adapter );
+		$err = CrawlCove_Change_Log::revert( $first, $this->adapter );
 		$this->assertTrue( is_wp_error( $err ) );
 		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
 		$data = $err->get_error_data();
@@ -193,12 +193,12 @@ class ChangeLogTest extends TestCase {
 		$this->assertSame( 'Second push', $data['current'] );
 		$this->assertSame( 'First push', $data['expected'] );
 		$this->assertSame( 'Second push', $this->adapter->get_title( 7 ), 'nothing written' );
-		$this->assertFalse( CCC_Change_Log::find( $first )['reverted'] );
+		$this->assertFalse( CrawlCove_Change_Log::find( $first )['reverted'] );
 
 		// Undo newest first and each step is allowed, ending at the original.
-		$this->assertTrue( CCC_Change_Log::revert( $second, $this->adapter ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $second, $this->adapter ) );
 		$this->assertSame( 'First push', $this->adapter->get_title( 7 ) );
-		$this->assertTrue( CCC_Change_Log::revert( $first, $this->adapter ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $first, $this->adapter ) );
 		$this->assertSame( 'Original', $this->adapter->get_title( 7 ) );
 	}
 
@@ -207,20 +207,20 @@ class ChangeLogTest extends TestCase {
 		$push = $this->push_title( 'Third push' );
 		$this->adapter->set_title( 7, 'Typed in Yoast' );
 
-		$err = CCC_Change_Log::revert( $push, $this->adapter );
+		$err = CrawlCove_Change_Log::revert( $push, $this->adapter );
 		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
 		$this->assertSame( 'Typed in Yoast', $err->get_error_data()['current'] );
 		$this->assertSame( 'Typed in Yoast', $this->adapter->get_title( 7 ) );
 
-		$this->assertTrue( CCC_Change_Log::revert( $push, $this->adapter, true ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $push, $this->adapter, true ) );
 		$this->assertSame( 'Original', $this->adapter->get_title( 7 ) );
-		$this->assertTrue( CCC_Change_Log::find( $push )['reverted'] );
+		$this->assertTrue( CrawlCove_Change_Log::find( $push )['reverted'] );
 	}
 
 	public function test_a_cleared_description_reverts_while_it_is_still_cleared() {
 		$this->adapter->set_description( 7, 'Old desc' );
-		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'description' => '' ) ), false, $this->adapter, 'bloo' );
-		$this->assertTrue( CCC_Change_Log::revert( $res[0]['applied']['description']['change_id'], $this->adapter ) );
+		$res = CrawlCove_Service::apply( array( array( 'post_id' => 7, 'description' => '' ) ), false, $this->adapter, 'bloo' );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $res[0]['applied']['description']['change_id'], $this->adapter ) );
 		$this->assertSame( 'Old desc', $this->adapter->get_description( 7 ) );
 	}
 
@@ -230,53 +230,53 @@ class ChangeLogTest extends TestCase {
 		// against what the SEO plugin served right after the push.
 		$adapter = new CC_Test_Fallback_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
 		$adapter->set_title( 7, 'Old title' );
-		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => '' ) ), false, $adapter, 'bloo' );
+		$res = CrawlCove_Service::apply( array( array( 'post_id' => 7, 'title' => '' ) ), false, $adapter, 'bloo' );
 		$id  = $res[0]['applied']['title']['change_id'];
-		$this->assertSame( 'Fallback title', CCC_Change_Log::find( $id )['after'] );
+		$this->assertSame( 'Fallback title', CrawlCove_Change_Log::find( $id )['after'] );
 
-		$this->assertTrue( CCC_Change_Log::revert( $id, $adapter ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $id, $adapter ) );
 		$this->assertSame( 'Old title', $adapter->get_title( 7 ) );
 	}
 
 	public function test_a_fallback_entry_still_refuses_after_a_hand_edit() {
 		$adapter = new CC_Test_Fallback_Adapter( 'yoast', '_yoast_wpseo_title', '_yoast_wpseo_metadesc' );
 		$adapter->set_title( 7, 'Old title' );
-		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => '' ) ), false, $adapter, 'bloo' );
+		$res = CrawlCove_Service::apply( array( array( 'post_id' => 7, 'title' => '' ) ), false, $adapter, 'bloo' );
 		$adapter->set_title( 7, 'Typed by hand' );
 
-		$err = CCC_Change_Log::revert( $res[0]['applied']['title']['change_id'], $adapter );
+		$err = CrawlCove_Change_Log::revert( $res[0]['applied']['title']['change_id'], $adapter );
 		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
 		$this->assertSame( 'Fallback title', $err->get_error_data()['expected'] );
 		$this->assertSame( 'Typed by hand', $adapter->get_title( 7 ) );
 	}
 
 	public function test_an_entry_that_reads_back_as_written_stores_no_after() {
-		$res = CCC_Service::apply( array( array( 'post_id' => 7, 'title' => 'New' ) ), false, $this->adapter, 'bloo' );
-		$this->assertArrayNotHasKey( 'after', CCC_Change_Log::find( $res[0]['applied']['title']['change_id'] ) );
+		$res = CrawlCove_Service::apply( array( array( 'post_id' => 7, 'title' => 'New' ) ), false, $this->adapter, 'bloo' );
+		$this->assertArrayNotHasKey( 'after', CrawlCove_Change_Log::find( $res[0]['applied']['title']['change_id'] ) );
 	}
 
 	public function test_superseded_maps_overwritten_live_entries_to_their_successor() {
-		CCC_Change_Log::record( 7, 'title', 'a', 'b', 'bloo' );              // 1, superseded by 3
-		CCC_Change_Log::record( 7, 'description', 'a', 'b', 'bloo' );        // 2, other field
-		CCC_Change_Log::record( 7, 'title', 'b', 'c', 'bloo' );              // 3, superseded by 5
-		CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'a', 'b', 'bloo', 'fr' ); // 4
-		CCC_Change_Log::record( 7, 'title', 'c', 'd', 'bloo' );              // 5, latest
-		CCC_Change_Log::record( CCC_Service::HOME_ID, 'title', 'x', 'y', 'bloo' );       // 6, other lang than 4
+		CrawlCove_Change_Log::record( 7, 'title', 'a', 'b', 'bloo' );              // 1, superseded by 3
+		CrawlCove_Change_Log::record( 7, 'description', 'a', 'b', 'bloo' );        // 2, other field
+		CrawlCove_Change_Log::record( 7, 'title', 'b', 'c', 'bloo' );              // 3, superseded by 5
+		CrawlCove_Change_Log::record( CrawlCove_Service::HOME_ID, 'title', 'a', 'b', 'bloo', 'fr' ); // 4
+		CrawlCove_Change_Log::record( 7, 'title', 'c', 'd', 'bloo' );              // 5, latest
+		CrawlCove_Change_Log::record( CrawlCove_Service::HOME_ID, 'title', 'x', 'y', 'bloo' );       // 6, other lang than 4
 
-		$this->assertSame( array( 3 => 5, 1 => 3 ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+		$this->assertSame( array( 3 => 5, 1 => 3 ), CrawlCove_Change_Log::superseded( CrawlCove_Change_Log::all() ) );
 	}
 
 	public function test_a_site_switch_flipped_again_supersedes_the_earlier_flip() {
-		$on  = CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'off', 'to' => 'on' ), 'bloo' );
-		CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'security_headers', 'from' => 'off', 'to' => 'on' ), 'bloo' );
-		$off = CCC_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CCC_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'on', 'to' => 'off' ), 'bloo' );
+		$on  = CrawlCove_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CrawlCove_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'off', 'to' => 'on' ), 'bloo' );
+		CrawlCove_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CrawlCove_Service::HOME_ID, 'field' => 'security_headers', 'from' => 'off', 'to' => 'on' ), 'bloo' );
+		$off = CrawlCove_Change_Log::record_entry( array( 'kind' => 'site_setting', 'post_id' => CrawlCove_Service::HOME_ID, 'field' => 'hide_generator', 'from' => 'on', 'to' => 'off' ), 'bloo' );
 
-		$this->assertSame( array( $on['id'] => $off['id'] ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+		$this->assertSame( array( $on['id'] => $off['id'] ), CrawlCove_Change_Log::superseded( CrawlCove_Change_Log::all() ) );
 	}
 
 	public function test_a_later_alt_push_to_the_same_image_and_page_supersedes_the_earlier_one() {
 		$alt = function ( $post_id, $attachment, $to, $src = 'https://example.com/a.jpg' ) {
-			return CCC_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => $post_id, 'field' => 'alt', 'src' => $src, 'from' => '', 'to' => $to, 'attachment' => $attachment ), 'bloo' );
+			return CrawlCove_Change_Log::record_entry( array( 'kind' => 'image_alt', 'post_id' => $post_id, 'field' => 'alt', 'src' => $src, 'from' => '', 'to' => $to, 'attachment' => $attachment ), 'bloo' );
 		};
 		$first  = $alt( 7, 40, 'a' );
 		$alt( 8, 40, 'other page' );
@@ -284,20 +284,20 @@ class ChangeLogTest extends TestCase {
 		$inline = $alt( 7, 0, 'inline only', 'https://example.com/b.jpg' );
 		$second = $alt( 7, 40, 'b' );
 		$again  = $alt( 7, 0, 'inline again', 'https://example.com/b.jpg' );
-		CCC_Change_Log::record_entry( array( 'kind' => 'replace_urls', 'post_id' => 7, 'field' => 'links', 'from' => 'x', 'to' => 'y' ), 'bloo' );
-		CCC_Change_Log::record_entry( array( 'kind' => 'replace_urls', 'post_id' => 7, 'field' => 'links', 'from' => 'y', 'to' => 'z' ), 'bloo' );
+		CrawlCove_Change_Log::record_entry( array( 'kind' => 'replace_urls', 'post_id' => 7, 'field' => 'links', 'from' => 'x', 'to' => 'y' ), 'bloo' );
+		CrawlCove_Change_Log::record_entry( array( 'kind' => 'replace_urls', 'post_id' => 7, 'field' => 'links', 'from' => 'y', 'to' => 'z' ), 'bloo' );
 
-		$this->assertSame( array( $inline['id'] => $again['id'], $first['id'] => $second['id'] ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+		$this->assertSame( array( $inline['id'] => $again['id'], $first['id'] => $second['id'] ), CrawlCove_Change_Log::superseded( CrawlCove_Change_Log::all() ) );
 	}
 
 	public function test_a_reverted_change_does_not_supersede_the_one_before_it() {
 		$this->adapter->set_title( 7, 'Original' );
 		$first  = $this->push_title( 'First push' );
 		$second = $this->push_title( 'Second push' );
-		$this->assertSame( array( $first => $second ), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+		$this->assertSame( array( $first => $second ), CrawlCove_Change_Log::superseded( CrawlCove_Change_Log::all() ) );
 
-		CCC_Change_Log::revert( $second, $this->adapter );
-		$this->assertSame( array(), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+		CrawlCove_Change_Log::revert( $second, $this->adapter );
+		$this->assertSame( array(), CrawlCove_Change_Log::superseded( CrawlCove_Change_Log::all() ) );
 	}
 }
 
@@ -305,7 +305,7 @@ class ChangeLogTest extends TestCase {
  * An SEO plugin whose empty title reads back as a fallback (Polylang's
  * per-language homepage with Yoast does this).
  */
-class CC_Test_Fallback_Adapter extends CCC_Adapter {
+class CC_Test_Fallback_Adapter extends CrawlCove_Adapter {
 	public function get_title( $post_id, $lang = '' ) {
 		$value = parent::get_title( $post_id, $lang );
 		return '' === $value ? 'Fallback title' : $value;

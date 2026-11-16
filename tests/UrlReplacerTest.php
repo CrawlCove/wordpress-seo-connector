@@ -20,14 +20,14 @@ class UrlReplacerTest extends TestCase {
 			),
 			$extra
 		);
-		$op = CCC_Url_Replacer::validate( $item );
+		$op = CrawlCove_Url_Replacer::validate( $item );
 		$this->assertIsArray( $op, is_wp_error( $op ) ? $op->get_error_code() : '' );
 		return $op;
 	}
 
 	private function roundtrip( $text, $where, array $op ) {
-		$r = CCC_Url_Replacer::rewrite( $text, $where, $op );
-		$this->assertSame( $text, CCC_Url_Replacer::unsplice( $r['text'], $r['splices'] ), 'unsplice must give back the original bytes' );
+		$r = CrawlCove_Url_Replacer::rewrite( $text, $where, $op );
+		$this->assertSame( $text, CrawlCove_Url_Replacer::unsplice( $r['text'], $r['splices'] ), 'unsplice must give back the original bytes' );
 		return $r;
 	}
 
@@ -53,7 +53,7 @@ class UrlReplacerTest extends TestCase {
 				),
 				$case[0]
 			);
-			$got  = CCC_Url_Replacer::validate( $item );
+			$got  = CrawlCove_Url_Replacer::validate( $item );
 			$this->assertInstanceOf( WP_Error::class, $got, $label );
 			$this->assertSame( $case[1], $got->get_error_code(), $label );
 		}
@@ -62,17 +62,17 @@ class UrlReplacerTest extends TestCase {
 	public function test_validate_page_scope_needs_edit_rights_and_allows_same_url_for_rel_strip() {
 		cc_add_post( 7, 'https://example.com/hello/' );
 		$GLOBALS['cc_deny'] = array( 7 );
-		$got = CCC_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'url' => 'https://example.com/hello/' ) );
+		$got = CrawlCove_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'url' => 'https://example.com/hello/' ) );
 		$this->assertSame( 'ccc_forbidden', $got->get_error_code() );
 
 		$GLOBALS['cc_deny'] = array();
-		$got = CCC_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => self::OLD, 'rel_strip' => 'nofollow', 'scope' => 'page', 'url' => 'https://example.com/hello/' ) );
+		$got = CrawlCove_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => self::OLD, 'rel_strip' => 'nofollow', 'scope' => 'page', 'url' => 'https://example.com/hello/' ) );
 		$this->assertSame( 7, $got['post_id'] );
 		$this->assertSame( array( self::OLD, '/old-page/' ), $got['forms'] );
 	}
 
 	public function test_off_site_from_has_no_relative_form() {
-		$this->assertSame( array( 'https://other.example/x' ), CCC_Url_Replacer::forms( 'https://other.example/x' ) );
+		$this->assertSame( array( 'https://other.example/x' ), CrawlCove_Url_Replacer::forms( 'https://other.example/x' ) );
 	}
 
 	public function test_rewrites_exact_urls_in_attributes_and_nothing_else() {
@@ -94,7 +94,7 @@ class UrlReplacerTest extends TestCase {
 	}
 
 	public function test_a_url_that_could_end_a_css_value_is_not_written_into_css() {
-		$op = CCC_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => 'https://example.com/x);color:red;', 'scope' => 'site' ) );
+		$op = CrawlCove_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => 'https://example.com/x);color:red;', 'scope' => 'site' ) );
 		$r  = $this->roundtrip( '<div style="background:url(https://example.com/old-page/)"></div><a href="https://example.com/old-page/">a</a>', 'content', $op );
 		$this->assertSame( 1, $r['count'] );
 		$this->assertSame( 1, $r['skipped'] );
@@ -111,7 +111,7 @@ class UrlReplacerTest extends TestCase {
 	public function test_from_gets_the_same_character_rules_as_to() {
 		// Review 22 Oct: a forced revert writes from back into the content.
 		foreach ( array( 'https://example.com/a"><svg onload=x>', "https://example.com/a'b", 'https://example.com/a b', 'https://example.com/a\\b' ) as $from ) {
-			$got = CCC_Url_Replacer::validate( array( 'from' => $from, 'to' => self::NEW, 'scope' => 'site' ) );
+			$got = CrawlCove_Url_Replacer::validate( array( 'from' => $from, 'to' => self::NEW, 'scope' => 'site' ) );
 			$this->assertSame( 'ccc_bad_url', $got->get_error_code(), $from );
 		}
 	}
@@ -157,30 +157,30 @@ class UrlReplacerTest extends TestCase {
 	}
 
 	public function test_the_homepage_has_no_bare_slash_form() {
-		$this->assertSame( array( 'https://example.com/' ), CCC_Url_Replacer::forms( 'https://example.com/' ) );
-		$r = CCC_Url_Replacer::rewrite( '<!-- wp:separator {"sep":"/"} /-->', 'content', CCC_Url_Replacer::validate( array( 'from' => 'https://example.com/', 'to' => self::NEW, 'scope' => 'site' ) ) );
+		$this->assertSame( array( 'https://example.com/' ), CrawlCove_Url_Replacer::forms( 'https://example.com/' ) );
+		$r = CrawlCove_Url_Replacer::rewrite( '<!-- wp:separator {"sep":"/"} /-->', 'content', CrawlCove_Url_Replacer::validate( array( 'from' => 'https://example.com/', 'to' => self::NEW, 'scope' => 'site' ) ) );
 		$this->assertSame( 0, $r['count'] );
 	}
 
 	public function test_forced_revert_refuses_where_the_new_url_was_already_linked() {
 		cc_add_post( 7, 'https://example.com/hello/' );
 		$GLOBALS['cc_posts'][7]['content'] = '<a href="https://example.com/new-page/">already</a><a href="https://example.com/old-page/">x</a>';
-		$res = CCC_Url_Replacer::run( array( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
+		$res = CrawlCove_Url_Replacer::run( array( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
 		$GLOBALS['cc_posts'][7]['content'] .= '<p>edit</p>';
-		$this->assertFalse( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $res[0]['change_id'] ) ) );
-		$err = CCC_Change_Log::revert( $res[0]['change_id'], null, true );
+		$this->assertFalse( CrawlCove_Url_Replacer::can_force( CrawlCove_Change_Log::find( $res[0]['change_id'] ) ) );
+		$err = CrawlCove_Change_Log::revert( $res[0]['change_id'], null, true );
 		$this->assertSame( 'ccc_content_changed', $err->get_error_code() );
 		$this->assertStringContainsString( 'href="https://example.com/new-page/">already', $GLOBALS['cc_posts'][7]['content'] );
 	}
 
 	public function test_entity_encoded_ampersands_match_and_stay_encoded() {
-		$op = CCC_Url_Replacer::validate( array( 'from' => 'https://example.com/?a=1&b=2', 'to' => 'https://example.com/n/?a=1&b=2', 'scope' => 'site' ) );
+		$op = CrawlCove_Url_Replacer::validate( array( 'from' => 'https://example.com/?a=1&b=2', 'to' => 'https://example.com/n/?a=1&b=2', 'scope' => 'site' ) );
 		$r  = $this->roundtrip( '<a href="https://example.com/?a=1&amp;b=2">x</a>', 'content', $op );
 		$this->assertSame( '<a href="https://example.com/n/?a=1&amp;b=2">x</a>', $r['text'] );
 	}
 
 	public function test_block_comment_attributes_are_rewritten_with_wordpress_escaping() {
-		$op   = CCC_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => 'https://example.com/new--page/?a=1&b=2', 'scope' => 'site' ) );
+		$op   = CrawlCove_Url_Replacer::validate( array( 'from' => self::OLD, 'to' => 'https://example.com/new--page/?a=1&b=2', 'scope' => 'site' ) );
 		$html = '<!-- wp:navigation-link {"label":"Old","url":"/old-page/","kind":"custom"} /-->'
 			. '<!-- wp:embed {"url":"https://example.com/old-page/"} --><figure></figure><!-- /wp:embed -->';
 		$r    = $this->roundtrip( $html, 'content', $op );
@@ -236,9 +236,9 @@ class UrlReplacerTest extends TestCase {
 	}
 
 	public function test_menu_url_is_replaced_only_on_an_exact_match() {
-		$this->assertSame( self::NEW, CCC_Url_Replacer::rewrite( '/old-page/', 'menu', $this->op() )['text'] );
-		$this->assertSame( 0, CCC_Url_Replacer::rewrite( '/old-page/x', 'menu', $this->op() )['count'] );
-		$this->assertSame( 0, CCC_Url_Replacer::rewrite( self::OLD, 'menu', $this->op( array( 'unlink' => true ) ) )['count'] );
+		$this->assertSame( self::NEW, CrawlCove_Url_Replacer::rewrite( '/old-page/', 'menu', $this->op() )['text'] );
+		$this->assertSame( 0, CrawlCove_Url_Replacer::rewrite( '/old-page/x', 'menu', $this->op() )['count'] );
+		$this->assertSame( 0, CrawlCove_Url_Replacer::rewrite( self::OLD, 'menu', $this->op( array( 'unlink' => true ) ) )['count'] );
 	}
 
 	public function test_page_scope_writes_the_row_logs_one_entry_and_reverts_byte_for_byte() {
@@ -247,13 +247,13 @@ class UrlReplacerTest extends TestCase {
 		$GLOBALS['cc_posts'][7]['content'] = $html;
 		$item = array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'url' => 'https://example.com/hello/' );
 
-		$dry = CCC_Url_Replacer::run( array( $item ), true, 'bloo' );
+		$dry = CrawlCove_Url_Replacer::run( array( $item ), true, 'bloo' );
 		$this->assertSame( 1, $dry[0]['count'] );
 		$this->assertSame( array( array( 'where' => 'content', 'count' => 1 ) ), $dry[0]['locations'] );
 		$this->assertSame( $html, $GLOBALS['cc_posts'][7]['content'] );
 		$this->assertArrayNotHasKey( 'change_id', $dry[0] );
 
-		$res = CCC_Url_Replacer::run( array( $item ), false, 'bloo' );
+		$res = CrawlCove_Url_Replacer::run( array( $item ), false, 'bloo' );
 		$this->assertTrue( $res[0]['ok'] );
 		$this->assertSame( 7, $res[0]['post_id'] );
 		$this->assertSame( array( 7 ), $GLOBALS['cc_db_writes'] );
@@ -261,48 +261,48 @@ class UrlReplacerTest extends TestCase {
 		$this->assertStringContainsString( '<iframe src="https://www.youtube.com/embed/x">', $GLOBALS['cc_posts'][7]['content'] );
 		$this->assertStringContainsString( self::NEW, $GLOBALS['cc_posts'][7]['content'] );
 
-		$entry = CCC_Change_Log::find( $res[0]['change_id'] );
+		$entry = CrawlCove_Change_Log::find( $res[0]['change_id'] );
 		$this->assertSame( 'replace_urls', $entry['kind'] );
-		$this->assertSame( array(), CCC_Change_Log::superseded( CCC_Change_Log::all() ) );
+		$this->assertSame( array(), CrawlCove_Change_Log::superseded( CrawlCove_Change_Log::all() ) );
 
-		$this->assertTrue( CCC_Change_Log::revert( $res[0]['change_id'], null ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $res[0]['change_id'], null ) );
 		$this->assertSame( $html, $GLOBALS['cc_posts'][7]['content'] );
-		$this->assertSame( 'ccc_already_reverted', CCC_Change_Log::revert( $res[0]['change_id'], null )->get_error_code() );
+		$this->assertSame( 'ccc_already_reverted', CrawlCove_Change_Log::revert( $res[0]['change_id'], null )->get_error_code() );
 	}
 
 	public function test_revert_refuses_after_an_edit_and_force_reverses_the_url() {
 		cc_add_post( 7, 'https://example.com/hello/' );
 		$GLOBALS['cc_posts'][7]['content'] = '<a href="https://example.com/old-page/">x</a>';
-		$res = CCC_Url_Replacer::run( array( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
+		$res = CrawlCove_Url_Replacer::run( array( array( 'from' => self::OLD, 'to' => self::NEW, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
 		$id  = $res[0]['change_id'];
 
 		$GLOBALS['cc_posts'][7]['content'] = 'Intro. ' . $GLOBALS['cc_posts'][7]['content'];
-		$err = CCC_Change_Log::revert( $id, null );
+		$err = CrawlCove_Change_Log::revert( $id, null );
 		$this->assertSame( 'ccc_value_changed', $err->get_error_code() );
 		$this->assertSame( array( 7 ), $err->get_error_data()['post_ids'] );
 		$this->assertSame( 'Intro. <a href="https://example.com/new-page/">x</a>', $GLOBALS['cc_posts'][7]['content'] );
 
-		$this->assertTrue( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $id ) ) );
-		$this->assertTrue( CCC_Change_Log::revert( $id, null, true ) );
+		$this->assertTrue( CrawlCove_Url_Replacer::can_force( CrawlCove_Change_Log::find( $id ) ) );
+		$this->assertTrue( CrawlCove_Change_Log::revert( $id, null, true ) );
 		$this->assertSame( 'Intro. <a href="https://example.com/old-page/">x</a>', $GLOBALS['cc_posts'][7]['content'] );
 	}
 
 	public function test_forced_revert_of_an_edited_unlink_refuses() {
 		cc_add_post( 7, 'https://example.com/hello/' );
 		$GLOBALS['cc_posts'][7]['content'] = '<a href="https://example.com/old-page/">x</a>';
-		$res = CCC_Url_Replacer::run( array( array( 'from' => self::OLD, 'unlink' => true, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
+		$res = CrawlCove_Url_Replacer::run( array( array( 'from' => self::OLD, 'unlink' => true, 'scope' => 'page', 'post_id' => 7 ) ), false, 'bloo' );
 		$this->assertSame( 'x', $GLOBALS['cc_posts'][7]['content'] );
-		$this->assertTrue( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $res[0]['change_id'] ) ) );
+		$this->assertTrue( CrawlCove_Url_Replacer::can_force( CrawlCove_Change_Log::find( $res[0]['change_id'] ) ) );
 		$GLOBALS['cc_posts'][7]['content'] = 'x!';
-		$this->assertFalse( CCC_Url_Replacer::can_force( CCC_Change_Log::find( $res[0]['change_id'] ) ) );
-		$this->assertSame( 'ccc_content_changed', CCC_Change_Log::revert( $res[0]['change_id'], null, true )->get_error_code() );
+		$this->assertFalse( CrawlCove_Url_Replacer::can_force( CrawlCove_Change_Log::find( $res[0]['change_id'] ) ) );
+		$this->assertSame( 'ccc_content_changed', CrawlCove_Change_Log::revert( $res[0]['change_id'], null, true )->get_error_code() );
 		$this->assertSame( 'x!', $GLOBALS['cc_posts'][7]['content'] );
 	}
 
 	public function test_a_replace_entry_is_hidden_from_a_user_who_cannot_edit_every_target() {
 		cc_add_post( 7, 'https://example.com/a/' );
 		cc_add_post( 8, 'https://example.com/b/' );
-		CCC_Change_Log::record_entry(
+		CrawlCove_Change_Log::record_entry(
 			array(
 				'kind'    => 'replace_urls',
 				'post_id' => 0,
@@ -317,14 +317,14 @@ class UrlReplacerTest extends TestCase {
 			'editor'
 		);
 		$GLOBALS['cc_deny_manage_options'] = true;
-		$this->assertCount( 1, CCC_Change_Log::visible() );
+		$this->assertCount( 1, CrawlCove_Change_Log::visible() );
 		$GLOBALS['cc_deny'] = array( 8 );
-		$this->assertCount( 0, CCC_Change_Log::visible() );
+		$this->assertCount( 0, CrawlCove_Change_Log::visible() );
 	}
 
 	public function test_needle_is_a_literal_piece_every_stored_form_contains() {
-		$this->assertSame( 'old-page', CCC_Url_Replacer::needle( self::OLD ) );
-		$this->assertSame( 'example.com', CCC_Url_Replacer::needle( 'https://example.com/' ) );
-		$this->assertSame( 'campaign', CCC_Url_Replacer::needle( 'https://example.com/a/?utm=campaign&b=1' ) );
+		$this->assertSame( 'old-page', CrawlCove_Url_Replacer::needle( self::OLD ) );
+		$this->assertSame( 'example.com', CrawlCove_Url_Replacer::needle( 'https://example.com/' ) );
+		$this->assertSame( 'campaign', CrawlCove_Url_Replacer::needle( 'https://example.com/a/?utm=campaign&b=1' ) );
 	}
 }
