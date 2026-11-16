@@ -24,9 +24,13 @@ repo and gated behind a human-only wordpress.org account.
 - `make-assets.php`: regenerates the icon/banner PNGs (PHP GD, run directly:
   `php wordpress-org/make-assets.php`, writes back into this folder).
 
-At submission time these get copied into the SVN `assets/` directory
-(trunk/tags stay separate). That step is part of the wp-release approval,
-not this repo.
+These PNGs are the SVN `assets/` directory. After the first submission is
+approved, every pushed `v*` tag publishes trunk, `tags/<version>` and these
+assets through `bin/deploy-wporg.sh` (the `wporg` job in release.yml, which
+skips until the repo secrets SVN_USERNAME and SVN_PASSWORD exist). A tag is
+only pushed after a wp-release approval. To try the script without touching
+wordpress.org, point it at a scratch repo:
+`svnadmin create /tmp/r && SVN_URL=file:///tmp/r bash bin/deploy-wporg.sh v<version>`.
 
 SVN trunk/tags must be built with `bash bin/build-zip.sh --wporg`
 (or `--stage-to DIR --wporg`), never from the GitHub release zip: the only

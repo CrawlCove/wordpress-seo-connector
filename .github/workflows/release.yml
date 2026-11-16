@@ -41,3 +41,35 @@ jobs:
             --title "Crawl Cove Connector ${GITHUB_REF_NAME#v}" \
             --notes-file build/notes.md \
             build/crawl-cove-connector.zip
+
+  # Publishes the same tag to wordpress.org SVN (trunk, tags/<version>,
+  # assets/) with bin/deploy-wporg.sh. The SVN repo only exists once
+  # wordpress.org has reviewed the first zip, so until SVN_USERNAME and
+  # SVN_PASSWORD are set as repo secrets this job skips and stays green.
+  wporg:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+    steps:
+      - name: Skip until the wordpress.org SVN secrets exist
+        id: gate
+        run: |
+          if [ -n "$SVN_USERNAME" ] && [ -n "$SVN_PASSWORD" ]; then
+            echo "go=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "SVN_USERNAME / SVN_PASSWORD not set: skipping the wordpress.org deploy"
+            echo "go=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.gate.outputs.go == '1'
+        uses: actions/checkout@v4
+
+      - name: Install Subversion
+        if: steps.gate.outputs.go == '1'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq subversion
+
+      - name: Commit trunk, tags/<version> and assets to wordpress.org SVN
+        if: steps.gate.outputs.go == '1'
+        run: bash bin/deploy-wporg.sh "${GITHUB_REF_NAME}"
