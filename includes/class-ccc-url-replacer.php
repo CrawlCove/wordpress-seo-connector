@@ -767,6 +767,7 @@ class CrawlCove_Url_Replacer {
 		$args     = array_merge( $types, self::STATUSES );
 		$out      = array();
 		if ( $types ) {
+			// Only %s placeholder lists are interpolated; every value goes through prepare().
 			// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type IN ($type_in) AND post_status IN ($state_in) AND post_content LIKE %s ORDER BY ID", array_merge( $args, array( $like ) ) ) );
 			foreach ( $ids as $id ) {
@@ -788,7 +789,7 @@ class CrawlCove_Url_Replacer {
 		// blocks, URL in the block comment), often converted from the classic
 		// menu on first render, so the header can still link to the old URL
 		// after every _menu_item_url is fixed.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- no core API searches post_content with LIKE; prepared.
 		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'wp_navigation' AND post_status = 'publish' AND post_content LIKE %s ORDER BY ID", $like ) );
 		foreach ( $ids as $id ) {
 			$out[] = array(
@@ -804,6 +805,7 @@ class CrawlCove_Url_Replacer {
 		}
 		if ( current_user_can( 'edit_theme_options' ) && ! $op['unlink'] ) {
 			$forms_in = implode( ',', array_fill( 0, count( $op['forms'] ), '%s' ) );
+			// Only %s placeholder lists are interpolated; every value goes through prepare().
 			// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p JOIN {$wpdb->postmeta} m ON m.post_id = p.ID WHERE p.post_type = 'nav_menu_item' AND m.meta_key = %s AND m.meta_value IN ($forms_in) ORDER BY p.ID", array_merge( array( self::MENU_KEY ), $op['forms'] ) ) );
 			// phpcs:enable
@@ -873,7 +875,7 @@ class CrawlCove_Url_Replacer {
 	public static function write( $post_id, $where, $text ) {
 		global $wpdb;
 		if ( 'content' === $where || 'navigation' === $where ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- writes post_content only; wp_update_post() would also rewrite the modified date and fire save hooks.
 			$wpdb->update( $wpdb->posts, array( 'post_content' => $text ), array( 'ID' => $post_id ) );
 			clean_post_cache( $post_id );
 			return;
