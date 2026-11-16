@@ -8,19 +8,15 @@ repo and gated behind a human-only wordpress.org account.
 - `screenshot-1.png`: Tools → Crawl Cove admin page with sample data,
   captured against the real-WP integration harness (see readme.txt's
   `== Screenshots ==` section for the caption that must stay in step).
-  Recipe (25 Oct 2026): `tests/integration/run.sh --adapter=rankmath`, then
-  on `.site`: blogname "Crawl Cove Connector Demo", delete the harness posts
-  and attachments and the `ccc_change_log`/`ccc_change_seq`/`ccc_last_connection`
-  options, import an image as `leaky-kitchen-tap.png`, create two demo posts
-  (one linking to an old URL and showing that image with an empty alt), then
-  with an admin application password push through the real routes: `/apply`
-  title + description on one post, title + `og_title` on the other,
-  `/replace-urls` on the link (with `rel_strip: nofollow`, the link given
-  `rel="nofollow"`), `/image-alt` on the image (`url` = the post's URL) and
-  `/site-settings` `hide_generator` (seven log rows, so the shot shows the
-  0.11 fix kinds). Last recaptured 1 Nov 2026 (review #301 labels). Serve with `php -S 127.0.0.1:8987`, log in as
-  admin/admin with Playwright and capture `tools.php?page=crawl-cove-connector`
-  at a 1280-wide viewport, full page (`fullPage: true`, so the last log row is not cut). Regenerate whenever the Tools page changes.
+  Recipe (scripted 16 Nov 2026): `tests/integration/run.sh --adapter=rankmath`,
+  serve the site (`cd tests/integration/.site && php -S 127.0.0.1:8987 -t .`),
+  then `bash wordpress-org/screenshot-setup.sh` (resets the demo posts, image,
+  change log and site settings, pushes seven changes through the real REST
+  routes, and drops a screenshot-only mu-plugin that hides the SQLite admin-bar
+  label and update counts) and
+  `PLAYWRIGHT=<node_modules/playwright> node wordpress-org/screenshot-capture.js wordpress-org/screenshot-1.png`
+  (1280-wide, full page). Last recaptured 16 Nov 2026 (review #377: Free plan
+  setup copy, no harness tells). Regenerate whenever the Tools page changes.
 - `make-assets.php`: regenerates the icon/banner PNGs (PHP GD, run directly:
   `php wordpress-org/make-assets.php`, writes back into this folder).
 
