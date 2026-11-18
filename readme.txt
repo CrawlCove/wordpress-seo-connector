@@ -80,6 +80,7 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 == Screenshots ==
 
 1. Tools → Crawl Cove: the detected SEO plugin, Application Passwords and desktop app status, setup steps, and the change log of pushed title, description, link and alt text fixes with one-click revert.
+2. Push a fixed meta description from a Crawl Cove finding straight to your WordPress site, with a preview first and one-click undo.
 
 == Changelog ==
 

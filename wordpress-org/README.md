@@ -17,6 +17,10 @@ repo and gated behind a human-only wordpress.org account.
   `PLAYWRIGHT=<node_modules/playwright> node wordpress-org/screenshot-capture.js wordpress-org/screenshot-1.png`
   (1280-wide, full page). Last recaptured 16 Nov 2026 (review #377: Free plan
   setup copy, no harness tells). Regenerate whenever the Tools page changes.
+- `screenshot-2.png`: the desktop app's Push to WordPress panel after a
+  meta description push (app ticket #391, 17 Nov 2026). It is an app-side
+  capture, so the app agent regenerates it; the site shown is a harness copy
+  renamed to harbourbakery.co.uk, which does not resolve publicly.
 - `make-assets.php`: regenerates the icon/banner PNGs (PHP GD, run directly:
   `php wordpress-org/make-assets.php`, writes back into this folder).
 
