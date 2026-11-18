@@ -34,10 +34,10 @@ wordpress.org, point it at a scratch repo:
 
 SVN trunk/tags must be built with `bash bin/build-zip.sh --wporg`
 (or `--stage-to DIR --wporg`), never from the GitHub release zip: the only
-differences are that the `Update URI:` header line is removed and readme.txt
-Installation step 1 says to search the directory instead of downloading the
-GitHub zip (keep step 1's opening words as they are, or the build refuses). The directory
-serves updates only to plugins that do not point their updates elsewhere,
-and Plugin Check flags the header; the GitHub copy keeps it so a GitHub
-install can never be offered whatever plugin might one day own this slug
-on wordpress.org (review ticket #212).
+difference is that readme.txt Installation step 1 says to search the
+directory instead of downloading the GitHub zip (keep step 1's opening words
+as they are, or the build refuses). Neither copy carries an `Update URI:`
+header, and the build refuses one: core leaves a plugin whose Update URI is
+not wordpress.org out of the directory update check, so GitHub installs
+would never be offered a directory release (review inbox #392). Until the
+slug was ours the GitHub copy carried one (review ticket #212).

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **No `Update URI` header any more**, now that the WordPress.org directory
+  lists this plugin under the crawl-cove-connector slug. A copy installed from
+  GitHub is offered directory updates under Plugins > Updates like any other
+  plugin. Installs of 0.10.4 to 1.0.0 from GitHub still carry the old header,
+  so they need one manual update to this version first.
+
 ## 1.0.0 (2026-11-16)
 
 - **First release on the WordPress.org plugin directory.** Same features as

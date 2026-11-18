@@ -37,8 +37,8 @@ done
 
 log "staging a production-only copy of the plugin (no vendor/, tests/, dev tooling)"
 # The exclude list lives in bin/build-zip.sh so the set Plugin Check sees is
-# byte-for-byte the set SVN trunk ships: --wporg drops the Update URI header
-# the GitHub zip carries (the directory refuses self-updating plugins).
+# byte-for-byte the set SVN trunk ships (--wporg only rewrites readme.txt
+# Installation step 1).
 bash "$PLUGIN_ROOT/bin/build-zip.sh" --stage-to "$DIST" --wporg
 
 # The shipped translation template must describe the shipped source. Cheap
