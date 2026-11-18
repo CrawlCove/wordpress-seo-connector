@@ -12,17 +12,17 @@
 #                                          # fail unless header + Stable tag say so
 #                                          # (the release workflow passes the tag)
 #   bash bin/build-zip.sh --wporg          # the wordpress.org SVN copy: identical
-#                                          # except the `Update URI:` header line
-#                                          # is removed and readme.txt Installation
-#                                          # step 1 says "search the directory"
-#                                          # instead of "download the GitHub zip"
-#                                          # (WPORG_STEP1 below). The directory only serves
-#                                          # updates to plugins WITHOUT a foreign
-#                                          # Update URI, and Plugin Check flags one;
-#                                          # the GitHub zip keeps it so a GitHub
-#                                          # install is never offered whatever
-#                                          # plugin may one day own this slug on
-#                                          # wordpress.org (review ticket #212).
+#                                          # except readme.txt Installation step 1
+#                                          # says "search the directory" instead
+#                                          # of "download the GitHub zip"
+#                                          # (WPORG_STEP1 below). Neither copy
+#                                          # carries an `Update URI:` header: core
+#                                          # skips the directory update check for a
+#                                          # plugin whose Update URI is not
+#                                          # wordpress.org, so GitHub installs
+#                                          # would never see a directory release
+#                                          # (review inbox #392; the header guarded
+#                                          # the slug before we owned it, #212).
 #                                          # Combines with --stage-to.
 #
 # The zip unpacks to crawl-cove-connector/ so WordPress installs it under
@@ -96,12 +96,11 @@ stage() {
     --exclude=README.md --exclude=CHANGELOG.md --exclude=docs \
     --exclude=CLAUDE.md --exclude=.claude --exclude='*.zip' --exclude='*.log' \
     "$PLUGIN_ROOT/" "$dest/"
+  if grep -qi '^ \* Update URI:' "$dest/$SLUG.php"; then
+    echo "no copy may carry an Update URI header: it hides directory updates (see --wporg)" >&2
+    exit 1
+  fi
   if [[ "$WPORG" -eq 1 ]]; then
-    sed -i '/^ \* Update URI:/d' "$dest/$SLUG.php"
-    if grep -q '^ \* Update URI:' "$dest/$SLUG.php"; then
-      echo "--wporg: failed to strip the Update URI header" >&2
-      exit 1
-    fi
     if [[ "$(grep -cF -- "$GITHUB_STEP1_PREFIX" "$dest/readme.txt")" != 1 ]]; then
       echo "--wporg: readme.txt must have exactly one line starting '$GITHUB_STEP1_PREFIX'" >&2
       exit 1
@@ -112,12 +111,7 @@ stage() {
       echo "--wporg: failed to rewrite readme.txt Installation step 1" >&2
       exit 1
     fi
-    log "wordpress.org copy: Update URI header removed, readme.txt step 1 points at the directory"
-  else
-    if ! grep -q '^ \* Update URI: *https://crawlcove.com/' "$dest/$SLUG.php"; then
-      echo "the GitHub copy must carry a crawlcove.com Update URI header (see --wporg)" >&2
-      exit 1
-    fi
+    log "wordpress.org copy: readme.txt step 1 points at the directory"
   fi
 }
 

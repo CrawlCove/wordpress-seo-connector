@@ -24,19 +24,17 @@ class ReadmeTest extends TestCase {
 	}
 
 	/**
-	 * GitHub installs must never be offered an update by api.wordpress.org
-	 * for whatever plugin may one day own this unclaimed slug (review ticket
-	 * #212): a non-wordpress.org Update URI makes core skip the directory for
-	 * this plugin. The SVN copy must NOT carry it (bin/build-zip.sh --wporg
-	 * strips it), because the directory only serves updates to plugins
-	 * without one.
+	 * Since wordpress.org approved the crawl-cove-connector slug for us, the
+	 * plugin carries no Update URI on either copy (review inbox #392). Core
+	 * leaves a plugin whose Update URI host is not wordpress.org/w.org out of
+	 * the api.wordpress.org update check, so the header that guarded GitHub
+	 * installs against a stranger owning the slug (review ticket #212) would
+	 * now stop them ever seeing a directory release.
 	 */
-	public function test_plugin_header_carries_a_non_wporg_update_uri() {
+	public function test_plugin_header_has_no_update_uri() {
 		$main = (string) file_get_contents( dirname( __DIR__ ) . '/crawl-cove-connector.php' );
-		preg_match( '/^\s*\*\s*Update URI:\s*(\S+)/m', $main, $uri );
 
-		$this->assertNotEmpty( $uri );
-		$this->assertSame( 'https://crawlcove.com/wordpress-plugin', $uri[1] );
+		$this->assertDoesNotMatchRegularExpression( '/^\s*\*\s*Update URI:/mi', $main );
 	}
 
 	/**
