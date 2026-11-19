@@ -139,7 +139,7 @@ POST_DRAFT="$("${WPCLI[@]}" post create --post_title="Draft plan" --post_status=
 POST_USER_REQUEST="$("${WPCLI[@]}" eval 'echo wp_create_user_request( "jane.doe@example.org", "export_personal_data" );' --path="$SITE")"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server.log" 2>&1 ) &
 SERVER_PID=$!
 UP=0
 for i in $(seq 1 30); do

@@ -8,7 +8,7 @@
 # only an administrator may set or remove the key; bad keys are refused;
 # /status advertises the capability; uninstall deletes the option.
 #
-# php -S hands every path it has no file for to index.php, the same thing
+# php -S (through router.php) hands every path it has no file for to index.php, the same thing
 # nginx's usual try_files and WordPress's Apache rewrite block do.
 #
 # Self-contained (own site dir and port), like site-settings-checks.sh.
@@ -106,7 +106,7 @@ KEY="ccc0a1b2c3d4e5f6-test"
 KEY2="second-key-0123456789"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-indexnow.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-indexnow.log" 2>&1 ) &
 SERVER_PID=$!
 for i in $(seq 1 30); do curl -s -o /dev/null "$URL/index.php?rest_route=/" && break; sleep 0.3; done
 

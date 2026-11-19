@@ -109,7 +109,7 @@ PRODUCT_ID="$("${WPCLI[@]}" post create --post_type=product --post_title="Test W
 CAT_TERM_ID="$("${WPCLI[@]}" term list product_cat --field=term_id --path="$SITE" | tail -1)"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-woo.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-woo.log" 2>&1 ) &
 SERVER_PID=$!
 UP=0
 for i in $(seq 1 30); do

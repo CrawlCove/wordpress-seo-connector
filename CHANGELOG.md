@@ -8,6 +8,14 @@
   descriptions, and four FAQs answer the searches people make: missing meta
   descriptions, WooCommerce products, links to a redirect, missing alt text.
   The slug and text domain stay `crawl-cove-connector`.
+- **A Settings link on the Plugins screen**, next to Deactivate, opens Tools →
+  Crawl Cove. Before, a new user had to find the setup steps in the Tools menu
+  on their own.
+- **Compatibility matrix** (`docs/compatibility.md`, `.github/workflows/compat.yml`):
+  the whole real-WordPress suite on PHP 7.4 to 8.5, and the suites that need
+  no other plugin on WordPress 6.2. The harness now serves through
+  `tests/integration/router.php`, since PHP's built-in server before 8.5
+  404s a missing `.txt` path instead of handing it to WordPress.
 
 ## 1.0.0 (2026-11-16)
 

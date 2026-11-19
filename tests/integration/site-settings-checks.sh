@@ -87,7 +87,7 @@ MARKER="XML-RPC server accepts POST requests only"
 UPLOADS_HT="$SITE/wp-content/uploads/.htaccess"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-settings.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-settings.log" 2>&1 ) &
 SERVER_PID=$!
 for i in $(seq 1 30); do curl -s -o /dev/null "$URL/index.php?rest_route=/" && break; sleep 0.3; done
 

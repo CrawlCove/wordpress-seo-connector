@@ -70,7 +70,7 @@ fail() { FAIL=$((FAIL+1)); echo "  FAIL $1"; }
 same() { if [[ "$2" == "$3" ]]; then ok "$1"; else fail "$1 — want [$3], got [$2]"; fi; }
 opt()  { "${WP[@]}" option get "$1" --format=json 2>/dev/null || echo "(none)"; }
 serve() {
-  ( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-migrate.log" 2>&1 ) &
+  ( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-migrate.log" 2>&1 ) &
   SERVER_PID=$!
   for i in $(seq 1 30); do curl -s -o /dev/null "$URL/index.php?rest_route=/" && break; sleep 0.3; done
 }

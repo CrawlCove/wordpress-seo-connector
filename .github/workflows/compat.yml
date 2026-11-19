@@ -1,0 +1,100 @@
+# Compatibility matrix: the whole real-WordPress suite (tests/integration/all.sh:
+# Yoast SEO, Rank Math, SEOPress, AIOSEO, no SEO plugin, multisite, WooCommerce,
+# Polylang, TranslatePress, caching and the 1.0.0 upgrade) on every PHP version
+# the plugin supports, against the current WordPress and plugin releases. A
+# second job runs the suites that need no third-party plugin on the oldest
+# WordPress the readme claims (Requires at least). Results feed
+# docs/compatibility.md.
+#
+# No third-party actions: PHP comes from the Ubuntu PPA the runner image already
+# trusts for its own PHP builds (ondrej/php), installed with apt.
+name: compat
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'wordpress-org/**']
+  schedule:
+    - cron: '17 5 * * 1' # Mondays: new WordPress / SEO plugin releases land without a push here
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  downloads:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fetch WordPress, the SEO plugins and wp-cli (one set for every job)
+        run: |
+          mkdir cache && cd cache
+          get() { curl -fsSL --retry 3 "$2" -o "$1"; }
+          get wordpress.zip https://wordpress.org/latest.zip
+          get wordpress-min.zip https://wordpress.org/wordpress-6.2.zip
+          for p in sqlite-database-integration:sqlite seo-by-rank-math:rankmath wordpress-seo:yoast \
+                   wp-seopress:seopress all-in-one-seo-pack:aioseo elementor:elementor woocommerce:woocommerce \
+                   polylang:polylang translatepress-multilingual:translatepress wp-super-cache:wp-super-cache; do
+            get "${p#*:}.zip" "https://downloads.wordpress.org/plugin/${p%%:*}.zip"
+          done
+          get wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          ls -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wp-cache
+          path: cache
+          retention-days: 3
+
+  php:
+    needs: downloads
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # migrate-checks.sh installs the 1.0.0 release from history
+      - &php
+        name: PHP ${{ matrix.php }}
+        run: |
+          sudo add-apt-repository -y ppa:ondrej/php >/dev/null
+          sudo apt-get update -q >/dev/null
+          v='${{ matrix.php }}'
+          sudo apt-get install -y -q "php$v-cli" "php$v-sqlite3" "php$v-mbstring" "php$v-xml" "php$v-curl" "php$v-zip" >/dev/null
+          sudo update-alternatives --set php "/usr/bin/php$v"
+          php -v
+      - uses: actions/download-artifact@v4
+        with:
+          name: wp-cache
+          path: tests/integration/.cache
+      - name: All real-WordPress suites
+        run: bash tests/integration/all.sh
+      - name: Logs on failure
+        if: failure()
+        run: tail -n 60 /tmp/ccc-integration-all.*/*.log
+
+  wordpress-min:
+    needs: downloads
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - *php
+      - uses: actions/download-artifact@v4
+        with:
+          name: wp-cache
+          path: tests/integration/.cache
+      - name: WordPress 6.2 (Requires at least), no third-party plugin needed
+        run: |
+          cd tests/integration/.cache && mv wordpress-min.zip wordpress.zip && cd -
+          for s in site-settings indexnow migrate; do
+            echo "== $s"
+            bash "tests/integration/$s-checks.sh" > "/tmp/$s.log" 2>&1 || { tail -n 60 "/tmp/$s.log"; exit 1; }
+            echo "ok ($(grep -c '^  ok' "/tmp/$s.log") checks)"
+          done

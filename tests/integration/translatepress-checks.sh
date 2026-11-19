@@ -123,7 +123,7 @@ POST_ID="$("${WPCLI[@]}" post create --post_title="CCC Test Article" --post_name
 EDITOR_PW="$("${WPCLI[@]}" user application-password create ccc_editor ccc-test --porcelain --path="$SITE")"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-trp.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-trp.log" 2>&1 ) &
 SERVER_PID=$!
 UP=0
 for i in $(seq 1 30); do

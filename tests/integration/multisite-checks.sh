@@ -103,7 +103,7 @@ log "a post on the subsite"
 POST_ID="$("${WPCLI[@]}" post create --post_title="Subsite Post" --post_status=publish --url="$SUBSITE_URL" --path="$SITE" --porcelain)"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-ms.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-ms.log" 2>&1 ) &
 SERVER_PID=$!
 UP=0
 for i in $(seq 1 30); do

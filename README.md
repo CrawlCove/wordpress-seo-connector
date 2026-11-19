@@ -615,6 +615,10 @@ default `true`; return `false` to opt out of the automatic per-post or
 full-site purge). Before 1.0.0 these four hooks were named `ccc_*`; the old names
 no longer fire.
 
+## Compatibility
+
+Tested on real WordPress sites with Yoast SEO, Rank Math, SEOPress, AIOSEO and no SEO plugin, on PHP 7.4 to 8.5, WordPress 7.1 and 6.2 (the minimum), multisite, WooCommerce, Polylang, TranslatePress and Elementor. Versions, check counts and how to rerun it: [docs/compatibility.md](docs/compatibility.md).
+
 ## Installation
 
 1. Download **[crawl-cove-connector.zip](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest/download/crawl-cove-connector.zip)** from the [latest GitHub release](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest). In your WordPress admin go to **Plugins → Add Plugin → Upload Plugin**, choose the zip and activate it (requires WordPress 6.2+ and PHP 7.4+). Don't use GitHub's "Download ZIP" of the source tree: it unpacks under the wrong folder name and includes the test suite. The wordpress.org listing is pending; once it is live you will be able to install from **Plugins → Add Plugin** by searching "Crawl Cove Connector".

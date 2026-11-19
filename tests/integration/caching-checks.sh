@@ -151,7 +151,7 @@ TERM_ID="$("${WPCLI[@]}" term list category --field=term_id --path="$SITE" | tai
 "${WPCLI[@]}" option update show_on_front posts --path="$SITE" --quiet
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-cache.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-cache.log" 2>&1 ) &
 SERVER_PID=$!
 UP=0
 for i in $(seq 1 30); do

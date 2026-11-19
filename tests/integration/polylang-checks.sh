@@ -142,7 +142,7 @@ PLL()->model->post->save_translations( $EN_POST, array( 'en' => $EN_POST, 'fr' =
 NEWS_TERM_ID="$("${WPCLI[@]}" term create category News --slug=news --porcelain --path="$SITE")"
 
 log "starting php -S on $URL"
-( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" >"$HERE/.server-pll.log" 2>&1 ) &
+( cd "$SITE" && exec php -S "127.0.0.1:$PORT" -t "$SITE" "$HERE/router.php" >"$HERE/.server-pll.log" 2>&1 ) &
 SERVER_PID=$!
 UP=0
 for i in $(seq 1 30); do
