@@ -177,7 +177,11 @@ class CrawlCove_Service {
 		$default_lang = isset( $settings['default-language'] ) ? $settings['default-language'] : '';
 		$home_path    = untrailingslashit( (string) wp_parse_url( home_url(), PHP_URL_PATH ) );
 		$url_path     = (string) wp_parse_url( $url, PHP_URL_PATH );
-		if ( 0 !== strpos( $url_path, $home_path ) ) {
+		// A site at the domain root has $home_path ''. strpos() with an empty
+		// needle returns false on PHP 7.4 (0 from PHP 8), so without the ''
+		// check every /fr/ URL on PHP 7.4 came back ccc_unresolvable (found
+		// by the PHP 7.4 compat job, 19 Nov 2026).
+		if ( '' !== $home_path && 0 !== strpos( $url_path, $home_path ) ) {
 			return $url; // Not even under this site's own path — resolve_url()'s host check runs before this, but the path itself could still differ.
 		}
 		$relative = trim( substr( $url_path, strlen( $home_path ) ), '/' );

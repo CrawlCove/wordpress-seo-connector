@@ -11,6 +11,10 @@
 - **A Settings link on the Plugins screen**, next to Deactivate, opens Tools →
   Crawl Cove. Before, a new user had to find the setup steps in the Tools menu
   on their own.
+- **Fix: TranslatePress translated URLs resolve on PHP 7.4.** On a site at
+  the domain root, `/fr/...` URLs came back `ccc_unresolvable` on PHP 7.4
+  only: `strpos()` with an empty needle returns `false` there and `0` from
+  PHP 8. Found by the new PHP 7.4 compatibility job.
 - **Dates on the Tools page follow Settings → General.** The Status row and
   the change log printed two different fixed formats; both now use the site's
   date and time format.
