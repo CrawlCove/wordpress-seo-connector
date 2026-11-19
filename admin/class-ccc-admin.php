@@ -38,6 +38,31 @@ class CrawlCove_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_post_ccc_revert', array( __CLASS__, 'handle_revert' ) );
 		add_action( 'admin_post_ccc_indexnow_remove', array( __CLASS__, 'handle_indexnow_remove' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( CRAWLCOVE_PLUGIN_FILE ), array( __CLASS__, 'action_links' ) );
+	}
+
+	/**
+	 * A "Settings" link on the Plugins screen row, pointing at Tools → Crawl
+	 * Cove. Without it, the row offers only Deactivate and a new user has to
+	 * find the setup steps in the Tools menu on their own (stranger walk,
+	 * 19 Nov 2026).
+	 *
+	 * @param string[] $links Action links WordPress already shows for the row.
+	 * @return string[]
+	 */
+	public static function action_links( $links ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return $links;
+		}
+		array_unshift(
+			$links,
+			sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( admin_url( 'tools.php?page=crawl-cove-connector' ) ),
+				esc_html__( 'Settings', 'crawl-cove-connector' )
+			)
+		);
+		return $links;
 	}
 
 	/**

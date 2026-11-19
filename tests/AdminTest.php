@@ -80,4 +80,22 @@ class AdminTest extends TestCase {
 			$this->assertStringNotContainsString( "\u{2014}", $msg, $field );
 		}
 	}
+
+	public function test_plugins_row_links_to_the_tools_page_first() {
+		$GLOBALS['cc_hooks'] = array();
+		CrawlCove_Admin::init();
+		$this->assertArrayHasKey( 'plugin_action_links_crawl-cove-connector/crawl-cove-connector.php', $GLOBALS['cc_hooks'] );
+		$links = CrawlCove_Admin::action_links( array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
+		$this->assertSame( '<a href="https://example.test/wp-admin/tools.php?page=crawl-cove-connector">Settings</a>', $links[0] );
+		$this->assertSame( '<a href="#">Deactivate</a>', $links['deactivate'] );
+	}
+
+	public function test_plugins_row_has_no_settings_link_for_a_user_who_cannot_open_the_page() {
+		$GLOBALS['cc_deny_manage_options'] = true;
+		try {
+			$this->assertSame( array( 'deactivate' => 'x' ), CrawlCove_Admin::action_links( array( 'deactivate' => 'x' ) ) );
+		} finally {
+			$GLOBALS['cc_deny_manage_options'] = false;
+		}
+	}
 }

@@ -127,6 +127,18 @@ function add_action( $tag, $callback, $priority = 10 ) {
 	return true;
 }
 
+/** Stub: filters are recorded like actions (nothing runs). */
+function add_filter( $tag, $callback, $priority = 10 ) {
+	return add_action( $tag, $callback, $priority );
+}
+function plugin_basename( $file ) { return basename( dirname( $file ) ) . '/' . basename( $file ); }
+function admin_url( $path = '' ) { return 'https://example.test/wp-admin/' . ltrim( $path, '/' ); }
+function esc_url( $url ) { return htmlspecialchars( (string) $url, ENT_QUOTES ); }
+function esc_html__( $text, $domain = null ) { return htmlspecialchars( (string) $text, ENT_QUOTES ); }
+if ( ! defined( 'CRAWLCOVE_PLUGIN_FILE' ) ) {
+	define( 'CRAWLCOVE_PLUGIN_FILE', dirname( __DIR__ ) . '/crawl-cove-connector.php' );
+}
+
 function get_post( $post_id ) {
 	if ( ! isset( $GLOBALS['cc_posts'][ $post_id ] ) ) {
 		return null;
