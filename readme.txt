@@ -1,4 +1,4 @@
-=== Crawl Cove Connector ===
+=== Crawl Cove Connector: Bulk Meta Description and SEO Title Fixes ===
 Contributors: crawlcove
 Tags: seo, meta description, bulk edit, yoast, rank math
 Requires at least: 6.2
@@ -8,11 +8,11 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Bulk-apply SEO fixes to Yoast, Rank Math, SEOPress or AIOSEO: titles, meta descriptions, links and alt text, each with one-click revert.
+Bulk edit SEO titles and meta descriptions in Yoast, Rank Math, SEOPress or AIOSEO, plus link and alt text fixes, each with one-click revert.
 
 == Description ==
 
-Fixing SEO problems one post at a time is slow. Crawl Cove Connector lets you bulk-apply the fixes you approved in the [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme) desktop crawler straight to your WordPress site. Titles and meta descriptions go into the SEO plugin you already use (Yoast SEO, Rank Math, SEOPress or AIOSEO), and every change is logged so you can revert it in one click.
+Editing SEO titles and meta descriptions one post at a time is slow. Crawl Cove Connector lets you bulk-apply the fixes you approved in the [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme) desktop crawler straight to your WordPress site. Titles and meta descriptions go into the SEO plugin you already use (Yoast SEO, Rank Math, SEOPress or AIOSEO), and every change is logged so you can revert it in one click.
 
 The plugin is free. The Crawl Cove desktop app it works with has a Free plan that crawls your site and lists the fixes. Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial, no card needed: see [Crawl Cove pricing](https://crawlcove.com/pricing?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=wporg-readme).
 
@@ -48,6 +48,22 @@ Sign-in uses WordPress core **Application Passwords**, so the plugin stores no p
 = Can I bulk edit meta descriptions in Yoast or Rank Math with it? =
 
 Yes. Approve the fixes in the Crawl Cove desktop app, then push them one at a time or every open title and description finding at once. The plugin writes each one into Yoast SEO, Rank Math, SEOPress or AIOSEO and logs it so you can revert it.
+
+= How do I fix missing meta descriptions on hundreds of pages? =
+
+Crawl the site with the Crawl Cove desktop app. It lists every page whose title or meta description is missing, duplicated or the wrong length. Write or accept a fix for each, then push every open title and description finding at once.
+
+= Does it work with WooCommerce products? =
+
+Yes. Product and product category titles and descriptions go into your SEO plugin the same way as posts. WooCommerce only lets Shop Managers and Administrators edit products, so connect the app as one of those to push product fixes.
+
+= Can it fix internal links that point to a redirect? =
+
+Yes. A link fix repoints the link to the final URL, or removes the link, in posts, Elementor layouts and menus. Only the matching link changes, and each change can be reverted.
+
+= How do I fix missing image alt text? =
+
+The crawler lists images with no alt text. Push the alt text you approve, and the plugin sets it on the media library image and in the page that shows it.
 
 = Is the plugin free? =
 

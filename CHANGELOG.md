@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Listing copy aimed at directory search.** The plugin is named "Crawl Cove
+  Connector: Bulk Meta Description and SEO Title Fixes" (header and readme),
+  the short description leads with bulk editing SEO titles and meta
+  descriptions, and four FAQs answer the searches people make: missing meta
+  descriptions, WooCommerce products, links to a redirect, missing alt text.
+  The slug and text domain stay `crawl-cove-connector`.
+
 ## 1.0.0 (2026-11-16)
 
 - **First release on the WordPress.org plugin directory.** Same features as

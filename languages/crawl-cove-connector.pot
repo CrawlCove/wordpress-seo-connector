@@ -2,23 +2,21 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Crawl Cove Connector 1.0.0\n"
+"Project-Id-Version: Crawl Cove Connector: Bulk Meta Description and SEO Title Fixes 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/crawl-cove-connector\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-11T14:07:01+00:00\n"
+"POT-Creation-Date: 2026-11-19T21:53:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
 
 #. Plugin Name of the plugin
 #: crawl-cove-connector.php
-#: admin/class-ccc-admin.php:48
-#: admin/class-ccc-admin.php:267
-msgid "Crawl Cove Connector"
+msgid "Crawl Cove Connector: Bulk Meta Description and SEO Title Fixes"
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -40,6 +38,11 @@ msgstr ""
 #. Author URI of the plugin
 #: crawl-cove-connector.php
 msgid "https://crawlcove.com"
+msgstr ""
+
+#: admin/class-ccc-admin.php:48
+#: admin/class-ccc-admin.php:267
+msgid "Crawl Cove Connector"
 msgstr ""
 
 #: admin/class-ccc-admin.php:61
@@ -416,8 +419,8 @@ msgid "That change was made for a language this site no longer serves through a 
 msgstr ""
 
 #: includes/class-ccc-change-log.php:304
-#: includes/class-ccc-image-alt.php:435
-#: includes/class-ccc-image-alt.php:449
+#: includes/class-ccc-image-alt.php:426
+#: includes/class-ccc-image-alt.php:440
 #: includes/class-ccc-site-settings.php:285
 msgid "The value has changed since this change was made, so reverting it would overwrite the newer value. Nothing was written."
 msgstr ""
@@ -446,40 +449,40 @@ msgstr ""
 msgid "A change needs the url of the page that shows the image."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:270
+#: includes/class-ccc-image-alt.php:277
 #: includes/class-ccc-service.php:584
-#: includes/class-ccc-url-replacer.php:567
+#: includes/class-ccc-url-replacer.php:572
 msgid "changes must be a non-empty array."
 msgstr ""
 
 #. translators: %d: maximum number of changes allowed per request
-#: includes/class-ccc-image-alt.php:274
+#: includes/class-ccc-image-alt.php:281
 #: includes/class-ccc-service.php:590
-#: includes/class-ccc-url-replacer.php:571
+#: includes/class-ccc-url-replacer.php:576
 #, php-format
 msgid "At most %d changes per request."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:301
+#: includes/class-ccc-image-alt.php:308
 msgid "This user may not edit that media library image."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:316
+#: includes/class-ccc-image-alt.php:323
 #: includes/class-ccc-rest.php:416
 #: includes/class-ccc-service.php:647
 #: includes/class-ccc-url-replacer.php:113
 msgid "This user may not edit that target."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:324
+#: includes/class-ccc-image-alt.php:331
 msgid "That image is neither in the media library nor in this page's content, so there is nothing to set."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:327
+#: includes/class-ccc-image-alt.php:334
 msgid "That image appears in this page only inside a shortcode, an attribute, a script or a comment, where the plugin cannot safely set its alt. Edit it in WordPress."
 msgstr ""
 
-#: includes/class-ccc-image-alt.php:431
+#: includes/class-ccc-image-alt.php:422
 msgid "The page has been edited since this change, so the old alt text cannot be put back into it safely. Nothing was written."
 msgstr ""
 
@@ -682,20 +685,20 @@ msgid "A page-scope change needs the url (or post_id) of the page that holds the
 msgstr ""
 
 #. translators: 1: number of places the link was found, 2: the limit
-#: includes/class-ccc-url-replacer.php:626
-#: includes/class-ccc-url-replacer.php:815
+#: includes/class-ccc-url-replacer.php:631
+#: includes/class-ccc-url-replacer.php:822
 #, php-format
 msgid "The link is in %1$d places, more than the %2$d one change may edit. Fix it page by page instead."
 msgstr ""
 
-#: includes/class-ccc-url-replacer.php:975
+#: includes/class-ccc-url-replacer.php:982
 msgid "The content has been edited since this change, and a removed link or nofollow cannot be put back safely. Nothing was written."
 msgstr ""
 
-#: includes/class-ccc-url-replacer.php:978
+#: includes/class-ccc-url-replacer.php:985
 msgid "The content has been edited since this change, and it already linked to the new URL before it, so those links cannot be told apart from the changed ones. Nothing was written."
 msgstr ""
 
-#: includes/class-ccc-url-replacer.php:995
+#: includes/class-ccc-url-replacer.php:1002
 msgid "The content has changed since this change was made, so reverting it would overwrite the newer edits. Nothing was written."
 msgstr ""
