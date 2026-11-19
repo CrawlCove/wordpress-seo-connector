@@ -132,7 +132,7 @@ function add_filter( $tag, $callback, $priority = 10 ) {
 	return add_action( $tag, $callback, $priority );
 }
 function wp_date( $format, $timestamp = null ) { return gmdate( $format, (int) $timestamp ); }
-function plugin_basename( $file ) { return basename( dirname( $file ) ) . '/' . basename( $file ); }
+function plugin_basename( $file ) { return 'crawl-cove-connector/' . basename( $file ); } // The installed folder, whatever the checkout is called.
 function admin_url( $path = '' ) { return 'https://example.test/wp-admin/' . ltrim( $path, '/' ); }
 function esc_url( $url ) { return htmlspecialchars( (string) $url, ENT_QUOTES ); }
 function esc_html__( $text, $domain = null ) { return htmlspecialchars( (string) $text, ENT_QUOTES ); }
