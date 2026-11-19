@@ -131,6 +131,7 @@ function add_action( $tag, $callback, $priority = 10 ) {
 function add_filter( $tag, $callback, $priority = 10 ) {
 	return add_action( $tag, $callback, $priority );
 }
+function wp_date( $format, $timestamp = null ) { return gmdate( $format, (int) $timestamp ); }
 function plugin_basename( $file ) { return basename( dirname( $file ) ) . '/' . basename( $file ); }
 function admin_url( $path = '' ) { return 'https://example.test/wp-admin/' . ltrim( $path, '/' ); }
 function esc_url( $url ) { return htmlspecialchars( (string) $url, ENT_QUOTES ); }

@@ -42,6 +42,19 @@ class CrawlCove_Admin {
 	}
 
 	/**
+	 * A timestamp in the site's own date and time format (Settings → General),
+	 * so the Status row and the change log read the same way and the way the
+	 * rest of the admin does.
+	 *
+	 * @param int $timestamp Unix timestamp.
+	 * @return string
+	 */
+	public static function when( $timestamp ) {
+		$format = trim( get_option( 'date_format', 'j M Y' ) . ' ' . get_option( 'time_format', 'H:i' ) );
+		return (string) wp_date( '' !== $format ? $format : 'j M Y H:i', (int) $timestamp );
+	}
+
+	/**
 	 * A "Settings" link on the Plugins screen row, pointing at Tools → Crawl
 	 * Cove. Without it, the row offers only Deactivate and a new user has to
 	 * find the setup steps in the Tools menu on their own (stranger walk,
@@ -402,7 +415,7 @@ class CrawlCove_Admin {
 								printf(
 									/* translators: 1: date and time, 2: WordPress username */
 									esc_html__( 'Last connected %1$s by %2$s', 'crawl-cove-connector' ),
-									'<strong>' . esc_html( wp_date( 'j M Y H:i', $conn['time'] ) ) . '</strong>',
+									'<strong>' . esc_html( self::when( $conn['time'] ) ) . '</strong>',
 									'<strong>' . esc_html( $conn['user'] ) . '</strong>'
 								);
 								?>
@@ -516,7 +529,7 @@ class CrawlCove_Admin {
 					<tbody>
 					<?php foreach ( $rows as $e ) : ?>
 						<tr>
-							<td><?php echo esc_html( wp_date( 'Y-m-d H:i', (int) $e['time'] ) ); ?></td>
+							<td><?php echo esc_html( self::when( (int) $e['time'] ) ); ?></td>
 							<td>
 								<?php if ( isset( $e['kind'] ) && 'site_setting' === $e['kind'] ) : ?>
 									<?php esc_html_e( 'Site setting', 'crawl-cove-connector' ); ?>

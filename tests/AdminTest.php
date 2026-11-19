@@ -98,4 +98,13 @@ class AdminTest extends TestCase {
 			$GLOBALS['cc_deny_manage_options'] = false;
 		}
 	}
+
+	public function test_times_use_the_site_date_and_time_format() {
+		update_option( 'date_format', 'F j, Y' );
+		update_option( 'time_format', 'g:i a' );
+		$this->assertSame( 'November 19, 2026 9:59 pm', CrawlCove_Admin::when( 1795125540 ) );
+		delete_option( 'date_format' );
+		delete_option( 'time_format' );
+		$this->assertSame( '19 Nov 2026 21:59', CrawlCove_Admin::when( 1795125540 ) );
+	}
 }

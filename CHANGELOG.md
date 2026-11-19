@@ -11,6 +11,9 @@
 - **A Settings link on the Plugins screen**, next to Deactivate, opens Tools →
   Crawl Cove. Before, a new user had to find the setup steps in the Tools menu
   on their own.
+- **Dates on the Tools page follow Settings → General.** The Status row and
+  the change log printed two different fixed formats; both now use the site's
+  date and time format.
 - **Compatibility matrix** (`docs/compatibility.md`, `.github/workflows/compat.yml`):
   the whole real-WordPress suite on PHP 7.4 to 8.5, and the suites that need
   no other plugin on WordPress 6.2. The harness now serves through
