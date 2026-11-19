@@ -2,7 +2,7 @@
 
 # Crawl Cove Connector: WordPress SEO Plugin for Bulk Title & Meta Description Fixes
 
-[![tests](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml/badge.svg)](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml) [![Latest release](https://img.shields.io/github/v/release/CrawlCove/wordpress-seo-connector)](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest) [![License: GPL v2+](https://img.shields.io/badge/license-GPLv2%2B-blue)](LICENSE)
+[![tests](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml/badge.svg)](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/tests.yml) [![PHP 7.4 to 8.5 on real WordPress](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/compat.yml/badge.svg)](docs/compatibility.md) [![Latest release](https://img.shields.io/github/v/release/CrawlCove/wordpress-seo-connector)](https://github.com/CrawlCove/wordpress-seo-connector/releases/latest) [![License: GPL v2+](https://img.shields.io/badge/license-GPLv2%2B-blue)](LICENSE)
 
 The official WordPress companion plugin for [Crawl Cove](https://crawlcove.com/?utm_source=wordpress-plugin&utm_medium=referral&utm_campaign=github-readme), the desktop SEO crawler. Push approved title and meta description fixes, and since 0.11 canonical, indexing, social tag, link and image alt text fixes, from your SEO audit straight into **Yoast SEO**, **Rank Math**, **SEOPress** or **All in One SEO (AIOSEO)**, with a full change log and one-click revert.
 
