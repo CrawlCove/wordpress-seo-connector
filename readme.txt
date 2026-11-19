@@ -102,6 +102,8 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 
 = 1.0.0 =
 * First WordPress.org release (0.11.4).
+* Feature: a Settings link on the Plugins screen.
+* Fix: TranslatePress translated URLs resolve on PHP 7.4.
 
 = 0.11.3 and 0.11.4 =
 * Security: an image alt push only edits real image tags, never tag-like text in a shortcode, attribute or script. One user can no longer flood other users' changes out of the log.
@@ -116,4 +118,4 @@ Deleting the plugin (Plugins → Delete) removes everything it stored, including
 * Fix: deleting the plugin removes its data from every site of a network, and the uploads .htaccess block it added.
 
 = 0.1.0 to 0.10.8 =
-* GitHub only: a push writes only the SEO fields; Revert refuses to overwrite a newer value unless you choose Revert anyway; Contributors and Authors see only their own posts and changes; adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles and descriptions (support varies by SEO plugin); Polylang, TranslatePress and WooCommerce support; cache purge after a change; Tools page status for Application Passwords and the app connection. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).
+* GitHub only: adapters for Yoast SEO, Rank Math, SEOPress and AIOSEO; homepage and category/tag archive titles; Polylang, TranslatePress and WooCommerce support; a revert that never overwrites a newer value. The full history is in [CHANGELOG.md](https://github.com/CrawlCove/wordpress-seo-connector/blob/main/CHANGELOG.md).

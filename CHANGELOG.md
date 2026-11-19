@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.0.0 (2026-11-19)
+
+- **First release on the WordPress.org plugin directory.** Same features as
+  0.11.4, renumbered to 1.0.0 for the directory listing. The desktop app
+  compares versions numerically, so 1.0.0 satisfies every 0.10.x and 0.11.x
+  minimum.
 - **Listing copy aimed at directory search.** The plugin is named "Crawl Cove
   Connector: Bulk Meta Description and SEO Title Fixes" (header and readme),
   the short description leads with bulk editing SEO titles and meta
@@ -24,13 +30,6 @@
   no other plugin on WordPress 6.2. The harness now serves through
   `tests/integration/router.php`, since PHP's built-in server before 8.5
   404s a missing `.txt` path instead of handing it to WordPress.
-
-## 1.0.0 (2026-11-16)
-
-- **First release on the WordPress.org plugin directory.** Same features as
-  0.11.4, renumbered to 1.0.0 for the directory listing. The desktop app
-  compares versions numerically, so 1.0.0 satisfies every 0.10.x and 0.11.x
-  minimum.
 - **Internal names carry a `crawlcove_` prefix** (WordPress.org asks for at
   least four letters): classes `CCC_*` are `CrawlCove_*`, constants
   `CRAWLCOVE_*`, options, the cache hooks (`crawlcove_after_post_write`,
