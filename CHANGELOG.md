@@ -17,7 +17,8 @@
   PHP 8. Found by the new PHP 7.4 compatibility job.
 - **Dates on the Tools page follow Settings → General.** The Status row and
   the change log printed two different fixed formats; both now use the site's
-  date and time format.
+  date and time format; the change log puts the date and the time on two
+  lines.
 - **Compatibility matrix** (`docs/compatibility.md`, `.github/workflows/compat.yml`):
   the whole real-WordPress suite on PHP 7.4 to 8.5, and the suites that need
   no other plugin on WordPress 6.2. The harness now serves through

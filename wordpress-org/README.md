@@ -16,7 +16,8 @@ repo and gated behind a human-only wordpress.org account.
   label and update counts) and
   `PLAYWRIGHT=<node_modules/playwright> node wordpress-org/screenshot-capture.js wordpress-org/screenshot-1.png`
   (1280-wide, full page). Last recaptured 16 Nov 2026 (review #377: Free plan
-  setup copy, no harness tells). Regenerate whenever the Tools page changes.
+  setup copy, no harness tells), again 19 Nov 2026 (dates in the site format,
+  date and time on two lines). Regenerate whenever the Tools page changes.
 - `screenshot-2.png`: the desktop app's Push to WordPress panel after a
   meta description push (app ticket #391, 17 Nov 2026). It is an app-side
   capture, so the app agent regenerates it; the site shown is a harness copy

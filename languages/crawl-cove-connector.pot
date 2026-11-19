@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-19T22:16:16+00:00\n"
+"POT-Creation-Date: 2026-11-19T22:36:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: crawl-cove-connector\n"
@@ -31,7 +31,7 @@ msgstr ""
 
 #. Author of the plugin
 #: crawl-cove-connector.php
-#: admin/class-ccc-admin.php:87
+#: admin/class-ccc-admin.php:103
 msgid "Crawl Cove"
 msgstr ""
 
@@ -40,351 +40,351 @@ msgstr ""
 msgid "https://crawlcove.com"
 msgstr ""
 
-#: admin/class-ccc-admin.php:75
+#: admin/class-ccc-admin.php:91
 msgid "Settings"
 msgstr ""
 
-#: admin/class-ccc-admin.php:86
-#: admin/class-ccc-admin.php:305
+#: admin/class-ccc-admin.php:102
+#: admin/class-ccc-admin.php:321
 msgid "Crawl Cove Connector"
 msgstr ""
 
-#: admin/class-ccc-admin.php:99
-#: admin/class-ccc-admin.php:135
+#: admin/class-ccc-admin.php:115
+#: admin/class-ccc-admin.php:151
 msgid "Not allowed."
 msgstr ""
 
-#: admin/class-ccc-admin.php:176
+#: admin/class-ccc-admin.php:192
 msgid "Title"
 msgstr ""
 
-#: admin/class-ccc-admin.php:177
+#: admin/class-ccc-admin.php:193
 msgid "Meta description"
 msgstr ""
 
-#: admin/class-ccc-admin.php:178
+#: admin/class-ccc-admin.php:194
 msgid "Canonical URL"
 msgstr ""
 
-#: admin/class-ccc-admin.php:179
+#: admin/class-ccc-admin.php:195
 msgid "Index or noindex"
 msgstr ""
 
-#: admin/class-ccc-admin.php:180
+#: admin/class-ccc-admin.php:196
 msgid "Open Graph title"
 msgstr ""
 
-#: admin/class-ccc-admin.php:181
+#: admin/class-ccc-admin.php:197
 msgid "Open Graph description"
 msgstr ""
 
-#: admin/class-ccc-admin.php:182
+#: admin/class-ccc-admin.php:198
 msgid "Open Graph image"
 msgstr ""
 
-#: admin/class-ccc-admin.php:183
+#: admin/class-ccc-admin.php:199
 msgid "Twitter title"
 msgstr ""
 
-#: admin/class-ccc-admin.php:184
+#: admin/class-ccc-admin.php:200
 msgid "Twitter description"
 msgstr ""
 
-#: admin/class-ccc-admin.php:185
+#: admin/class-ccc-admin.php:201
 msgid "Link"
 msgstr ""
 
-#: admin/class-ccc-admin.php:186
+#: admin/class-ccc-admin.php:202
 msgid "Image alt text"
 msgstr ""
 
-#: admin/class-ccc-admin.php:187
+#: admin/class-ccc-admin.php:203
 msgid "XML-RPC off"
 msgstr ""
 
-#: admin/class-ccc-admin.php:188
+#: admin/class-ccc-admin.php:204
 msgid "WordPress version hidden"
 msgstr ""
 
-#: admin/class-ccc-admin.php:189
+#: admin/class-ccc-admin.php:205
 msgid "Security headers"
 msgstr ""
 
-#: admin/class-ccc-admin.php:190
+#: admin/class-ccc-admin.php:206
 msgid "No upload folder listing"
 msgstr ""
 
-#: admin/class-ccc-admin.php:204
+#: admin/class-ccc-admin.php:220
 msgid "(link removed)"
 msgstr ""
 
-#: admin/class-ccc-admin.php:209
+#: admin/class-ccc-admin.php:225
 msgid "(nofollow removed)"
 msgstr ""
 
 #. translators: %s: the URL the links now point to
-#: admin/class-ccc-admin.php:212
+#: admin/class-ccc-admin.php:228
 #, php-format
 msgid "%s (nofollow removed)"
 msgstr ""
 
-#: admin/class-ccc-admin.php:226
+#: admin/class-ccc-admin.php:242
 msgid "Revert anyway (leaves it empty)"
 msgstr ""
 
 #. translators: %s: the value the revert would restore
-#: admin/class-ccc-admin.php:229
+#: admin/class-ccc-admin.php:245
 #, php-format
 msgid "Revert anyway to \"%s\""
 msgstr ""
 
-#: admin/class-ccc-admin.php:244
+#: admin/class-ccc-admin.php:260
 msgid "Not reverted: this title has been emptied since that push. Reverting would fill it in again."
 msgstr ""
 
-#: admin/class-ccc-admin.php:247
+#: admin/class-ccc-admin.php:263
 msgid "Not reverted: this description has been emptied since that push. Reverting would fill it in again."
 msgstr ""
 
-#: admin/class-ccc-admin.php:250
+#: admin/class-ccc-admin.php:266
 msgid "Not reverted: this image's alt text has been emptied since that push. Reverting would fill it in again."
 msgstr ""
 
 #. translators: %s: field name, such as "Open Graph title"
-#: admin/class-ccc-admin.php:253
+#: admin/class-ccc-admin.php:269
 #, php-format
 msgid "Not reverted: this %s has been emptied since that push. Reverting would fill it in again."
 msgstr ""
 
 #. translators: %s: the title currently stored in the SEO plugin
-#: admin/class-ccc-admin.php:257
+#: admin/class-ccc-admin.php:273
 #, php-format
 msgid "Not reverted: this title has changed since that push and now reads \"%s\". Reverting would overwrite it."
 msgstr ""
 
 #. translators: %s: the description currently stored in the SEO plugin
-#: admin/class-ccc-admin.php:261
+#: admin/class-ccc-admin.php:277
 #, php-format
 msgid "Not reverted: this description has changed since that push and now reads \"%s\". Reverting would overwrite it."
 msgstr ""
 
 #. translators: %s: the image's alt text as it is now
-#: admin/class-ccc-admin.php:265
+#: admin/class-ccc-admin.php:281
 #, php-format
 msgid "Not reverted: this image's alt text has changed since that push and now reads \"%s\". Reverting would overwrite it."
 msgstr ""
 
 #. translators: 1: field name, such as "Open Graph title"; 2: the value currently stored in the SEO plugin
-#: admin/class-ccc-admin.php:268
+#: admin/class-ccc-admin.php:284
 #, php-format
 msgid "Not reverted: this %1$s has changed since that push and now reads \"%2$s\". Reverting would overwrite it."
 msgstr ""
 
-#: admin/class-ccc-admin.php:308
+#: admin/class-ccc-admin.php:324
 msgid "IndexNow key removed. The key file is no longer served."
 msgstr ""
 
-#: admin/class-ccc-admin.php:310
+#: admin/class-ccc-admin.php:326
 msgid "Change reverted."
 msgstr ""
 
-#: admin/class-ccc-admin.php:313
+#: admin/class-ccc-admin.php:329
 msgid "Not reverted: the content holding these links has been edited since that change, and a removed link or nofollow, or a link that already pointed at the new URL, cannot be put back safely. Nothing was written."
 msgstr ""
 
-#: admin/class-ccc-admin.php:317
+#: admin/class-ccc-admin.php:333
 msgid "Not reverted: the content holding these links has been edited since that change. Reverting anyway changes the new URL back to the old one wherever it now appears."
 msgstr ""
 
-#: admin/class-ccc-admin.php:324
+#: admin/class-ccc-admin.php:340
 msgid "Revert anyway"
 msgstr ""
 
-#: admin/class-ccc-admin.php:329
+#: admin/class-ccc-admin.php:345
 msgid "Not reverted: the page showing this image has been edited since that push, so its old alt text cannot be put back into it safely. Nothing was written."
 msgstr ""
 
-#: admin/class-ccc-admin.php:365
+#: admin/class-ccc-admin.php:381
 msgid "Could not revert that change."
 msgstr ""
 
-#: admin/class-ccc-admin.php:368
+#: admin/class-ccc-admin.php:384
 msgid "Status"
 msgstr ""
 
-#: admin/class-ccc-admin.php:372
+#: admin/class-ccc-admin.php:388
 msgid "SEO plugin detected"
 msgstr ""
 
-#: admin/class-ccc-admin.php:378
+#: admin/class-ccc-admin.php:394
 msgid "None"
 msgstr ""
 
-#: admin/class-ccc-admin.php:379
+#: admin/class-ccc-admin.php:395
 msgid "(titles, descriptions, canonical, index and social fields need Yoast SEO, Rank Math, SEOPress or AIOSEO; link, image alt text and site hardening fixes work without one)"
 msgstr ""
 
-#: admin/class-ccc-admin.php:384
+#: admin/class-ccc-admin.php:400
 msgid "Application Passwords"
 msgstr ""
 
-#: admin/class-ccc-admin.php:387
+#: admin/class-ccc-admin.php:403
 msgid "On"
 msgstr ""
 
-#: admin/class-ccc-admin.php:389
+#: admin/class-ccc-admin.php:405
 msgid "Off"
 msgstr ""
 
-#: admin/class-ccc-admin.php:391
+#: admin/class-ccc-admin.php:407
 msgid "The desktop app cannot log in until they are on. WordPress itself allows them on this site, so a plugin or theme has switched them off."
 msgstr ""
 
-#: admin/class-ccc-admin.php:393
+#: admin/class-ccc-admin.php:409
 msgid "Wordfence does this by default: untick Firewall, All Firewall Options, Disable WordPress application passwords, then save. On another security plugin, look for a setting with a similar name."
 msgstr ""
 
-#: admin/class-ccc-admin.php:395
+#: admin/class-ccc-admin.php:411
 msgid "The desktop app cannot log in until they are on. WordPress only enables Application Passwords when the site is served over HTTPS (is_ssl()) or WP_ENVIRONMENT_TYPE is local."
 msgstr ""
 
-#: admin/class-ccc-admin.php:397
+#: admin/class-ccc-admin.php:413
 msgid "If a proxy or load balancer terminates HTTPS in front of WordPress, tell it so in wp-config.php:"
 msgstr ""
 
-#: admin/class-ccc-admin.php:400
+#: admin/class-ccc-admin.php:416
 msgid "Last resort for a trusted local or staging site:"
 msgstr ""
 
-#: admin/class-ccc-admin.php:407
+#: admin/class-ccc-admin.php:423
 msgid "REST endpoint"
 msgstr ""
 
-#: admin/class-ccc-admin.php:411
+#: admin/class-ccc-admin.php:427
 msgid "Desktop app"
 msgstr ""
 
 #. translators: 1: date and time, 2: WordPress username
-#: admin/class-ccc-admin.php:417
+#: admin/class-ccc-admin.php:433
 #, php-format
 msgid "Last connected %1$s by %2$s"
 msgstr ""
 
-#: admin/class-ccc-admin.php:423
+#: admin/class-ccc-admin.php:439
 msgid "Not connected yet."
 msgstr ""
 
-#: admin/class-ccc-admin.php:424
+#: admin/class-ccc-admin.php:440
 msgid "Nothing has called the REST API. Follow the steps below."
 msgstr ""
 
-#: admin/class-ccc-admin.php:430
+#: admin/class-ccc-admin.php:446
 msgid "IndexNow key"
 msgstr ""
 
 #. translators: %s: URL of the IndexNow key file
-#: admin/class-ccc-admin.php:435
+#: admin/class-ccc-admin.php:451
 #, php-format
 msgid "Served at %s, so the desktop app can ask Bing and other IndexNow search engines to recrawl a page once its fix is verified. This plugin contacts no one itself."
 msgstr ""
 
-#: admin/class-ccc-admin.php:442
+#: admin/class-ccc-admin.php:458
 msgid "Remove the key"
 msgstr ""
 
-#: admin/class-ccc-admin.php:450
+#: admin/class-ccc-admin.php:466
 msgid "Connect the Crawl Cove desktop app"
 msgstr ""
 
 #. translators: %s: link to the Crawl Cove download page
-#: admin/class-ccc-admin.php:456
+#: admin/class-ccc-admin.php:472
 #, php-format
 msgid "Install the <a href=\"%s\">Crawl Cove desktop app</a> on your computer, if you have not already. It is the crawler that finds the problems (titles and descriptions, links, image alt text, canonical, indexing and social tags); this plugin only applies the fixes you approve there. The app has a Free plan for crawling. Pushing fixes to WordPress needs a paid Crawl Cove plan or the free trial."
 msgstr ""
 
 #. translators: %s: link to the current user's profile page
-#: admin/class-ccc-admin.php:465
+#: admin/class-ccc-admin.php:481
 #, php-format
 msgid "Create an <a href=\"%s\">Application Password</a> for your user (Users → Profile → Application Passwords). Name it \"Crawl Cove\"."
 msgstr ""
 
-#: admin/class-ccc-admin.php:470
+#: admin/class-ccc-admin.php:486
 msgid "In Crawl Cove, open the client, then Connections, and fill in the WordPress card: site URL, username and application password."
 msgstr ""
 
-#: admin/class-ccc-admin.php:471
+#: admin/class-ccc-admin.php:487
 msgid "Crawl, review the suggested fixes, and push the approved ones. Every push lands in the log below and can be reverted."
 msgstr ""
 
-#: admin/class-ccc-admin.php:474
+#: admin/class-ccc-admin.php:490
 msgid "Change log"
 msgstr ""
 
 #. translators: %s: number of entries the change log keeps
-#: admin/class-ccc-admin.php:480
+#: admin/class-ccc-admin.php:496
 #, php-format
 msgid "The log keeps the most recent %s changes. It is full, so each new push drops the oldest entries (already-reverted ones first); dropped entries can no longer be reverted from here."
 msgstr ""
 
-#: admin/class-ccc-admin.php:487
+#: admin/class-ccc-admin.php:503
 msgid "No changes pushed yet."
 msgstr ""
 
 #. translators: 1: first row number shown, 2: last row number shown, 3: total number of logged changes
-#: admin/class-ccc-admin.php:494
+#: admin/class-ccc-admin.php:510
 #, php-format
 msgid "Showing changes %1$s to %2$s of %3$s."
 msgstr ""
 
-#: admin/class-ccc-admin.php:520
+#: admin/class-ccc-admin.php:536
 msgid "When"
 msgstr ""
 
-#: admin/class-ccc-admin.php:521
+#: admin/class-ccc-admin.php:537
 msgid "Post"
 msgstr ""
 
-#: admin/class-ccc-admin.php:522
+#: admin/class-ccc-admin.php:538
 msgid "Field"
 msgstr ""
 
-#: admin/class-ccc-admin.php:523
+#: admin/class-ccc-admin.php:539
 msgid "Before"
 msgstr ""
 
-#: admin/class-ccc-admin.php:524
+#: admin/class-ccc-admin.php:540
 msgid "After"
 msgstr ""
 
-#: admin/class-ccc-admin.php:525
+#: admin/class-ccc-admin.php:541
 msgid "By"
 msgstr ""
 
-#: admin/class-ccc-admin.php:535
+#: admin/class-ccc-admin.php:552
 msgid "Site setting"
 msgstr ""
 
 #. translators: %d: number of posts, Elementor layouts and menu items the change edited
-#: admin/class-ccc-admin.php:547
+#: admin/class-ccc-admin.php:564
 #, php-format
 msgid "Links in %d place"
 msgid_plural "Links in %d places"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/class-ccc-admin.php:550
+#: admin/class-ccc-admin.php:567
 msgid "Homepage"
 msgstr ""
 
-#: admin/class-ccc-admin.php:573
+#: admin/class-ccc-admin.php:590
 msgid "replaced by a later change"
 msgstr ""
 
-#: admin/class-ccc-admin.php:580
+#: admin/class-ccc-admin.php:597
 msgid "Revert"
 msgstr ""
 
-#: admin/class-ccc-admin.php:583
+#: admin/class-ccc-admin.php:600
 msgid "reverted"
 msgstr ""
 
@@ -430,7 +430,7 @@ msgid "The value has changed since this change was made, so reverting it would o
 msgstr ""
 
 #: includes/class-ccc-image-alt.php:36
-#: includes/class-ccc-service.php:373
+#: includes/class-ccc-service.php:377
 #: includes/class-ccc-url-replacer.php:56
 msgid "Each change must be an object."
 msgstr ""
@@ -454,14 +454,14 @@ msgid "A change needs the url of the page that shows the image."
 msgstr ""
 
 #: includes/class-ccc-image-alt.php:277
-#: includes/class-ccc-service.php:584
+#: includes/class-ccc-service.php:588
 #: includes/class-ccc-url-replacer.php:572
 msgid "changes must be a non-empty array."
 msgstr ""
 
 #. translators: %d: maximum number of changes allowed per request
 #: includes/class-ccc-image-alt.php:281
-#: includes/class-ccc-service.php:590
+#: includes/class-ccc-service.php:594
 #: includes/class-ccc-url-replacer.php:576
 #, php-format
 msgid "At most %d changes per request."
@@ -473,7 +473,7 @@ msgstr ""
 
 #: includes/class-ccc-image-alt.php:323
 #: includes/class-ccc-rest.php:416
-#: includes/class-ccc-service.php:647
+#: includes/class-ccc-service.php:651
 #: includes/class-ccc-url-replacer.php:113
 msgid "This user may not edit that target."
 msgstr ""
@@ -525,102 +525,102 @@ msgid "URL does not map to a post, page or taxonomy archive."
 msgstr ""
 
 #. translators: %s: Polylang language slug, e.g. "fr"
-#: includes/class-ccc-service.php:321
+#: includes/class-ccc-service.php:325
 #, php-format
 msgid "Homepage (latest posts, %s)"
 msgstr ""
 
-#: includes/class-ccc-service.php:322
+#: includes/class-ccc-service.php:326
 msgid "Homepage (latest posts)"
 msgstr ""
 
-#: includes/class-ccc-service.php:385
+#: includes/class-ccc-service.php:389
 msgid "This site has a static front page. Pass that page's own post_id instead of 0."
 msgstr ""
 
-#: includes/class-ccc-service.php:390
-#: includes/class-ccc-service.php:403
+#: includes/class-ccc-service.php:394
+#: includes/class-ccc-service.php:407
 msgid "No term with that id."
 msgstr ""
 
-#: includes/class-ccc-service.php:410
+#: includes/class-ccc-service.php:414
 #: includes/class-ccc-url-replacer.php:99
 msgid "No post with that id."
 msgstr ""
 
-#: includes/class-ccc-service.php:418
+#: includes/class-ccc-service.php:422
 msgid "A change needs a url or a post_id."
 msgstr ""
 
-#: includes/class-ccc-service.php:423
+#: includes/class-ccc-service.php:427
 msgid "lang must be a string."
 msgstr ""
 
-#: includes/class-ccc-service.php:430
+#: includes/class-ccc-service.php:434
 msgid "lang is only meaningful for the homepage (post_id 0)."
 msgstr ""
 
-#: includes/class-ccc-service.php:438
+#: includes/class-ccc-service.php:442
 msgid "This site has no supported multilingual plugin active."
 msgstr ""
 
-#: includes/class-ccc-service.php:441
+#: includes/class-ccc-service.php:445
 msgid "No active language with that code."
 msgstr ""
 
 #. translators: %s: field name, either "title" or "description"
 #. translators: %s: field name
-#: includes/class-ccc-service.php:464
-#: includes/class-ccc-service.php:525
+#: includes/class-ccc-service.php:468
+#: includes/class-ccc-service.php:529
 #, php-format
 msgid "%s must be a string."
 msgstr ""
 
 #. translators: 1: field name, either "title" or "description"; 2: max length allowed
 #. translators: 1: field name; 2: max length allowed
-#: includes/class-ccc-service.php:471
-#: includes/class-ccc-service.php:541
+#: includes/class-ccc-service.php:475
+#: includes/class-ccc-service.php:545
 #, php-format
 msgid "%1$s is longer than %2$d characters."
 msgstr ""
 
-#: includes/class-ccc-service.php:483
+#: includes/class-ccc-service.php:487
 msgid "Only the title and description can be set on the homepage or an archive page."
 msgstr ""
 
-#: includes/class-ccc-service.php:488
+#: includes/class-ccc-service.php:492
 msgid "A change needs at least one field to set (title, description, canonical, robots_index or a social field)."
 msgstr ""
 
-#: includes/class-ccc-service.php:518
+#: includes/class-ccc-service.php:522
 msgid "robots_index must be true, false or null."
 msgstr ""
 
 #. translators: %s: field name
-#: includes/class-ccc-service.php:532
+#: includes/class-ccc-service.php:536
 #, php-format
 msgid "%s must be an absolute http or https URL, or empty to clear it."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:618
+#: includes/class-ccc-service.php:622
 #, php-format
 msgid "%s does not support homepage title/description changes yet."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:628
+#: includes/class-ccc-service.php:632
 #, php-format
 msgid "%s does not support per-language homepage title/description changes yet."
 msgstr ""
 
 #. translators: %s: active SEO plugin's display name
-#: includes/class-ccc-service.php:638
+#: includes/class-ccc-service.php:642
 #, php-format
 msgid "%s does not support taxonomy term title/description changes yet."
 msgstr ""
 
-#: includes/class-ccc-service.php:665
+#: includes/class-ccc-service.php:669
 msgid "This SEO plugin's homepage title has no automatic fallback, so clearing it would leave a blank browser-tab title. Set a new title instead, or clear it from the SEO plugin's own settings directly."
 msgstr ""
 

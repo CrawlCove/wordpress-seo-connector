@@ -106,5 +106,6 @@ class AdminTest extends TestCase {
 		delete_option( 'date_format' );
 		delete_option( 'time_format' );
 		$this->assertSame( '19 Nov 2026 21:59', CrawlCove_Admin::when( 1795125540 ) );
+		$this->assertSame( array( '19 Nov 2026', '21:59' ), CrawlCove_Admin::when_parts( 1795125540 ) );
 	}
 }

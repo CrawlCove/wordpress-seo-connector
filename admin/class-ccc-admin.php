@@ -50,8 +50,24 @@ class CrawlCove_Admin {
 	 * @return string
 	 */
 	public static function when( $timestamp ) {
-		$format = trim( get_option( 'date_format', 'j M Y' ) . ' ' . get_option( 'time_format', 'H:i' ) );
-		return (string) wp_date( '' !== $format ? $format : 'j M Y H:i', (int) $timestamp );
+		return implode( ' ', self::when_parts( $timestamp ) );
+	}
+
+	/**
+	 * The same timestamp as [date, time], for the change log, which prints
+	 * them on two lines so a long date format ("November 19, 2026") never
+	 * breaks in the middle of the date.
+	 *
+	 * @param int $timestamp Unix timestamp.
+	 * @return string[] Date, then time.
+	 */
+	public static function when_parts( $timestamp ) {
+		$date = trim( (string) get_option( 'date_format', '' ) );
+		$time = trim( (string) get_option( 'time_format', '' ) );
+		return array(
+			(string) wp_date( '' !== $date ? $date : 'j M Y', (int) $timestamp ),
+			(string) wp_date( '' !== $time ? $time : 'H:i', (int) $timestamp ),
+		);
 	}
 
 	/**
@@ -529,7 +545,8 @@ class CrawlCove_Admin {
 					<tbody>
 					<?php foreach ( $rows as $e ) : ?>
 						<tr>
-							<td><?php echo esc_html( self::when( (int) $e['time'] ) ); ?></td>
+							<?php $crawlcove_when = self::when_parts( (int) $e['time'] ); ?>
+							<td><span style="white-space:nowrap"><?php echo esc_html( $crawlcove_when[0] ); ?></span><br><?php echo esc_html( $crawlcove_when[1] ); ?></td>
 							<td>
 								<?php if ( isset( $e['kind'] ) && 'site_setting' === $e['kind'] ) : ?>
 									<?php esc_html_e( 'Site setting', 'crawl-cove-connector' ); ?>
