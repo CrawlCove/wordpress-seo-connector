@@ -38,15 +38,23 @@ refused with a reason. The Tools page says the same.
 | WordPress | What ran | Result |
 |---|---|---|
 | 7.1.5 (current) | everything above | pass |
-| 6.2 (`Requires at least`) | `site-settings`, `indexnow`, `migrate` (current SEO plugins no longer install on 6.2) | pass |
+| 6.2 (`Requires at least`), on PHP 7.4 | `site-settings`, `indexnow`, `migrate` (current SEO plugins no longer install on 6.2) | pass (108 checks) |
 
 ## PHP
 
 | PHP | How | Result |
 |---|---|---|
-| 7.4 (`Requires PHP`) to 8.2, 8.4 | the full suite in CI, `.github/workflows/compat.yml` | see the latest [compat run](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/compat.yml) |
+| 7.4 (`Requires PHP`) | the full suite in CI | pass (1,202 checks) |
+| 8.0, 8.1, 8.2 | the full suite in CI | pass (1,202 checks each) |
 | 8.3 | the full suite, locally and in CI | pass (1,202 checks) |
+| 8.4 | the full suite in CI | pass (1,202 checks) |
 | 8.5 | the full suite, locally and in CI | pass (1,202 checks) |
+
+The CI matrix is `.github/workflows/compat.yml`: it runs on every code push
+and every Monday, so a new WordPress or SEO plugin release is tested within a
+week. [Latest runs](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/compat.yml).
+Its first run found a real PHP 7.4 bug (TranslatePress translated URLs did not
+resolve), fixed the same night.
 
 Every push also runs PHPCompatibility for PHP 7.4 and later (`composer
 phpcompat`), so syntax or functions newer than 7.4 fail the build before any
