@@ -154,6 +154,14 @@ check "Yoast SEO"  "wordpress-seo"          "yoast.zip"     "wordpress-seo/wp-se
 check "SEOPress"   "wp-seopress"            "seopress.zip"  "wp-seopress/seopress.php"
 check "AIOSEO"     "all-in-one-seo-pack"    "aioseo.zip"    "all-in-one-seo-pack/all_in_one_seo_pack.php"
 check "Elementor"  "elementor"              "elementor.zip" "elementor/elementor.php"
+# The scenario suites' plugins and the SQLite driver every harness site runs
+# on drift the same way (the driver was 3.0.2 here with 3.1.3 current on 19 Nov
+# 2026), and docs/compatibility.md quotes these versions.
+check "SQLite driver"  "sqlite-database-integration" "sqlite.zip"         "sqlite-database-integration/load.php"
+check "WooCommerce"    "woocommerce"                 "woocommerce.zip"    "woocommerce/woocommerce.php"
+check "Polylang"       "polylang"                    "polylang.zip"       "polylang/polylang.php"
+check "TranslatePress" "translatepress-multilingual" "translatepress.zip" "translatepress-multilingual/index.php"
+check "WP Super Cache" "wp-super-cache"              "wp-super-cache.zip" "wp-super-cache/wp-cache.php"
 
 if [[ "$STALE" -eq 1 ]]; then
   log "one or more caches are stale. To refresh, e.g.:"
@@ -162,5 +170,5 @@ if [[ "$STALE" -eq 1 ]]; then
   log "then re-run tests/integration/run.sh --adapter=<name> and check for regressions."
   exit 1
 fi
-log "cached WordPress core and all SEO plugin builds match current wordpress.org stable"
+log "cached WordPress core and every cached plugin build match current wordpress.org stable"
 exit 0

@@ -232,7 +232,7 @@ hasnt "notice: an edited plain replace is not called unrecoverable" "$N" "cannot
 
 echo "-- Tools page change log --"
 # Each row as "field|post|before|after", rendered by the real admin page.
-TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>[^<]*</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( $m[2][ $i ] ), "|", trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( $c ) ) ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
+TOOLS_ROWS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $h = substr( $h, strpos( $h, "<tbody>", strpos( $h, "widefat striped\">" ) ) ); preg_match_all( "#<tr>\s*<td>.*?</td>\s*<td>(.*?)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>#s", $h, $m ); foreach ( $m[1] as $i => $c ) { echo trim( $m[2][ $i ] ), "|", trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( $c ) ) ), "|", trim( $m[3][ $i ] ), "|", trim( $m[4][ $i ] ), "\n"; }')"
 has "tools: a page-scope links row names its page" "$TOOLS_ROWS" "Link|Links page"
 has "tools: a site-wide links row counts its places" "$TOOLS_ROWS" "Link|Links in "
 has "tools: the nofollow-strip row says what changed" "$TOOLS_ROWS" "|$OLD|(nofollow removed)"

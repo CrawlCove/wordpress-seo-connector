@@ -26,11 +26,11 @@ refused with a reason. The Tools page says the same.
 | Setup | Version tested | Suite | Checks | Result |
 |---|---|---|---|---|
 | WordPress Multisite (subdirectory) | | `multisite-checks.sh` | 7 | pass |
-| WooCommerce products and categories | 11.1.2 | `woocommerce-checks.sh` | 11 | pass |
-| Polylang (Rank Math, Yoast homepage) | 3.8.9 | `polylang-checks.sh`, `polylang-yoast-home-checks.sh` | 39 | pass |
-| TranslatePress | 3.3.6 | `translatepress-checks.sh` | 9 | pass |
+| WooCommerce products and categories | 11.3.1 | `woocommerce-checks.sh` | 11 | pass |
+| Polylang (Rank Math, Yoast homepage) | 3.9.2 | `polylang-checks.sh`, `polylang-yoast-home-checks.sh` | 39 | pass |
+| TranslatePress | 3.4 | `translatepress-checks.sh` | 9 | pass |
 | Elementor layouts (links, alt text) | 4.4.1 | `replace-urls-checks.sh`, `image-alt-checks.sh` | 102 | pass |
-| WP Super Cache purge | 3.1.3 | `caching-checks.sh` | 16 | pass |
+| WP Super Cache purge | 3.1.5 | `caching-checks.sh` | 16 | pass |
 | Upgrade from 1.0.0 (`ccc_` to `crawlcove_` options) | | `migrate-checks.sh` | 15 | pass |
 
 ## WordPress
