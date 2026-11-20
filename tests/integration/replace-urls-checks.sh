@@ -216,7 +216,7 @@ same "rel_strip: nofollow gone, noopener and the other link kept, href stays rel
 RS_ID="$(echo "$RESP_BODY" | jq -r '.[0].change_id')"
 
 echo "-- Tools page: Revert anyway only where a forced revert can work --"
-notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*Change log'; }
+notice() { "${WP[@]}" eval "\$_GET['crawlcove_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*Change log'; }
 put_content "$P4" "get_post( $P4 )->post_content . '<p>edited</p>'"
 N="$(notice "$RS_ID")"
 has   "notice: an edited nofollow strip says it cannot be put back" "$N" "cannot be put back safely"

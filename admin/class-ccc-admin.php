@@ -36,8 +36,8 @@ class CrawlCove_Admin {
 	 */
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_post_ccc_revert', array( __CLASS__, 'handle_revert' ) );
-		add_action( 'admin_post_ccc_indexnow_remove', array( __CLASS__, 'handle_indexnow_remove' ) );
+		add_action( 'admin_post_crawlcove_revert', array( __CLASS__, 'handle_revert' ) );
+		add_action( 'admin_post_crawlcove_indexnow_remove', array( __CLASS__, 'handle_indexnow_remove' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( CRAWLCOVE_PLUGIN_FILE ), array( __CLASS__, 'action_links' ) );
 	}
 
@@ -132,7 +132,7 @@ class CrawlCove_Admin {
 			add_query_arg(
 				array(
 					'page'       => 'crawl-cove-connector',
-					'ccc_notice' => $notice,
+					'crawlcove_notice' => $notice,
 					'change_id'  => $change_id,
 					'paged'      => $paged,
 				),
@@ -156,7 +156,7 @@ class CrawlCove_Admin {
 			add_query_arg(
 				array(
 					'page'       => 'crawl-cove-connector',
-					'ccc_notice' => is_wp_error( $done ) ? 'error' : 'indexnow_removed',
+					'crawlcove_notice' => is_wp_error( $done ) ? 'error' : 'indexnow_removed',
 				),
 				admin_url( 'tools.php' )
 			)
@@ -295,7 +295,7 @@ class CrawlCove_Admin {
 		// Read-only display flags from our own redirect / pagination links
 		// (handle_revert() already nonce-checked the action that set the
 		// notice); nothing here changes state.
-		$notice = isset( $_GET['ccc_notice'] ) ? sanitize_key( wp_unslash( $_GET['ccc_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$notice = isset( $_GET['crawlcove_notice'] ) ? sanitize_key( wp_unslash( $_GET['crawlcove_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$paged  = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$failed = isset( $_GET['change_id'] ) ? CrawlCove_Change_Log::find( (int) $_GET['change_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 

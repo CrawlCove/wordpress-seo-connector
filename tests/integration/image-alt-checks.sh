@@ -170,7 +170,7 @@ has "decorative: the img keeps alt=\"\"" "$(img_tags "$P1")" 'alt=""'
 "${WP[@]}" post meta update "$IMG_ID" _wp_attachment_image_alt "Typed later" >/dev/null
 req POST /revert "$EDITOR" "{\"change_id\":$CID}"
 check "drift: refused with the current value" 409 "$RESP_HTTP" '[.code, .data.current]' '["ccc_value_changed","Typed later"]' "$RESP_BODY"
-notice() { "${WP[@]}" eval "\$_GET['ccc_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*</form>\|notice-warning[^/]*</p>'; }
+notice() { "${WP[@]}" eval "\$_GET['crawlcove_notice'] = 'changed'; \$_GET['change_id'] = '$1'; require_once WP_PLUGIN_DIR . '/crawl-cove-connector/admin/class-ccc-admin.php'; wp_set_current_user( 1 ); CrawlCove_Admin::render();" 2>/dev/null | tr '\n\t' '  ' | grep -o 'notice-warning.*</form>\|notice-warning[^/]*</p>'; }
 N="$(notice "$CID")"
 has   "tools notice: the alt text drift is explained" "$N" "alt text has changed since that push and now reads &quot;Typed later&quot;"
 has   "tools notice: offers Revert anyway" "$N" "Revert anyway to &quot;Old&quot;"

@@ -100,7 +100,7 @@ not_served() {
 # The Tools page Status table as text, rendered by the real admin page.
 tools_status() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; require_once ABSPATH . "wp-admin/includes/template.php"; wp_set_current_user( 1 ); ob_start(); CrawlCove_Admin::render(); $h = ob_get_clean(); $s = strpos( $h, "SEO plugin detected" ); echo trim( preg_replace( "/\s+/", " ", wp_strip_all_tags( substr( $h, $s, strpos( $h, "</table>", $s ) - $s ) ) ) );'; }
 # Press the row's Remove button as the form would: admin, real nonce, redirect captured.
-press_remove() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); $_POST = array( "action" => "crawlcove_indexnow_remove", "_wpnonce" => wp_create_nonce( "crawlcove_indexnow_remove" ) ); $_REQUEST = $_POST; add_filter( "wp_redirect", function ( $l ) { throw new Exception( $l ); } ); try { CrawlCove_Admin::handle_indexnow_remove(); } catch ( Exception $e ) { echo $e->getMessage(); }'; }
+press_remove() { "${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); $_POST = array( "action" => "crawlcove_indexnow_remove", "_wpnonce" => wp_create_nonce( "crawlcove_indexnow_remove" ) ); $_REQUEST = $_POST; add_filter( "wp_redirect", function ( $l ) { throw new Exception( $l ); } ); try { CrawlCove_Admin::init(); do_action( "admin_post_" . sanitize_key( $_REQUEST["action"] ) ); echo "no handler"; } catch ( Exception $e ) { echo $e->getMessage(); }'; }
 
 KEY="ccc0a1b2c3d4e5f6-test"
 KEY2="second-key-0123456789"
@@ -182,7 +182,7 @@ TS="$(tools_status)"
 has "tools: IndexNow row names where the key is served" "$TS" "IndexNow key Served at $URL/$KEY.txt"
 has "tools: the row says the plugin contacts no one" "$TS" "This plugin contacts no one itself"
 LOC="$(press_remove)"
-has "tools: Remove redirects back with the notice" "$LOC" "ccc_notice=indexnow_removed"
+has "tools: Remove redirects back with the notice" "$LOC" "crawlcove_notice=indexnow_removed"
 not_served "tools: after Remove the key file is gone" "$KEY"
 hasnt "tools: the row is gone after Remove" "$(tools_status)" "IndexNow key"
 NONCELESS="$("${WP[@]}" eval 'require_once WP_PLUGIN_DIR . "/crawl-cove-connector/admin/class-ccc-admin.php"; wp_set_current_user( 1 ); update_option( "crawlcove_indexnow_key", "nonce-test-key-1" ); $_POST = $_REQUEST = array( "action" => "crawlcove_indexnow_remove" ); add_filter( "wp_die_handler", function () { return function () { echo "died"; exit; }; } ); CrawlCove_Admin::handle_indexnow_remove();' 2>&1)"

@@ -90,6 +90,26 @@ class AdminTest extends TestCase {
 		$this->assertSame( '<a href="#">Deactivate</a>', $links['deactivate'] );
 	}
 
+	/**
+	 * Every form the Tools page posts to admin-post.php must reach a handler:
+	 * admin-post.php fires admin_post_{action} and does nothing when no one is
+	 * hooked. 1.0.0 shipped forms posting crawlcove_* to hooks still named ccc_*,
+	 * so Revert and Remove key did nothing at all.
+	 */
+	public function test_every_admin_post_form_action_has_a_handler() {
+		$GLOBALS['cc_hooks'] = array();
+		CrawlCove_Admin::init();
+		$src = file_get_contents( dirname( __DIR__ ) . '/admin/class-ccc-admin.php' );
+		preg_match_all( '/name="action" value="([a-z0-9_]+)"/', $src, $m );
+		$actions = array_unique( $m[1] );
+		$this->assertNotEmpty( $actions );
+		foreach ( $actions as $action ) {
+			$this->assertArrayHasKey( 'admin_post_' . $action, $GLOBALS['cc_hooks'], $action );
+			$this->assertTrue( is_callable( $GLOBALS['cc_hooks'][ 'admin_post_' . $action ][0] ), $action );
+		}
+		$this->assertSame( array( 'crawlcove_indexnow_remove', 'crawlcove_revert' ), array_values( array_intersect( array( 'crawlcove_indexnow_remove', 'crawlcove_revert' ), $actions ) ) );
+	}
+
 	public function test_plugins_row_has_no_settings_link_for_a_user_who_cannot_open_the_page() {
 		$GLOBALS['cc_deny_manage_options'] = true;
 		try {
