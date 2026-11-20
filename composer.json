@@ -18,7 +18,10 @@
     },
     "scripts": {
         "test": "phpunit --colors=always",
-        "lint": "find . -path ./vendor -prune -o -path ./build -prune -o -path './tests/integration' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l",
+        "lint": [
+            "find . -path ./vendor -prune -o -path ./build -prune -o -path './tests/integration' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l",
+            "@phpcs"
+        ],
         "phpcs": "phpcs",
         "phpcompat": "phpcs --standard=phpcompatibility.xml.dist ."
     },
