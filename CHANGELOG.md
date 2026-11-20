@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.0.1 (2026-11-20)
+
+- **Fix: Revert and Remove key on Tools → Crawl Cove do something again.** The
+  1.0.0 prefix rename gave both forms `crawlcove_` action names but left their
+  handlers hooked under the old `ccc_` names, so WordPress answered either
+  button with a blank 400 page and changed nothing. Reverting from the desktop
+  app was not affected. The page's notice query argument is now
+  `crawlcove_notice`.
+
 ## 1.0.0 (2026-11-19)
 
 - **First release on the WordPress.org plugin directory.** Same features as

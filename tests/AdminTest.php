@@ -92,8 +92,8 @@ class AdminTest extends TestCase {
 
 	/**
 	 * Every form the Tools page posts to admin-post.php must reach a handler:
-	 * admin-post.php fires admin_post_{action} and does nothing when no one is
-	 * hooked. 1.0.0 shipped forms posting crawlcove_* to hooks still named ccc_*,
+	 * admin-post.php fires admin_post_{action}, and when no one is
+	 * hooked it answers a blank 400. 1.0.0 shipped forms posting crawlcove_* to hooks still named ccc_*,
 	 * so Revert and Remove key did nothing at all.
 	 */
 	public function test_every_admin_post_form_action_has_a_handler() {

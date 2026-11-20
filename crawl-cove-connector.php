@@ -4,7 +4,7 @@
  * Plugin URI:  https://crawlcove.com/wordpress-plugin
  * Update URI:  https://crawlcove.com/wordpress-plugin
  * Description: Receive approved SEO fixes from the Crawl Cove desktop crawler and apply them to your site: titles, descriptions, canonical, robots and social fields in Yoast SEO, Rank Math, SEOPress or AIOSEO, plus link and image alt text fixes, with a full change log and one-click revert.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Author:      Crawl Cove
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CRAWLCOVE_VERSION', '1.0.0' );
+define( 'CRAWLCOVE_VERSION', '1.0.1' );
 define( 'CRAWLCOVE_PLUGIN_FILE', __FILE__ );
 define( 'CRAWLCOVE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 

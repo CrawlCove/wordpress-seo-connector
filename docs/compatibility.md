@@ -5,7 +5,7 @@ real WordPress site built by `tests/integration/` (SQLite, `php -S`), with the
 real plugin installed, pushed to over the REST API and read back. Nothing here
 is assumed from a plugin's documentation.
 
-Last full run: 19 Nov 2026, connector main after 1.0.0.
+Last full run: 20 Nov 2026, connector 1.0.1.
 
 ## SEO plugins
 
