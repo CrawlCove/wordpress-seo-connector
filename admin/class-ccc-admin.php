@@ -131,10 +131,10 @@ class CrawlCove_Admin {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'       => 'crawl-cove-connector',
+					'page'             => 'crawl-cove-connector',
 					'crawlcove_notice' => $notice,
-					'change_id'  => $change_id,
-					'paged'      => $paged,
+					'change_id'        => $change_id,
+					'paged'            => $paged,
 				),
 				admin_url( 'tools.php' )
 			)
@@ -155,7 +155,7 @@ class CrawlCove_Admin {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'       => 'crawl-cove-connector',
+					'page'             => 'crawl-cove-connector',
 					'crawlcove_notice' => is_wp_error( $done ) ? 'error' : 'indexnow_removed',
 				),
 				admin_url( 'tools.php' )
