@@ -14,7 +14,7 @@ Last full run: 20 Nov 2026, connector 1.0.1.
 | Yoast SEO | 28.9 | `run.sh --adapter=yoast` | 231 | pass |
 | Rank Math | 1.0.282 | `run.sh --adapter=rankmath` | 231 | pass |
 | SEOPress | 10.4 | `run.sh --adapter=seopress` | 229 | pass |
-| All in One SEO (AIOSEO) | 5.0.5 | `run.sh --adapter=aioseo` | 219 | pass |
+| All in One SEO (AIOSEO) | 5.0.5.1 | `run.sh --adapter=aioseo` | 219 | pass |
 | No SEO plugin | | `replace-urls`, `image-alt`, `site-settings`, `indexnow` | 195 | pass |
 
 With no SEO plugin, `/status` lists only the fix kinds that still work (links,

@@ -39,6 +39,12 @@ cached_version() {
   unzip -p "$CACHE/$1" "$2" 2>/dev/null | grep -m1 -oP '(?<=Version:)\s*\K[0-9][0-9A-Za-z.\-]*'
 }
 
+strip_zeros() {
+  local v="$1"
+  while [[ "$v" == *.0 ]]; do v="${v%.0}"; done
+  printf '%s' "$v"
+}
+
 STALE=0
 
 check() {
@@ -58,7 +64,9 @@ check() {
   # (e.g. 1.0.279 vs 1.0.279.1). A "-" suffix (28.6-RC4 vs 28.6) is a
   # pre-release and must NOT match here — that prefix match is exactly how
   # a cached RC read as "matches current stable" for a week (29 Sept 2026).
-  if [[ "$have" == "$want" || "$have" == "$want".* || "$want" == "$have".* ]]; then
+  # 1.2 and 1.2.0 are one release, but 5.0.5 and 5.0.5.1 are not: compare with
+  # trailing .0 segments removed, never by prefix (a prefix match hid AIOSEO 5.0.5.1).
+  if [[ "$(strip_zeros "$have")" == "$(strip_zeros "$want")" ]]; then
     log "$label: cache matches current stable ($have)"
     return
   fi
