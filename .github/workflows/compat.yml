@@ -58,10 +58,20 @@ jobs:
       - &php
         name: PHP ${{ matrix.php }}
         run: |
-          sudo add-apt-repository -y ppa:ondrej/php >/dev/null
-          sudo apt-get update -q >/dev/null
           v='${{ matrix.php }}'
-          sudo apt-get install -y -q "php$v-cli" "php$v-sqlite3" "php$v-mbstring" "php$v-xml" "php$v-curl" "php$v-zip" "php$v-gd" >/dev/null
+          # The PPA answers 503 now and then (23 Nov 2026: 7 of 8 jobs red);
+          # apt-get update only warns on that, so the install is what fails.
+          # Retry the pair a few times before calling the run red.
+          for try in 1 2 3 4; do
+            if sudo add-apt-repository -y ppa:ondrej/php >/dev/null \
+              && sudo apt-get update -q >/dev/null \
+              && sudo apt-get install -y -q "php$v-cli" "php$v-sqlite3" "php$v-mbstring" "php$v-xml" "php$v-curl" "php$v-zip" "php$v-gd" >/dev/null; then
+              break
+            fi
+            [ "$try" = 4 ] && exit 1
+            echo "PHP $v install failed (try $try), retrying in $((try * 30))s"
+            sleep $((try * 30))
+          done
           sudo update-alternatives --set php "/usr/bin/php$v"
           php -v && php -m | grep -E "^(gd|pdo_sqlite|mbstring)$"
       - uses: actions/download-artifact@v4
