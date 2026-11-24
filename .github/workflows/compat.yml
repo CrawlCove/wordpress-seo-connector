@@ -62,6 +62,16 @@ jobs:
         run: |
           # git must exist before checkout, or checkout falls back to a
           # history-less tarball and migrate-checks.sh cannot find 1.0.0.
+          # php:7.4/8.0 are Debian 11 (bullseye), which deb.debian.org is retiring:
+          # on 24 Nov 2026 its security index listed .debs that 404. archive.debian.org
+          # holds the same packages.
+          . /etc/os-release
+          if [ "$VERSION_CODENAME" = bullseye ]; then
+            printf '%s\n' "deb http://archive.debian.org/debian bullseye main" \
+              "deb http://archive.debian.org/debian bullseye-updates main" \
+              "deb http://archive.debian.org/debian-security bullseye-security main" > /etc/apt/sources.list
+            rm -f /etc/apt/sources.list.d/*
+          fi
           apt-get update -q >/dev/null
           apt-get install -y -q --no-install-recommends git unzip zip jq curl python3 procps \
             libpng-dev libjpeg-dev libzip-dev >/dev/null
