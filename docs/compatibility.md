@@ -52,7 +52,7 @@ refused with a reason. The Tools page says the same.
 
 The CI matrix is `.github/workflows/compat.yml`: it runs on every code push
 and every Monday, so a new WordPress or SEO plugin release is tested within a
-week. [Latest runs](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/compat.yml).
+week. Each PHP version runs in the official `php:<version>-cli` Docker image. [Latest runs](https://github.com/CrawlCove/wordpress-seo-connector/actions/workflows/compat.yml).
 Its first run found a real PHP 7.4 bug (TranslatePress translated URLs did not
 resolve), fixed the same night.
 
