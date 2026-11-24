@@ -13,7 +13,7 @@ name: compat
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'wp/compat-*'] # TEMP branch trigger
     paths-ignore: ['**.md', 'wordpress-org/**']
   schedule:
     - cron: '17 5 * * 1' # Mondays: new WordPress / SEO plugin releases land without a push here
