@@ -77,6 +77,19 @@ jobs:
             libpng-dev libjpeg-dev libzip-dev >/dev/null
           docker-php-ext-configure gd --with-jpeg >/dev/null
           docker-php-ext-install -j"$(nproc)" gd zip >/dev/null
+          # The SQLite drop-in (sqlite-database-integration 3.x) needs SQLite 3.37+;
+          # bullseye links PHP against 3.34, so build a current libsqlite3 there.
+          sqlite_old() { php -r 'exit(version_compare((new PDO("sqlite::memory:"))->query("select sqlite_version()")->fetchColumn(), "3.37.0", "<") ? 0 : 1);'; }
+          if sqlite_old; then
+            cd /tmp
+            curl -fsSLO https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz
+            echo 'a3db587a1b92ee5ddac2f66b3edb41b26f9c867275782d46c3a088977d6a5b18  sqlite-autoconf-3500400.tar.gz' | sha256sum -c -
+            tar xzf sqlite-autoconf-3500400.tar.gz && cd sqlite-autoconf-3500400
+            ./configure --prefix=/usr/local >/dev/null && make -j"$(nproc)" >/dev/null && make install >/dev/null
+            ldconfig && cd /tmp
+          fi
+          sqlite_old && { echo 'SQLite is still older than 3.37'; exit 1; }
+          php -r 'echo "SQLite ", (new PDO("sqlite::memory:"))->query("select sqlite_version()")->fetchColumn(), "\n";'
           # Same settings as Debian's CLI php.ini, which the PPA builds used.
           cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
           echo 'memory_limit = -1' > "$PHP_INI_DIR/conf.d/zz-ci.ini"
