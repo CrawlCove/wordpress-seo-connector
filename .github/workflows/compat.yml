@@ -6,8 +6,9 @@
 # WordPress the readme claims (Requires at least). Results feed
 # docs/compatibility.md.
 #
-# No third-party actions: PHP comes from the Ubuntu PPA the runner image already
-# trusts for its own PHP builds (ondrej/php), installed with apt.
+# No third-party actions: each job runs inside the official Docker Hub php:<v>-cli
+# image. Until 24 Nov 2026 PHP came from the ondrej/php launchpad PPA, which
+# answered 503 for a whole day (23 Nov: 4-5 of 8 jobs red even with 4 retries).
 name: compat
 
 on:
@@ -20,6 +21,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  WP_CLI_ALLOW_ROOT: '1' # the php:<v>-cli containers run as root; wp-cli refuses root without it
 
 jobs:
   downloads:
@@ -47,33 +51,35 @@ jobs:
   php:
     needs: downloads
     runs-on: ubuntu-24.04
+    container: php:${{ matrix.php }}-cli
     strategy:
       fail-fast: false
       matrix:
         php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
     steps:
+      - &tools
+        name: PHP ${{ matrix.php }} extensions and test tools
+        run: |
+          # git must exist before checkout, or checkout falls back to a
+          # history-less tarball and migrate-checks.sh cannot find 1.0.0.
+          apt-get update -q >/dev/null
+          apt-get install -y -q --no-install-recommends git unzip zip jq curl python3 procps \
+            libpng-dev libjpeg-dev libzip-dev >/dev/null
+          docker-php-ext-configure gd --with-jpeg >/dev/null
+          docker-php-ext-install -j"$(nproc)" gd zip >/dev/null
+          # Same settings as Debian's CLI php.ini, which the PPA builds used.
+          cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+          echo 'memory_limit = -1' > "$PHP_INI_DIR/conf.d/zz-ci.ini"
+          php -v
+          for m in gd zip pdo_sqlite sqlite3 mbstring curl dom xml openssl; do
+            php -m | grep -qix "$m" || { echo "missing PHP extension: $m"; exit 1; }
+          done
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # migrate-checks.sh installs the 1.0.0 release from history
-      - &php
-        name: PHP ${{ matrix.php }}
-        run: |
-          v='${{ matrix.php }}'
-          # The PPA answers 503 now and then (23 Nov 2026: 7 of 8 jobs red);
-          # apt-get update only warns on that, so the install is what fails.
-          # Retry the pair a few times before calling the run red.
-          for try in 1 2 3 4; do
-            if sudo add-apt-repository -y ppa:ondrej/php >/dev/null \
-              && sudo apt-get update -q >/dev/null \
-              && sudo apt-get install -y -q "php$v-cli" "php$v-sqlite3" "php$v-mbstring" "php$v-xml" "php$v-curl" "php$v-zip" "php$v-gd" >/dev/null; then
-              break
-            fi
-            [ "$try" = 4 ] && exit 1
-            echo "PHP $v install failed (try $try), retrying in $((try * 30))s"
-            sleep $((try * 30))
-          done
-          sudo update-alternatives --set php "/usr/bin/php$v"
-          php -v && php -m | grep -E "^(gd|pdo_sqlite|mbstring)$"
+      - &safe
+        name: Trust the checkout (container runs as root, workspace is the runner's)
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/download-artifact@v4
         with:
           name: wp-cache
@@ -87,15 +93,17 @@ jobs:
   wordpress-min:
     needs: downloads
     runs-on: ubuntu-24.04
+    container: php:${{ matrix.php }}-cli
     strategy:
       fail-fast: false
       matrix:
         php: ['7.4']
     steps:
+      - *tools
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - *php
+      - *safe
       - uses: actions/download-artifact@v4
         with:
           name: wp-cache
