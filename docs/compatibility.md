@@ -5,14 +5,14 @@ real WordPress site built by `tests/integration/` (SQLite, `php -S`), with the
 real plugin installed, pushed to over the REST API and read back. Nothing here
 is assumed from a plugin's documentation.
 
-Last full run: 20 Nov 2026, connector 1.0.1.
+Last full run: 25 Nov 2026, connector 1.0.1 (main 7d6c8db).
 
 ## SEO plugins
 
 | Setup | Version tested | Suite | Checks | Result |
 |---|---|---|---|---|
 | Yoast SEO | 28.9 | `run.sh --adapter=yoast` | 231 | pass |
-| Rank Math | 1.0.282 | `run.sh --adapter=rankmath` | 231 | pass |
+| Rank Math | 1.0.283 | `run.sh --adapter=rankmath` | 231 | pass |
 | SEOPress | 10.4 | `run.sh --adapter=seopress` | 229 | pass |
 | All in One SEO (AIOSEO) | 5.0.5.1 | `run.sh --adapter=aioseo` | 219 | pass |
 | No SEO plugin | | `replace-urls`, `image-alt`, `site-settings`, `indexnow` | 195 | pass |
