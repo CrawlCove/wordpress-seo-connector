@@ -5,7 +5,7 @@ real WordPress site built by `tests/integration/` (SQLite, `php -S`), with the
 real plugin installed, pushed to over the REST API and read back. Nothing here
 is assumed from a plugin's documentation.
 
-Last full run: 25 Nov 2026, connector 1.0.1 (main 7d6c8db).
+Last full run: 26 Nov 2026, connector 1.0.1 (main 0470ad4).
 
 ## SEO plugins
 
@@ -14,7 +14,7 @@ Last full run: 25 Nov 2026, connector 1.0.1 (main 7d6c8db).
 | Yoast SEO | 28.9 | `run.sh --adapter=yoast` | 231 | pass |
 | Rank Math | 1.0.283 | `run.sh --adapter=rankmath` | 231 | pass |
 | SEOPress | 10.4 | `run.sh --adapter=seopress` | 229 | pass |
-| All in One SEO (AIOSEO) | 5.0.5.1 | `run.sh --adapter=aioseo` | 219 | pass |
+| All in One SEO (AIOSEO) | 5.0.6.1 | `run.sh --adapter=aioseo` | 219 | pass |
 | No SEO plugin | | `replace-urls`, `image-alt`, `site-settings`, `indexnow` | 195 | pass |
 
 With no SEO plugin, `/status` lists only the fix kinds that still work (links,
